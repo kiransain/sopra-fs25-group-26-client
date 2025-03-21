@@ -41,6 +41,7 @@ export default function Home() {
           <li>
             To test, modify the current page <code>app/page.tsx</code>{" "}
             and save to see your changes instantly.
+            I added some text - group 26
           </li>
         </ol>
 
