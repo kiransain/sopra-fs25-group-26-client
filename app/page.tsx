@@ -35,7 +35,7 @@ export default function Page() {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <APIProvider 
-        apiKey="AIzaSyDeN_7XJBgVRpqoj-T4HqWvGIvPAgkacE" 
+        apiKey="AIzaSyDeN_7XJBgVRpqoj-T4HqjWvGIvPAgkacE" 
         onLoad={() => console.log('Maps API loaded')}
       >
         <Map
