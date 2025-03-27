@@ -10,10 +10,8 @@ export default function Page() {
   const apiService = useApi();  
 
   useEffect(() => {
-    
     const fetchApiKey = async () => {
       try {
-        
         const response = await apiService.get<{ apiKey: string }>("/api/maps/key");
         
         if (response && response.apiKey) {
@@ -27,7 +25,7 @@ export default function Page() {
     fetchApiKey(); 
 
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
+      const watchId = navigator.geolocation.watchPosition(
         (position) => {
           setCurrentLocation({
             lat: position.coords.latitude,
@@ -37,8 +35,14 @@ export default function Page() {
         (error) => {
           console.error('Error getting location:', error);
           setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
-        }
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 } // Customize options as needed
       );
+
+      // Clean up the watch position when the component unmounts
+      return () => {
+        navigator.geolocation.clearWatch(watchId);
+      };
     } else {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
