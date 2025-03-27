@@ -1,14 +1,100 @@
-"use client"; // For components that need React hooks and browser APIs, SSR (server side rendering) has to be disabled. Read more here: https://nextjs.org/docs/pages/building-your-application/rendering/server-side-rendering
-import "@ant-design/v5-patch-for-react-19";
-import styles from "@/styles/page.module.css";
+"use client";
 
-export default function Home() {
+import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
+import { Circle } from '@/components/circle';
+import { useEffect, useState } from 'react';
+
+export default function Page() {
+  const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [radius, setRadius] = useState(1000);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
+        }
+      );
+    } else {
+      console.log('Geolocation is not supported by this browser.');
+      setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
+    }
+  }, []);
+
+  if (!currentLocation) {
+    return <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      Loading map...
+    </div>;
+  }
 
   return (
-    <div className={styles.page}>
-      <li>
-        Group 26
-      </li>
+    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+      <APIProvider 
+        apiKey="AIzaSyDeN_7XJBgVRpqoj-T4HqjWvGIvPAgkacE" 
+        onLoad={() => console.log('Maps API loaded')}
+      >
+        <Map
+          style={{ width: '100%', height: '100%' }}
+          defaultZoom={13}
+          defaultCenter={currentLocation}
+        >
+          <Marker position={currentLocation} />
+          <Circle
+            center={currentLocation}
+            radius={radius}
+            strokeColor="#FF0000"
+            strokeOpacity={0.8}
+            strokeWeight={2}
+            fillColor="#FF0000"
+            fillOpacity={0.35}
+            editable={true}
+            draggable={true}
+            onRadiusChanged={(r) => setRadius(r)}
+            onCenterChanged={(center) => {
+              if (center) setCurrentLocation({ lat: center.lat(), lng: center.lng() });
+            }}
+          />
+        </Map>
+
+        {/* Overlay with inline styles */}
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          zIndex: 1,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '15px',
+          borderRadius: '8px',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+          maxWidth: '300px'
+        }}>
+          <h2 style={{ marginTop: 0, color: '#333', fontSize: '1.2rem' }}>Group 26 - Location Info</h2>
+          <p style={{ margin: '8px 0', color: '#555' }}>Lat: {currentLocation.lat.toFixed(6)}</p>
+          <p style={{ margin: '8px 0', color: '#555' }}>Lng: {currentLocation.lng.toFixed(6)}</p>
+          <p style={{ margin: '8px 0', color: '#555' }}>Radius: {radius} meters</p>
+          <button 
+            style={{
+              backgroundColor: '#4285F4',
+              color: 'white',
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginTop: '10px'
+            }}
+            onClick={() => window.location.reload()}
+          >
+            Refresh Location
+          </button>
+        </div>
+      </APIProvider>
     </div>
   );
 }
