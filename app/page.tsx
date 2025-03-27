@@ -2,11 +2,20 @@
 
 import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 import { useEffect, useState } from 'react';
+import { getApiDomain } from "@/utils/domain";
 
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
   useEffect(() => {
+    const apiUrl = `${getApiDomain()}/api/maps/key`; // Use dynamic API URL
+
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => setApiKey(data.apiKey))
+      .catch(error => console.error("Error fetching API key:", error));
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -26,7 +35,7 @@ export default function Page() {
     }
   }, []);
 
-  if (!currentLocation) {
+  if (!currentLocation || !apiKey) {
     return <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       Loading map...
     </div>;
@@ -34,10 +43,7 @@ export default function Page() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <APIProvider 
-        apiKey="AIzaSyDeN_7XJBgVRpqoj-T4HqjWvGIvPAgkacE" 
-        onLoad={() => console.log('Maps API loaded')}
-      >
+      <APIProvider apiKey={apiKey}>
         <Map
           style={{ width: '100%', height: '100%' }}
           defaultZoom={13}
