@@ -1,12 +1,10 @@
 "use client";
 
 import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
-import { Circle } from '@/components/circle';
 import { useEffect, useState } from 'react';
 
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [radius, setRadius] = useState(1000);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -37,7 +35,7 @@ export default function Page() {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <APIProvider 
-        apiKey="AIzaSyDeN_7XJBgVRpqoj-T4HqjWvGIvPAgkacE" 
+        apiKey="AIzaSyDeN_7XJBgVRpqoj-T4HqWvGIvPAgkacE" 
         onLoad={() => console.log('Maps API loaded')}
       >
         <Map
@@ -46,21 +44,6 @@ export default function Page() {
           defaultCenter={currentLocation}
         >
           <Marker position={currentLocation} />
-          <Circle
-            center={currentLocation}
-            radius={radius}
-            strokeColor="#FF0000"
-            strokeOpacity={0.8}
-            strokeWeight={2}
-            fillColor="#FF0000"
-            fillOpacity={0.35}
-            editable={true}
-            draggable={true}
-            onRadiusChanged={(r) => setRadius(r)}
-            onCenterChanged={(center) => {
-              if (center) setCurrentLocation({ lat: center.lat(), lng: center.lng() });
-            }}
-          />
         </Map>
 
         {/* Overlay with inline styles */}
@@ -78,7 +61,6 @@ export default function Page() {
           <h2 style={{ marginTop: 0, color: '#333', fontSize: '1.2rem' }}>Group 26 - Location Info</h2>
           <p style={{ margin: '8px 0', color: '#555' }}>Lat: {currentLocation.lat.toFixed(6)}</p>
           <p style={{ margin: '8px 0', color: '#555' }}>Lng: {currentLocation.lng.toFixed(6)}</p>
-          <p style={{ margin: '8px 0', color: '#555' }}>Radius: {radius} meters</p>
           <button 
             style={{
               backgroundColor: '#4285F4',
