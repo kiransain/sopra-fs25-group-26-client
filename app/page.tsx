@@ -1,6 +1,5 @@
 "use client";
 
-import { useApi } from "@/hooks/useApi";  
 import { useEffect, useState } from "react";
 import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 
