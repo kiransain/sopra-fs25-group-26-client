@@ -7,15 +7,34 @@ export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   
+  // old API key access
+  // useEffect(() => {
+  //   // Directly access the environment variable for the API key
+  //   const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  //   if (key) {
+  //     setApiKey(key); // Set the API key state with the environment variable
+  //   } else {
+  //     console.error("API Key not found");
+  //     console.log('API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+  //   }
+
   useEffect(() => {
-    // Directly access the environment variable for the API key
-    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (key) {
-      setApiKey(key); // Set the API key state with the environment variable
-    } else {
-      console.error("API Key not found");
-      console.log('API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
-    }
+    const fetchApiKey = async () => {
+      try {
+        // localhost:8080 in development, real backend URL in production
+        const backendUrl = window.location.hostname === 'localhost' 
+          ? 'http://localhost:8080' 
+          : 'sopra-fs25-group-26-server.oa.r.appspot.com';
+    
+        const response = await fetch(`${backendUrl}/api/maps/key`);
+        const data = await response.json();
+        setApiKey(data.apiKey);
+      } catch (error) {
+        console.error("Error fetching API key:", error);
+      }
+    };
+
+    fetchApiKey();
 
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
