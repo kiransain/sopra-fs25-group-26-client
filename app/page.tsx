@@ -20,22 +20,29 @@ export default function Page() {
 
   useEffect(() => {
     const fetchApiKey = async () => {
+      // 1. Try using the direct env variable first (works in Vercel)
+      const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      if (envKey) {
+        setApiKey(envKey);
+        return; // Stop here if the key exists
+      }
+  
+      // 2. Fallback: Fetch from backend (for local dev)
       try {
-        // localhost:8080 in development, real backend URL in production
         const backendUrl = window.location.hostname === 'localhost' 
           ? 'http://localhost:8080' 
-          : 'sopra-fs25-group-26-server.oa.r.appspot.com';
-    
+          : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
+        
         const response = await fetch(`${backendUrl}/api/maps/key`);
         const data = await response.json();
         setApiKey(data.apiKey);
       } catch (error) {
-        console.error("Error fetching API key:", error);
+        console.error("Failed to fetch API key:", error);
       }
     };
-
+  
     fetchApiKey();
-
+    
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
