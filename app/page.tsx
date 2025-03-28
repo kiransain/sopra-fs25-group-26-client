@@ -14,6 +14,7 @@ export default function Page() {
       setApiKey(key); // Set the API key state with the environment variable
     } else {
       console.error("API Key not found");
+      console.log('API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
     }
 
     if (navigator.geolocation) {
