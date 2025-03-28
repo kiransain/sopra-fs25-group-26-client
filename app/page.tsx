@@ -7,22 +7,15 @@ import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
-  const apiService = useApi();  
-
+  
   useEffect(() => {
-    const fetchApiKey = async () => {
-      try {
-        const response = await apiService.get<{ apiKey: string }>("/api/maps/key");
-        
-        if (response && response.apiKey) {
-          setApiKey(response.apiKey); 
-        }
-      } catch (error) {
-        console.error("Error fetching API key:", error);
-      }
-    };
-
-    fetchApiKey(); 
+    // Directly access the environment variable for the API key
+    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (key) {
+      setApiKey(key); // Set the API key state with the environment variable
+    } else {
+      console.error("API Key not found");
+    }
 
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
@@ -47,9 +40,10 @@ export default function Page() {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
-  }, [apiService]);
+  }, []);
 
-  if (!currentLocation || !apiKey) {
+  // debugging: removing !apiKey
+  if (!currentLocation || !apiKey) { 
     return <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       Loading map...
     </div>;
