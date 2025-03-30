@@ -1,22 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { APIProvider, Map, Marker } from '@vis.gl/react-google-maps';
+import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
 
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null); // To store the initial fixed location
   const [apiKey, setApiKey] = useState<string | null>(null);
-  
-  // old API key access
-  // useEffect(() => {
-  //   // Directly access the environment variable for the API key
-  //   const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  //   if (key) {
-  //     setApiKey(key); // Set the API key state with the environment variable
-  //   } else {
-  //     console.error("API Key not found");
-  //     console.log('API Key:', process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
-  //   }
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -26,7 +16,7 @@ export default function Page() {
         setApiKey(envKey);
         return; // Stop here if the key exists
       }
-  
+
       // 2. Fallback: Fetch from backend (for local dev)
       try {
         const backendUrl = window.location.hostname === 'localhost' 
@@ -40,16 +30,22 @@ export default function Page() {
         console.error("Failed to fetch API key:", error);
       }
     };
-  
+
     fetchApiKey();
     
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
-          setCurrentLocation({
+          const newLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude
-          });
+          };
+          setCurrentLocation(newLocation);
+
+          // Only set the fixedLocation once when the location is first fetched
+          if (!fixedLocation) {
+            setFixedLocation(newLocation);
+          }
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -66,10 +62,9 @@ export default function Page() {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
-  }, []);
+  }, [fixedLocation]); // Only re-run when fixedLocation changes
 
-  // debugging: removing !apiKey
-  if (!currentLocation || !apiKey) { 
+  if (!currentLocation || !apiKey || !fixedLocation) { 
     return <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       Loading map...
     </div>;
@@ -77,14 +72,31 @@ export default function Page() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <APIProvider apiKey={apiKey}>
-        <Map
-          style={{ width: '100%', height: '100%' }}
-          defaultZoom={13}
-          defaultCenter={currentLocation}
+      <LoadScript googleMapsApiKey={apiKey}>
+      <GoogleMap
+          mapContainerStyle={{ width: '100%', height: '100%' }}
+          center={currentLocation}
+          zoom={16}
+          onLoad={(map: google.maps.Map) => {
+            console.log('Map Loaded:', map);
+            // You can interact with the map instance here if needed
+          }}
         >
-          <Marker position={currentLocation} />
-        </Map>
+            <Marker position={currentLocation} />
+          
+          {/* Fixed circle with 100 meters radius at the initial location */}
+          <Circle
+            center={fixedLocation}  // Circle will stay at the fixed location
+            radius={100} // 100 meters radius
+            options={{
+              fillColor: "rgba(0, 123, 255, 0.3)", 
+              fillOpacity: 0.3,
+              strokeColor: "#007BFF", 
+              strokeOpacity: 0.7,
+              strokeWeight: 2
+            }}
+          />
+        </GoogleMap>
 
         {/* Overlay with inline styles */}
         <div style={{
@@ -116,7 +128,7 @@ export default function Page() {
             Refresh Location
           </button>
         </div>
-      </APIProvider>
+      </LoadScript>
     </div>
   );
 }
