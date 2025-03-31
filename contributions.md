@@ -30,18 +30,20 @@ reason).
 
 ---
 
-## Contributions Week 1 - [Begin Date] to [End Date]
+## Contributions Week 1 - 25.03.2025 to 01.04.2025
 
-| **Student**        | **Date** | **Link to Commit** | **Description**                 | **Relevance**                       |
-| ------------------ | -------- | ------------------ | ------------------------------- | ----------------------------------- |
-| **[@githubUser1]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser2]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser3]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
-| **[@githubUser4]** | [date]   | [Link to Commit 1] | [Brief description of the task] | [Why this contribution is relevant] |
-|                    | [date]   | [Link to Commit 2] | [Brief description of the task] | [Why this contribution is relevant] |
+| **Student**        | **Date**   | **Link to Commit** | **Description**                                                                                                                                                                 | **Relevance**                       |
+|--------------------|------------| ------------------ |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| ----------------------------------- |
+| ermin-mumic        | 29.03.2025 | https://github.com/kiransain/sopra-fs25-group-26-server/commit/3fdeda19478707ef7999d495fcddf89ce445b867 | Created and configured the Game, Player, and updated User entities. Implemented their corresponding JPA repositories to enable database operations for each entity.             | Defined the core entities (Game, Player, User) and their repositories, forming the foundation for all game and user interactions in the backend. |
+| ermin-mumic        | 29.03.2025 | https://github.com/kiransain/sopra-fs25-group-26-server/commit/1235911949d6885c0cf7747ab63e05776520c533 | Implemented user registration logic, including saving new users to the database with a generated token and initial stats as well as handling error for already taken usernames. | Enables user account creation and authentication, which is essential for tracking players and managing game participation. |
+| ermin-mumic        | 31.03.2025 | https://github.com/kiransain/sopra-fs25-group-26-server/commit/c5d4b4befab3761829fe582786e915fcecb48a21 | Added endpoint to validate user credentials and return the stored token upon successful login.                                                                                  | Enables secure user login and token-based authentication, which is required to protect routes and link actions to specific users. |
+| ermin-mumic        | 31.03.2025 | https://github.com/kiransain/sopra-fs25-group-26-server/commit/405fb3652cdc319129e3e7baf2172246b42bc092 | Implemented logic to create a game and automatically register the creator as a player with location and role while handling error cases.                                        | Allows users to create games and participate as players, enabling the core gameplay flow of ManHunt. |
+| **[@githubUser2]** | [date]     | [Link to Commit 1] | [Brief description of the task]                                                                                                                                                 | [Why this contribution is relevant] |
+|                    | [date]     | [Link to Commit 2] | [Brief description of the task]                                                                                                                                                 | [Why this contribution is relevant] |
+| **[@githubUser3]** | [date]     | [Link to Commit 1] | [Brief description of the task]                                                                                                                                                 | [Why this contribution is relevant] |
+|                    | [date]     | [Link to Commit 2] | [Brief description of the task]                                                                                                                                                 | [Why this contribution is relevant] |
+| **[@githubUser4]** | [date]     | [Link to Commit 1] | [Brief description of the task]                                                                                                                                                 | [Why this contribution is relevant] |
+|                    | [date]     | [Link to Commit 2] | [Brief description of the task]                                                                                                                                                 | [Why this contribution is relevant] |
 
 ---
 
