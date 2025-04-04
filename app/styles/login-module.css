@@ -36,6 +36,27 @@
     background-repeat: no-repeat;
     background-position: center;
   }
+  .man-logo-reg {
+    width: 80px;
+    height: 120px;
+    position: relative;
+    background-image: url('/logo.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+
+  .pin-marker-reg {
+    position: absolute;
+    top: -25px;
+    right: -25px;
+    width: 60px; 
+    height: 60px; 
+    background-image: url('/marker.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); 
+  }
   
   .pin-marker {
     position: absolute;
@@ -111,6 +132,25 @@
     text-decoration: none;
     font-weight: 500;
   }
+
+  .intro-text {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .intro-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: #000;
+  }
+  
+  .intro-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+  }
+  
   
   /* Override Ant Design styles */
   .manhunt-login-container .ant-input,
@@ -119,9 +159,18 @@
     border-radius: 5px;
     border: 1px solid #e8e8e8;
   }
+  .manhunt-login-container .ant-input-password {
+    padding-top: 3px;  
+    padding-bottom: 2px;
+    line-height: 1.5;  
+  }
   
   .manhunt-login-container .ant-input::placeholder {
     color: #bbb;
+  }
+  .manhunt-login-container .ant-input-password input::placeholder {
+    color: #bbb;
+    transform: translateY(-6px); 
   }
   
   .manhunt-login-container .ant-form-item-label {
