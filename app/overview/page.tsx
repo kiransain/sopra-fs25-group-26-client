@@ -102,8 +102,8 @@ export default function Page() {
         {/* Overlay with inline styles */}
         <div style={{
           position: 'absolute',
-          top: '20px',
-          left: '20px',
+          top: '20px', // border to top
+          left: '40%', // so that location info is roughly in the middle
           zIndex: 1,
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
           padding: '15px',
@@ -111,7 +111,7 @@ export default function Page() {
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
           maxWidth: '300px'
         }}>
-          <h2 style={{ marginTop: 0, color: '#333', fontSize: '1.2rem' }}>Group 26 - Location Info</h2>
+          <h2 style={{ marginTop: 0, color: '#333', fontSize: '1.2rem' }}> Your location Info</h2>
           <p style={{ margin: '8px 0', color: '#555' }}>Lat: {currentLocation.lat.toFixed(6)}</p>
           <p style={{ margin: '8px 0', color: '#555' }}>Lng: {currentLocation.lng.toFixed(6)}</p>
           <button 
@@ -127,6 +127,21 @@ export default function Page() {
             onClick={() => window.location.reload()}
           >
             Refresh Location
+          </button>
+          {/* logout button added, 05.04.2025 */}
+          <button
+            style={{
+              backgroundColor: 'red',
+              color: 'white', border: 'none', padding: '8px 12px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginTop: '10px'
+            }}
+            onClick={() =>{
+              localStorage.removeItem('token');
+              window.location.href = '/';
+            }}>
+              Logout
           </button>
         </div>
       </LoadScript>
