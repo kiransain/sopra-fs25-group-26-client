@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null); // To store the initial fixed location
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -128,6 +130,46 @@ export default function Page() {
           >
             Refresh Location
           </button>
+
+
+          
+          {/* Play Game Button */}
+          <button
+            style={{
+              backgroundColor: '#34A853',
+              color: 'white',
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+            onClick={() => {
+              // Redirect to game lobby or start game logic
+              router.push('/lobby'); // Or your game start route
+            }}
+          >
+            Play Game
+          </button>
+
+          {/* User Profile Button */}
+          <button
+            style={{
+              backgroundColor: '#FBBC05',
+              color: 'white',
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+            onClick={() => {
+              router.push('/profile'); 
+            }}
+          >
+            User Profile
+          </button>
+
+
+
           {/* logout button added, 05.04.2025 */}
           <button
             style={{
