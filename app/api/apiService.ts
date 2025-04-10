@@ -55,6 +55,26 @@ export class ApiService {
       : Promise.resolve(res as T);
   }
 
+  
+  private getAuthHeader(): { Authorization: string } | undefined {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token");
+      if (token) {
+        return { Authorization: `Bearer ${token}` };
+      }
+    }
+    return undefined;
+  }
+
+  
+  private getHeaders(): HeadersInit {
+    const authHeader = this.getAuthHeader();
+    if (authHeader) {
+      return { ...this.defaultHeaders, ...authHeader };
+    }
+    return this.defaultHeaders;
+  }
+
   /**
    * GET request.
    * @param endpoint - The API endpoint (e.g. "/users").
@@ -64,7 +84,7 @@ export class ApiService {
     const url = `${this.baseURL}${endpoint}`;
     const res = await fetch(url, {
       method: "GET",
-      headers: this.defaultHeaders,
+      headers: this.getHeaders(),
     });
     return this.processResponse<T>(
       res,
@@ -82,7 +102,7 @@ export class ApiService {
     const url = `${this.baseURL}${endpoint}`;
     const res = await fetch(url, {
       method: "POST",
-      headers: this.defaultHeaders,
+      headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
     return this.processResponse<T>(
@@ -101,7 +121,7 @@ export class ApiService {
     const url = `${this.baseURL}${endpoint}`;
     const res = await fetch(url, {
       method: "PUT",
-      headers: this.defaultHeaders,
+      headers: this.getHeaders(),
       body: JSON.stringify(data),
     });
     return this.processResponse<T>(
@@ -119,7 +139,7 @@ export class ApiService {
     const url = `${this.baseURL}${endpoint}`;
     const res = await fetch(url, {
       method: "DELETE",
-      headers: this.defaultHeaders,
+      headers: this.getHeaders(),
     });
     return this.processResponse<T>(
       res,
