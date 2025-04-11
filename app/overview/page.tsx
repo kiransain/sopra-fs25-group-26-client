@@ -13,6 +13,42 @@ export default function Page() {
   const [backendUrl, setBackendUrl] = useState('');
   const router = useRouter();
 
+  
+
+  const fetchGames = async () => {
+    try {
+      const response = await fetch(`${backendUrl}/games`, {
+        headers: {
+          Authorization: localStorage.getItem("token") || '',
+        },
+      });
+  
+      // Check if the response is ok
+      if (!response.ok) {
+        throw new Error('Failed to fetch games');
+      }
+  
+      const data = await response.json();
+      console.log('Response Data:', data); // Log the raw response for debugging
+  
+      // Ensure data is an array (you can adjust this based on the actual response structure)
+      if (Array.isArray(data)) {
+        setAvailableGames(data); // Directly use the data if it's already an array
+      } else if (data && Array.isArray(data.games)) {
+        // Handle the case where the response is an object with a 'games' property
+        setAvailableGames(data.games);
+      } else {
+        console.error("Error: Response data is not in the expected format", data);
+        setAvailableGames([]); // Set to an empty array if the structure is incorrect
+      }
+    } catch (error) {
+      console.error("Failed to fetch games:", error);
+      setAvailableGames([]); // Set to an empty array on error
+    }
+  };
+  
+  
+
   useEffect(() => {
     const url =
       window.location.hostname === 'localhost'
@@ -98,12 +134,10 @@ export default function Page() {
       alert("Please wait until your location is determined");
       return;
     }
-
-    const gameName = prompt("Enter a name for your game:");
-    if (!gameName?.trim()) return;
-
+  
     setIsCreatingGame(true);
     try {
+      // Send request to create game with a default name or no name
       const response = await fetch(`${backendUrl}/games`, {
         method: 'POST',
         headers: {
@@ -111,19 +145,19 @@ export default function Page() {
           'Authorization': localStorage.getItem("token") || ''
         },
         body: JSON.stringify({
-          gamename: gameName,
+          gamename: "Default Game Name",  // Or provide an empty string or any other logic for naming
           locationLat: fixedLocation.lat,
           locationLong: fixedLocation.lng
         })
       });
-
+  
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || 'Failed to create game');
       }
-
+  
       const gameData = await response.json();
-      router.push(`/lobby/${gameData.id}`);
+      router.push(`/lobbyv2/${gameData.id}`);  // Redirect directly to the created game's lobby
     } catch (error) {
       console.error('Error:', error);
       alert(`Game creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -131,6 +165,7 @@ export default function Page() {
       setIsCreatingGame(false);
     }
   };
+  
 
   if (!currentLocation || !apiKey || !fixedLocation) {
     return (
@@ -208,6 +243,28 @@ export default function Page() {
               Logout
             </button>
           </div>
+
+          <div style={{ marginTop: '15px' }}>
+            <h3 style={{ marginBottom: '10px', fontSize: '1rem' }}>Available Games</h3>
+            {availableGames.length === 0 ? (
+              <p style={{ color: '#777' }}>No games available</p>
+            ) : (
+              <ul style={{ listStyle: 'none', paddingLeft: 0, maxHeight: '200px', overflowY: 'auto' }}>
+                {Array.isArray(availableGames) ? (
+                  availableGames.map((game) => (
+                    <li key={game.id} style={{ marginBottom: '6px', cursor: 'pointer', color: '#007BFF' }}
+                        onClick={() => router.push(`/lobby/${game.id}`)}>
+                      🎮 {game.gamename}
+                    </li>
+                  ))
+                ) : (
+                  <p>Error: availableGames is not an array</p>
+                )}
+              </ul>
+            )}
+          </div>
+
+
         </div>
       </LoadScript>
     </div>
