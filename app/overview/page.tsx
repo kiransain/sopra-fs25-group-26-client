@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
+import useLocalStorage from "@/hooks/useLocalStorage";
+
 
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
@@ -12,6 +14,7 @@ export default function Page() {
   const [availableGames, setAvailableGames] = useState<any[]>([]);
   const [backendUrl, setBackendUrl] = useState('');
   const router = useRouter();
+  const { set: setToken } = useLocalStorage<string>("token", ""); 
 
   
 
@@ -23,23 +26,17 @@ export default function Page() {
         },
       });
   
-      // Check if the response is ok
       if (!response.ok) {
         throw new Error('Failed to fetch games');
       }
+        const data = await response.json();
+      console.log('Response Data:', data); //  for debugging
   
-      const data = await response.json();
-      console.log('Response Data:', data); // Log the raw response for debugging
-  
-      // Ensure data is an array (you can adjust this based on the actual response structure)
       if (Array.isArray(data)) {
-        setAvailableGames(data); // Directly use the data if it's already an array
-      } else if (data && Array.isArray(data.games)) {
-        // Handle the case where the response is an object with a 'games' property
-        setAvailableGames(data.games);
+        setAvailableGames(data); //  set available games if it is an array
       } else {
-        console.error("Error: Response data is not in the expected format", data);
-        setAvailableGames([]); // Set to an empty array if the structure is incorrect
+        console.error("Error: Response data is not an array", data);
+        setAvailableGames([]); //  to an empty array if the structure is incorrect
       }
     } catch (error) {
       console.error("Failed to fetch games:", error);
