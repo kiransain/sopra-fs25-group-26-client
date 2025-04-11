@@ -6,9 +6,16 @@ import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null); // To store the initial fixed location
+  const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const [isCreatingGame, setIsCreatingGame] = useState(false);
   const router = useRouter();
+
+  // the backend URL is not fetched only once.
+  const backendUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8080' 
+    : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
+
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -20,12 +27,7 @@ export default function Page() {
         return; // Stop here if the key exists
       }
 
-      // 2. Fallback: Fetch from backend (for local dev)
-      try {
-        const backendUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:8080' 
-          : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
-        
+      try{
         const response = await fetch(`${backendUrl}/api/maps/key`);
         const data = await response.json();
         setApiKey(data.apiKey);
@@ -46,9 +48,7 @@ export default function Page() {
           setCurrentLocation(newLocation);
 
           // Only set the fixedLocation once when the location is first fetched
-          if (!fixedLocation) {
-            setFixedLocation(newLocation);
-          }
+          if (!fixedLocation) setFixedLocation(newLocation);
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -58,39 +58,29 @@ export default function Page() {
       );
 
       // Clean up the watch position when the component unmounts
-      return () => {
-        navigator.geolocation.clearWatch(watchId);
-      };
+      return () =>navigator.geolocation.clearWatch(watchId);
     } else {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
-  }, [fixedLocation]); // Only re-run when fixedLocation changes
-
-  if (!currentLocation || !apiKey || !fixedLocation) { 
-    return <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      Loading map...
-    </div>;
-  }
+  }, [fixedLocation, backendUrl]); // Only re-run when fixedLocation changes
 
   const handleCreateGame = async () => {
+    if (!fixedLocation) {
+      alert("Please wait until your location is determined");
+      return;
+    }
+
+    const gameName = prompt("Enter a name for your game:");
+    if (!gameName?.trim()) return;
+
+    setIsCreatingGame(true);
     try {
-      if (!fixedLocation) {
-        alert("Please wait until your location is fixed");
-        return;
-      }
-
-      const gameName = prompt("Enter a name for your game:");
-      if (!gameName) return;
-
-      const backendUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:8080' 
-        : 'https://your-production-server.com';
-
       const response = await fetch(`${backendUrl}/games`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': localStorage.getItem("token") || ''
         },
         body: JSON.stringify({
           gamename: gameName,
@@ -98,18 +88,35 @@ export default function Page() {
           locationLong: fixedLocation.lng
         })
       });
-
+      
       if (!response.ok) {
-        throw new Error('Failed to create game');
+        const error = await response.text();
+        throw new Error(error || 'Failed to create game');
       }
-
+      
       const gameData = await response.json();
       router.push(`/lobby/${gameData.id}`);
     } catch (error) {
-      console.error('Error creating game:', error);
-      alert('Failed to create game. Please try again.');
+      console.error('Error:', error);
+      alert(`Game creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsCreatingGame(false);
     }
   };
+
+  if (!currentLocation || !apiKey || !fixedLocation) {
+    return (
+      <div style={{ 
+        width: '100vw', 
+        height: '100vh', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center' 
+      }}>
+        Loading map...
+      </div>
+    );
+  }
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
@@ -123,8 +130,7 @@ export default function Page() {
             // You can interact with the map instance here if needed
           }}
         >
-            <Marker position={currentLocation} />
-          
+          <Marker position={currentLocation} />
           {/* Fixed circle with 100 meters radius at the initial location */}
           <Circle
             center={fixedLocation}  // Circle will stay at the fixed location
@@ -154,114 +160,59 @@ export default function Page() {
           <h2 style={{ marginTop: 0, color: '#333', fontSize: '1.2rem' }}> Your location Info</h2>
           <p style={{ margin: '8px 0', color: '#555' }}>Lat: {currentLocation.lat.toFixed(6)}</p>
           <p style={{ margin: '8px 0', color: '#555' }}>Lng: {currentLocation.lng.toFixed(6)}</p>
-          <button 
-            style={{
-              backgroundColor: '#4285F4',
-              color: 'white',
-              border: 'none',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '10px'
-            }}
-            onClick={() => window.location.reload()}
-          >
-            Refresh Location
-          </button>
+          
 
-            {/* Create Game Button */}
-            <button
-              style={{
-                backgroundColor: '#34A853',
-                color: 'white',
-                border: 'none',
-                padding: '8px 12px',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}
-              onClick={async () => {
-                try {
-                  if (!fixedLocation) {
-                    throw new Error("Location not fixed yet");
-                  }
-
-                  const gameName = prompt("Enter a name for your game:");
-                  if (!gameName) return;
-                  
-                  const token = localStorage.getItem("token");
-                  if (!token) {
-                    router.push('/login');
-                    return;
-                  }
-
-                  const backendUrl = window.location.hostname === 'localhost' 
-                    ? 'http://localhost:8080' 
-                    : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
-
-                  const response = await fetch(`${backendUrl}/games`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': token
-                    },
-                    body: JSON.stringify({
-                      gamename: gameName,
-                      locationLat: fixedLocation.lat,
-                      locationLong: fixedLocation.lng
-                    })
-                  });
-                  
-                  if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to create game');
-                  }
-                  
-                  const gameData = await response.json();
-                  router.push(`/lobby/${gameData.id}`);
-                } catch (error) {
-                  console.error('Error creating game:', error);
-                  alert(`Failed to create game: ${error instanceof Error ? error.message : String(error)}`);
-                }
-              }}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <button 
+              style={buttonStyle('#4285F4')}
+              onClick={() => window.location.reload()}
             >
-              Create Game
+              Refresh Location
             </button>
 
-          {/* User Profile Button */}
-          <button
-            style={{
-              backgroundColor: '#FBBC05',
-              color: 'white',
-              border: 'none',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-            onClick={() => {
-              router.push('/profile'); 
-            }}
-          >
-            User Profile
-          </button>
+            <button
+              style={buttonStyle('#34A853')}
+              onClick={handleCreateGame}
+              disabled={isCreatingGame}
+            >
+              {isCreatingGame ? 'Creating...' : 'Create Game'}
+            </button>
 
+            <button
+              style={buttonStyle('#FBBC05')}
+              onClick={() => router.push('/profile')}
+            >
+              User Profile
+            </button>
 
-          {/* logout button added, 05.04.2025 */}
-          <button
-            style={{
-              backgroundColor: 'red',
-              color: 'white', border: 'none', padding: '8px 12px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              marginTop: '10px'
-            }}
-            onClick={() =>{
-              localStorage.removeItem('token');
-              window.location.href = '/';
-            }}>
+            <button
+              style={buttonStyle('red', true)}
+              onClick={() => {
+                localStorage.removeItem('token');
+                window.location.href = '/';
+              }}
+            >
               Logout
-          </button>
+            </button>
+          </div>
         </div>
       </LoadScript>
     </div>
   );
 }
+
+const buttonStyle = (color: string, marginTop = false) => ({
+  backgroundColor: color,
+  color: 'white',
+  border: 'none',
+  padding: '8px 12px',
+  borderRadius: '4px',
+  cursor: 'pointer',
+  marginTop: marginTop ? '10px' : '0',
+  width: '100%',
+  transition: 'opacity 0.2s',
+  ':disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed'
+  }
+});
