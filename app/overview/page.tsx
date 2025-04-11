@@ -73,6 +73,44 @@ export default function Page() {
     </div>;
   }
 
+  const handleCreateGame = async () => {
+    try {
+      if (!fixedLocation) {
+        alert("Please wait until your location is fixed");
+        return;
+      }
+
+      const gameName = prompt("Enter a name for your game:");
+      if (!gameName) return;
+
+      const backendUrl = window.location.hostname === 'localhost' 
+        ? 'http://localhost:8080' 
+        : 'https://your-production-server.com';
+
+      const response = await fetch(`${backendUrl}/games`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gamename: gameName,
+          locationLat: fixedLocation.lat,
+          locationLong: fixedLocation.lng
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create game');
+      }
+
+      const gameData = await response.json();
+      router.push(`/lobby/${gameData.id}`);
+    } catch (error) {
+      console.error('Error creating game:', error);
+      alert('Failed to create game. Please try again.');
+    }
+  };
+
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <LoadScript googleMapsApiKey={apiKey}>
@@ -131,23 +169,63 @@ export default function Page() {
             Refresh Location
           </button>
 
-            {/* Play Game Button */}
-          <button
-            style={{
-              backgroundColor: '#34A853',
-              color: 'white',
-              border: 'none',
-              padding: '8px 12px',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-            onClick={() => {
-              // Redirect to game lobby or start game logic
-              router.push('/lobby'); // Or your game start route
-            }}
-          >
-            Play Game
-          </button>
+            {/* Create Game Button */}
+            <button
+              style={{
+                backgroundColor: '#34A853',
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+              onClick={async () => {
+                try {
+                  if (!fixedLocation) {
+                    throw new Error("Location not fixed yet");
+                  }
+
+                  const gameName = prompt("Enter a name for your game:");
+                  if (!gameName) return;
+                  
+                  const token = localStorage.getItem("token");
+                  if (!token) {
+                    router.push('/login');
+                    return;
+                  }
+
+                  const backendUrl = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:8080' 
+                    : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
+
+                  const response = await fetch(`${backendUrl}/games`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': token
+                    },
+                    body: JSON.stringify({
+                      gamename: gameName,
+                      locationLat: fixedLocation.lat,
+                      locationLong: fixedLocation.lng
+                    })
+                  });
+                  
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to create game');
+                  }
+                  
+                  const gameData = await response.json();
+                  router.push(`/lobby/${gameData.id}`);
+                } catch (error) {
+                  console.error('Error creating game:', error);
+                  alert(`Failed to create game: ${error instanceof Error ? error.message : String(error)}`);
+                }
+              }}
+            >
+              Create Game
+            </button>
 
           {/* User Profile Button */}
           <button
