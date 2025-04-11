@@ -22,7 +22,7 @@ export default function GameLobby({ params }: { params: { gameId: string } }) {
             setLoading(true);
             
             // Fetch players
-            const playersResponse = await fetch(`/api/games/${gameId}/players`, {
+            const playersResponse = await fetch(`/games/${gameId}/players`, {
                 headers: {
                     Authorization: localStorage.getItem("token") || "",
                 },
@@ -33,7 +33,7 @@ export default function GameLobby({ params }: { params: { gameId: string } }) {
             setPlayers(playersData);
             
             // Check if can start
-            const canStartResponse = await fetch(`/api/games/${gameId}/canStart`, {
+            const canStartResponse = await fetch(`/games/${gameId}/canStart`, {
                 headers: {
                     Authorization: localStorage.getItem("token") || "",
                 },
@@ -58,7 +58,7 @@ export default function GameLobby({ params }: { params: { gameId: string } }) {
 
     const handleStartGame = async () => {
         try {
-            const response = await fetch(`/api/games/${gameId}/start`, {
+            const response = await fetch(`/games/${gameId}/start`, {
                 method: "POST",
                 headers: {
                     Authorization: localStorage.getItem("token") || "",
@@ -134,7 +134,9 @@ export default function GameLobby({ params }: { params: { gameId: string } }) {
                     
                     <Button 
                         danger
-                        onClick={handleLeaveGame}
+                        onClick={() => {
+                            router.push('/overview'); 
+                          }}
                     >
                         Leave Game
                     </Button>
