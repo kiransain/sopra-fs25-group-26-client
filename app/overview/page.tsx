@@ -9,25 +9,27 @@ export default function Page() {
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isCreatingGame, setIsCreatingGame] = useState(false);
+  const [availableGames, setAvailableGames] = useState<any[]>([]);
+  const [backendUrl, setBackendUrl] = useState('');
   const router = useRouter();
 
-  // the backend URL is not fetched only once.
-  const backendUrl = window.location.hostname === 'localhost' 
-    ? 'http://localhost:8080' 
-    : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
-
+  useEffect(() => {
+    const url =
+      window.location.hostname === 'localhost'
+        ? 'http://localhost:8080'
+        : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
+    setBackendUrl(url);
+  }, []);
 
   useEffect(() => {
     const fetchApiKey = async () => {
-      // 1. Try using the direct env variable first (works in Vercel)
       const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      
       if (envKey) {
         setApiKey(envKey);
-        return; // Stop here if the key exists
+        return;
       }
 
-      try{
+      try {
         const response = await fetch(`${backendUrl}/api/maps/key`);
         const data = await response.json();
         setApiKey(data.apiKey);
@@ -36,8 +38,34 @@ export default function Page() {
       }
     };
 
-    fetchApiKey();
-    
+    if (backendUrl) {
+      fetchApiKey();
+    }
+  }, [backendUrl]);
+
+  // Fetch available games
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/games`, {
+          headers: {
+            Authorization: localStorage.getItem("token") || ''
+          }
+        });
+        const data = await response.json();
+        setAvailableGames(data);
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+      }
+    };
+
+    if (backendUrl) {
+      fetchGames();
+    }
+  }, [backendUrl]);
+
+  // Watch for geolocation changes
+  useEffect(() => {
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
@@ -54,16 +82,16 @@ export default function Page() {
           console.error('Error getting location:', error);
           setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
         },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 } // Customize options as needed
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
       );
 
       // Clean up the watch position when the component unmounts
-      return () =>navigator.geolocation.clearWatch(watchId);
+      return () => navigator.geolocation.clearWatch(watchId);
     } else {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
-  }, [fixedLocation, backendUrl]); // Only re-run when fixedLocation changes
+  }, [fixedLocation]);
 
   const handleCreateGame = async () => {
     if (!fixedLocation) {
@@ -88,12 +116,12 @@ export default function Page() {
           locationLong: fixedLocation.lng
         })
       });
-      
+
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || 'Failed to create game');
       }
-      
+
       const gameData = await response.json();
       router.push(`/lobby/${gameData.id}`);
     } catch (error) {
@@ -106,13 +134,7 @@ export default function Page() {
 
   if (!currentLocation || !apiKey || !fixedLocation) {
     return (
-      <div style={{ 
-        width: '100vw', 
-        height: '100vh', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center' 
-      }}>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         Loading map...
       </div>
     );
@@ -121,13 +143,12 @@ export default function Page() {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       <LoadScript googleMapsApiKey={apiKey}>
-      <GoogleMap
+        <GoogleMap
           mapContainerStyle={{ width: '100%', height: '100%' }}
           center={currentLocation}
           zoom={16}
           onLoad={(map: google.maps.Map) => {
             console.log('Map Loaded:', map);
-            // You can interact with the map instance here if needed
           }}
         >
           <Marker position={currentLocation} />
@@ -136,20 +157,19 @@ export default function Page() {
             center={fixedLocation}  // Circle will stay at the fixed location
             radius={100} // 100 meters radius
             options={{
-              fillColor: "rgba(0, 123, 255, 0.3)", 
+              fillColor: "rgba(0, 123, 255, 0.3)",
               fillOpacity: 0.3,
-              strokeColor: "#007BFF", 
+              strokeColor: "#007BFF",
               strokeOpacity: 0.7,
               strokeWeight: 2
             }}
           />
         </GoogleMap>
 
-        {/* Overlay with inline styles */}
         <div style={{
           position: 'absolute',
-          top: '20px', // border to top
-          left: '40%', // so that location info is roughly in the middle
+          top: '20px',
+          left: '40%',
           zIndex: 1,
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
           padding: '15px',
@@ -160,13 +180,9 @@ export default function Page() {
           <h2 style={{ marginTop: 0, color: '#333', fontSize: '1.2rem' }}> Your location Info</h2>
           <p style={{ margin: '8px 0', color: '#555' }}>Lat: {currentLocation.lat.toFixed(6)}</p>
           <p style={{ margin: '8px 0', color: '#555' }}>Lng: {currentLocation.lng.toFixed(6)}</p>
-          
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button 
-              style={buttonStyle('#4285F4')}
-              onClick={() => window.location.reload()}
-            >
+            <button style={buttonStyle('#4285F4')} onClick={() => window.location.reload()}>
               Refresh Location
             </button>
 
@@ -178,10 +194,7 @@ export default function Page() {
               {isCreatingGame ? 'Creating...' : 'Create Game'}
             </button>
 
-            <button
-              style={buttonStyle('#FBBC05')}
-              onClick={() => router.push('/profile')}
-            >
+            <button style={buttonStyle('#FBBC05')} onClick={() => router.push('/users/[id]')}>
               User Profile
             </button>
 
