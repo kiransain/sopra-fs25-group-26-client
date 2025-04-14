@@ -1,180 +1,123 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Button, List, message, Spin, Card, Tag, Form, Input } from "antd";
-import Link from "next/link";
-import "@/styles/login-module.css";
+import { useApi } from "@/hooks/useApi";
+import { Button, Form, Input } from "antd";
+import { useState, useEffect } from "react";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import "@/styles/newgame-module.css";
 
-
-
-interface Player {
-  id: number;
-  username: string;
+interface GamePostDTO {
+  gamename: string;
+  locationLat: number;
+  locationLong: number;
 }
 
-interface GameInfo {
-  id: number;
-  name: string;
-  creator: string;
-  status: string;
-}
-
-export default function NewGame() {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [gameName, setGameName] = useState("");
+const NewGame: React.FC = () => {
   const router = useRouter();
-  const token = useLocalStorage("token", "");
-
-
-  const fetchLobbyData = async () => {
-    try {
-      setLoading(true);
-      const backendUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:8080' 
-        : 'https://your-production-server.com';
-
-      const response = await fetch(`${backendUrl}/games`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch games");
-      const games = await response.json();
-
-      setPlayers(games.map((game: any) => ({
-        id: game.id,
-        username: game.name
-      })));
-
-    } catch (error) {
-      message.error("Failed to load lobby data");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-    };
-
-    const handleCreateGame = async (values: { gameName: string }) => {
-        try {
-          setLoading(true);
-          const backendUrl = window.location.hostname === 'localhost' 
-            ? 'http://localhost:8080' 
-            : 'https://your-production-server.com';
-    
-          //get user's current location
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-          });
-    
-          const response = await fetch(`${backendUrl}/games`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              gamename: values.gameName,
-              locationLat: position.coords.latitude,
-              locationLong: position.coords.longitude
-            })
-          });
-    
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || "Failed to create game");
-          }
-          
-          const game = await response.json();
-          
-          // redirect to lobbyv2 page with the game ID
-          router.push(`/lobbyv2/${game.id}`);
-    
-        } catch (error) {
-          if (error instanceof Error) {
-            message.error(`Failed to create game: ${error.message}`);
-          } else {
-            message.error("An unknown error occurred");
-            console.error("An unknown error occurred");
-          }
-        } finally {
-          setLoading(false);
-        }
-      };
+  const apiService = useApi();
+  const [form] = Form.useForm();
+  const { value: token } = useLocalStorage<string | null>("token", null);
+  const [currentLocation, setCurrentLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (token) {
-      fetchLobbyData();
-      const interval = setInterval(fetchLobbyData, 5000);
-      return () => clearInterval(interval);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          alert('Unable to retrieve your location. Please allow location access.');
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser.');
     }
-  }, [token]);
+  }, []);
+
+  const handleCreateGame = async (values: {gameName: string}) => {
+    if (!currentLocation) {
+      alert('Location not available. Please ensure location services are enabled.');
+      return;
+    }
+    
+    setIsLoading(true);
+
+    try {
+      
+      const gameData: GamePostDTO = {
+        gamename: values.gameName,
+        locationLat: currentLocation.lat,
+        locationLong: currentLocation.lng
+      };
+
+      
+      const response = await apiService.post<any>("/games", gameData,{
+        Authorization: `Bearer ${token}`,
+      });
+      
+      router.push("/overview");
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(`Failed to create game:\n${error.message}`);
+      } else {
+        console.error("An unknown error occurred while creating the game.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="manhunt-login-container">
-      <div className="login-card">
-        <h1 className="app-title">ManHunt</h1>
+    <div className="newgame-container">
+      <div className="newgame-header">
+        <button 
+          className="back-button" 
+          onClick={() => router.back()}
+        >
+          &lt;
+        </button>
+        <h1 className="newgame-title">ManHunt</h1>
+      </div>
 
-        <div className="logo-container">
-          <div className="man-logo-reg">
-            <div className="pin-marker-reg"></div>
-          </div>
-        </div>
-
-        <div className="intro-text">
-          <h2 className="intro-title">Game Lobby</h2>
-          <p className="intro-subtitle">Create or join a game</p>
-        </div>
-        
+      <div className="newgame-content">
         <Form
-          name="createGame"
-          size="large"
+          form={form}
+          name="newgame"
           onFinish={handleCreateGame}
           layout="vertical"
-          className="login-form"
+          className="newgame-form"
         >
-          <Form.Item 
-            name="gameName" 
-            className="form-item"
-            rules={[{ required: true, message: "Please enter a game name!" }]}
+          <Form.Item
+            name="gameName"
+            rules={[{ required: true, message: "Please input a game name!" }]}
           >
-            <Input placeholder="Game Name" />
+            <Input placeholder="Game Name" className="game-name-input" />
           </Form.Item>
           
-          <Form.Item className="form-button">
-            <Button type="primary" htmlType="submit" className="login-button">
-              Create Game
+          <Form.Item>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              className="create-button"
+              loading={isLoading}
+            >
+              Create
             </Button>
           </Form.Item>
         </Form>
-        
-        <div className="divider">
-          <span>or</span>
-        </div>
-        
-        <Spin spinning={loading}>
-          <div className="available-games">
-            <h3 className="font-medium mb-2">Join available Games ({players.length}):</h3>
-            <List
-              dataSource={players}
-              renderItem={(player) => (
-                <List.Item 
-                  className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-                  onClick={() => router.push(`/lobby/${player.id}`)}
-                >
-                  <List.Item.Meta
-                    title={player.username}
-                    description={`Game ID: ${player.id}`}
-                  />
-                </List.Item>
-              )}
-            />
-          </div>
-        </Spin>
+
+        <p className="location-info">
+          The game area will be created based on the location of the hunter
+        </p>
       </div>
     </div>
   );
-}
+};
+
+export default NewGame;
