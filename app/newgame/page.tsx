@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import { Button, List, message, Spin, Card, Tag, Form, Input } from "antd";
 import Link from "next/link";
 import "@/styles/login-module.css";
+import useLocalStorage from "@/hooks/useLocalStorage";
+
+
 
 interface Player {
   id: number;
@@ -23,6 +26,8 @@ export default function NewGame() {
   const [loading, setLoading] = useState(true);
   const [gameName, setGameName] = useState("");
   const router = useRouter();
+  const token = useLocalStorage("token", "");
+
 
   const fetchLobbyData = async () => {
     try {
@@ -31,13 +36,15 @@ export default function NewGame() {
         ? 'http://localhost:8080' 
         : 'https://your-production-server.com';
 
-      // Fetch available games
-      const gamesResponse = await fetch(`${backendUrl}/games`);
-      if (!gamesResponse.ok) throw new Error("Failed to fetch games");
-      const games = await gamesResponse.json();
+      const response = await fetch(`${backendUrl}/games`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
 
-      // For the lobby page, we might want to show available games to join
-      // This is just a placeholder - adjust based on your actual API response
+      if (!response.ok) throw new Error("Failed to fetch games");
+      const games = await response.json();
+
       setPlayers(games.map((game: any) => ({
         id: game.id,
         username: game.name
@@ -49,47 +56,62 @@ export default function NewGame() {
     } finally {
       setLoading(false);
     }
-  };
+    };
 
-  const handleCreateGame = async (values: { gameName: string }) => {
-    try {
-      setLoading(true);
-      const backendUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:8080' 
-        : 'https://your-production-server.com';
-
-      const response = await fetch(`${backendUrl}/games`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: values.gameName
-        })
-      });
-
-      if (!response.ok) throw new Error("Failed to create game");
-      const game = await response.json();
-      
-      // Redirect to the specific game lobby
-      router.push(`/lobby/${game.id}`);
-
-    } catch (error) {
-      if (error instanceof Error) {
-        message.error(`Failed to create game: ${error.message}`);
-      } else {
-        console.error("An unknown error occurred");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleCreateGame = async (values: { gameName: string }) => {
+        try {
+          setLoading(true);
+          const backendUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:8080' 
+            : 'https://your-production-server.com';
+    
+          //get user's current location
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
+    
+          const response = await fetch(`${backendUrl}/games`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              gamename: values.gameName,
+              locationLat: position.coords.latitude,
+              locationLong: position.coords.longitude
+            })
+          });
+    
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to create game");
+          }
+          
+          const game = await response.json();
+          
+          // redirect to lobbyv2 page with the game ID
+          router.push(`/lobbyv2/${game.id}`);
+    
+        } catch (error) {
+          if (error instanceof Error) {
+            message.error(`Failed to create game: ${error.message}`);
+          } else {
+            message.error("An unknown error occurred");
+            console.error("An unknown error occurred");
+          }
+        } finally {
+          setLoading(false);
+        }
+      };
 
   useEffect(() => {
-    fetchLobbyData();
-    const interval = setInterval(fetchLobbyData, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    if (token) {
+      fetchLobbyData();
+      const interval = setInterval(fetchLobbyData, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [token]);
 
   return (
     <div className="manhunt-login-container">
