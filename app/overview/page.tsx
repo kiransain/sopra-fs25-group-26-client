@@ -16,8 +16,6 @@ export default function Page() {
   const router = useRouter();
   const { set: setToken } = useLocalStorage<string>("token", ""); 
 
-  
-
   const fetchGames = async () => {
     try {
       const response = await fetch(`${backendUrl}/games`, {
@@ -45,7 +43,6 @@ export default function Page() {
   };
   
   
-
   useEffect(() => {
     const url =
       window.location.hostname === 'localhost'
@@ -127,43 +124,10 @@ export default function Page() {
   }, [fixedLocation]);
 
   const handleCreateGame = async () => {
-    if (!fixedLocation) {
-      alert("Please wait until your location is determined");
-      return;
-    }
-  
-    setIsCreatingGame(true);
-    try {
-      // Send request to create game with a default name or no name
-      const response = await fetch(`${backendUrl}/games`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': localStorage.getItem("token") || ''
-        },
-        body: JSON.stringify({
-          gamename: "Default Game Name",  // Or provide an empty string or any other logic for naming
-          locationLat: fixedLocation.lat,
-          locationLong: fixedLocation.lng
-        })
-      });
-  
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Failed to create game');
-      }
-  
-      const gameData = await response.json();
-      router.push(`/lobbyv2/${gameData.id}`);  // Redirect directly to the created game's lobby
-    } catch (error) {
-      console.error('Error:', error);
-      alert(`Game creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsCreatingGame(false);
-    }
+    router.push('/newgame');  // Redirect to the newgame page
   };
   
-
+  
   if (!currentLocation || !apiKey || !fixedLocation) {
     return (
       <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -243,19 +207,24 @@ export default function Page() {
 
           <div style={{ marginTop: '15px' }}>
             <h3 style={{ marginBottom: '10px', fontSize: '1rem' }}>Available Games</h3>
-            {availableGames.length === 0 ? (
+            {!availableGames || availableGames.length === 0 ? ( // if no games -> No games available.
               <p style={{ color: '#777' }}>No games available</p>
             ) : (
               <ul style={{ listStyle: 'none', paddingLeft: 0, maxHeight: '200px', overflowY: 'auto' }}>
-                {Array.isArray(availableGames) ? (
+                {Array.isArray(availableGames) ? ( 
+                  // I tried removing isArray, but then whole site crashes because client-server rendering is different
+                  // API endpoint returns a List
                   availableGames.map((game) => (
-                    <li key={game.id} style={{ marginBottom: '6px', cursor: 'pointer', color: '#007BFF' }}
-                        onClick={() => router.push(`/lobby/${game.id}`)}>
-                      🎮 {game.gamename}
+                    <li 
+                      key={game.id}
+                      style={{ marginBottom: '6px', cursor: 'pointer', color: '#007BFF' }}
+                      onClick={() => router.push(`/lobby/${game.id}`)} // push to dynamic lobby
+                    >
+                      {game.gamename}
                     </li>
                   ))
                 ) : (
-                  <p>Error: availableGames is not an array</p>
+                  <p style={{ color: 'red' }}>Invalid games data format</p> 
                 )}
               </ul>
             )}
