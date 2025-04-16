@@ -112,9 +112,6 @@ const NewGame: React.FC = () => {
           </Form.Item>
         </Form>
 
-        <p className="location-info">
-          The game area will be created based on the location of the hunter
-        </p>
       </div>
     </div>
   );

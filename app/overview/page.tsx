@@ -3,63 +3,78 @@
 import { useEffect, useState } from "react";
 import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
+import { Avatar, Button, Card, List, Tag, Tooltip, Typography } from 'antd';
+import { UserOutlined, ReloadOutlined } from '@ant-design/icons';
+import { useApi } from "@/hooks/useApi";
+import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
+// Game related interfaces matching the backend DTOs
+interface PlayerGetDTO {
+  playerId: number;
+  userId: number;
+  role: 'HUNTER' | 'HIDER'; // PlayerRole enum
+  status: 'HIDING' | 'HUNTING' | 'FOUND'; // PlayerStatus enum
+  outOfArea: boolean;
+  foundTime: string; // LocalDateTime as string
+  locationLat: number | null;
+  locationLong: number | null;
+}
+
+interface GameGetDTO {
+  gameId: number;
+  gamename: string;
+  status: 'IN_GAME' | 'IN_GAME_PREPARATION' | 'FINISHED' | 'IN_LOBBY';
+  centerLatitude: number;
+  centerLongitude: number;
+  timer: string; // LocalDateTime as string
+  radius: number;
+  creatorId: number;
+  players: PlayerGetDTO[];
+}
+
+const { Title, Text } = Typography;
 
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
-  const [isCreatingGame, setIsCreatingGame] = useState(false);
-  const [availableGames, setAvailableGames] = useState<any[]>([]);
-  const [backendUrl, setBackendUrl] = useState('');
-  const router = useRouter();
-  const { set: setToken } = useLocalStorage<string>("token", ""); 
+  const [games, setGames] = useState<GameGetDTO[]>([]);
+  const { value: token } = useLocalStorage<string | null>("token", null);
 
+  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
+  const apiService = useApi();
+
+  // Fetch games from the API
   const fetchGames = async () => {
     try {
-      const response = await fetch(`${backendUrl}/games`, {
-        headers: {
-          Authorization: localStorage.getItem("token") || '',
-        },
+      const gamesData = await apiService.get<GameGetDTO[]>('/games', {
+        Authorization: `Bearer ${token}`,
       });
-  
-      if (!response.ok) {
-        throw new Error('Failed to fetch games');
-      }
-        const data = await response.json();
-      console.log('Response Data:', data); //  for debugging
-  
-      if (Array.isArray(data)) {
-        setAvailableGames(data); //  set available games if it is an array
-      } else {
-        console.error("Error: Response data is not an array", data);
-        setAvailableGames([]); //  to an empty array if the structure is incorrect
-      }
+      setGames(gamesData);
     } catch (error) {
       console.error("Failed to fetch games:", error);
-      setAvailableGames([]); // Set to an empty array on error
+    } finally {
+      setLoading(false);
     }
   };
-  
-  
-  useEffect(() => {
-    const url =
-      window.location.hostname === 'localhost'
-        ? 'http://localhost:8080'
-        : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
-    setBackendUrl(url);
-  }, []);
 
   useEffect(() => {
+    // Fetch Google Maps API key
     const fetchApiKey = async () => {
       const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      
       if (envKey) {
         setApiKey(envKey);
         return;
       }
 
       try {
+        const backendUrl = window.location.hostname === 'localhost' 
+          ? 'http://localhost:8080' 
+          : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
+        
         const response = await fetch(`${backendUrl}/api/maps/key`);
         const data = await response.json();
         setApiKey(data.apiKey);
@@ -68,34 +83,9 @@ export default function Page() {
       }
     };
 
-    if (backendUrl) {
-      fetchApiKey();
-    }
-  }, [backendUrl]);
-
-  // Fetch available games
-  useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        const response = await fetch(`${backendUrl}/games`, {
-          headers: {
-            Authorization: localStorage.getItem("token") || ''
-          }
-        });
-        const data = await response.json();
-        setAvailableGames(data);
-      } catch (error) {
-        console.error("Failed to fetch games:", error);
-      }
-    };
-
-    if (backendUrl) {
-      fetchGames();
-    }
-  }, [backendUrl]);
-
-  // Watch for geolocation changes
-  useEffect(() => {
+    fetchApiKey();
+    fetchGames();
+    
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
@@ -105,8 +95,9 @@ export default function Page() {
           };
           setCurrentLocation(newLocation);
 
-          // Only set the fixedLocation once when the location is first fetched
-          if (!fixedLocation) setFixedLocation(newLocation);
+          if (!fixedLocation) {
+            setFixedLocation(newLocation);
+          }
         },
         (error) => {
           console.error('Error getting location:', error);
@@ -115,140 +106,170 @@ export default function Page() {
         { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
       );
 
-      // Clean up the watch position when the component unmounts
-      return () => navigator.geolocation.clearWatch(watchId);
+      
+      const interval = setInterval(fetchGames, 10000);
+
+      return () => {
+        navigator.geolocation.clearWatch(watchId);
+        clearInterval(interval);
+      };
     } else {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
   }, [fixedLocation]);
 
-  const handleCreateGame = async () => {
-    router.push('/newgame');  // Redirect to the newgame page
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'IN_LOBBY': return 'blue';
+      case 'IN_GAME': return 'green';
+      case 'FINISHED': return 'gray';
+      default: return 'default';
+    }
   };
   
-  
-  if (!currentLocation || !apiKey || !fixedLocation) {
+  const handleJoinGame = (gameId: number) => {
+    
+    router.push(`/games/${gameId}`);
+  };
+
+  const mapOptions = {
+    disableDefaultUI: true,
+    zoomControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    mapTypeControl: false,
+    styles: [
+      {
+        featureType: "poi",
+        stylers: [{ visibility: "off" }]
+      },
+      {
+        featureType: "transit",
+        stylers: [{ visibility: "off" }]
+      },
+      {
+        featureType: "road",
+        elementType: "labels",
+        stylers: [{ visibility: "off" }]
+      },
+      {
+        featureType: "administrative",
+        stylers: [{ visibility: "off" }]
+      }
+    ]
+  };
+
+  if (!currentLocation || !apiKey || !fixedLocation) { 
     return (
-      <div style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="loading-container">
         Loading map...
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <LoadScript googleMapsApiKey={apiKey}>
-        <GoogleMap
-          mapContainerStyle={{ width: '100%', height: '100%' }}
-          center={currentLocation}
-          zoom={16}
-          onLoad={(map: google.maps.Map) => {
-            console.log('Map Loaded:', map);
-          }}
+    <div className="overview-container">
+      {}
+      <header className="header">
+        <Title level={3} className="app-title">ManHunt</Title>
+        
+        {}
+        <Button
+          type="primary"
+          size="large"
+          className="create-game-button"
+          onClick={() => router.push('/newgame')}
         >
-          <Marker position={currentLocation} />
-          {/* Fixed circle with 100 meters radius at the initial location */}
-          <Circle
-            center={fixedLocation}  // Circle will stay at the fixed location
-            radius={100} // 100 meters radius
-            options={{
-              fillColor: "rgba(0, 123, 255, 0.3)",
-              fillOpacity: 0.3,
-              strokeColor: "#007BFF",
-              strokeOpacity: 0.7,
-              strokeWeight: 2
-            }}
+          Create Game
+        </Button>
+
+        <Tooltip title="Profile">
+          <Avatar 
+            icon={<UserOutlined />} 
+            size="large" 
+            style={{ cursor: 'pointer' }}
+            onClick={() => router.push('/users/me')} 
           />
-        </GoogleMap>
+        </Tooltip>
+      </header>
 
-        <div style={{
-          position: 'absolute',
-          top: '20px',
-          left: '40%',
-          zIndex: 1,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          padding: '15px',
-          borderRadius: '8px',
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-          maxWidth: '300px'
-        }}>
-          <h2 style={{ marginTop: 0, color: '#333', fontSize: '1.2rem' }}> Your location Info</h2>
-          <p style={{ margin: '8px 0', color: '#555' }}>Lat: {currentLocation.lat.toFixed(6)}</p>
-          <p style={{ margin: '8px 0', color: '#555' }}>Lng: {currentLocation.lng.toFixed(6)}</p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <button style={buttonStyle('#4285F4')} onClick={() => window.location.reload()}>
-              Refresh Location
-            </button>
-
-            <button
-              style={buttonStyle('#34A853')}
-              onClick={handleCreateGame}
-              disabled={isCreatingGame}
-            >
-              {isCreatingGame ? 'Creating...' : 'Create Game'}
-            </button>
-
-            <button style={buttonStyle('#FBBC05')} onClick={() => router.push('/users/[id]')}>
-              User Profile
-            </button>
-
-            <button
-              style={buttonStyle('red', true)}
-              onClick={() => {
-                localStorage.removeItem('token');
-                window.location.href = '/';
+      <div className="content-container">
+        {}
+        <div className="map-container">
+          <LoadScript googleMapsApiKey={apiKey}>
+            <GoogleMap
+              mapContainerStyle={{ width: '100%', height: '100%' }}
+              center={currentLocation}
+              zoom={18}
+              options={mapOptions}
+              onLoad={(map: google.maps.Map) => {
+                console.log('Map Loaded:', map);
               }}
             >
-              Logout
-            </button>
-          </div>
-
-          <div style={{ marginTop: '15px' }}>
-            <h3 style={{ marginBottom: '10px', fontSize: '1rem' }}>Available Games</h3>
-            {!availableGames || availableGames.length === 0 ? ( // if no games -> No games available.
-              <p style={{ color: '#777' }}>No games available</p>
-            ) : (
-              <ul style={{ listStyle: 'none', paddingLeft: 0, maxHeight: '200px', overflowY: 'auto' }}>
-                {Array.isArray(availableGames) ? ( 
-                  // I tried removing isArray, but then whole site crashes because client-server rendering is different
-                  // API endpoint returns a List
-                  availableGames.map((game) => (
-                    <li 
-                      key={game.id}
-                      style={{ marginBottom: '6px', cursor: 'pointer', color: '#007BFF' }}
-                      onClick={() => router.push(`/lobby/${game.id}`)} // push to dynamic lobby
-                    >
-                      {game.gamename}
-                    </li>
-                  ))
-                ) : (
-                  <p style={{ color: 'red' }}>Invalid games data format</p> 
-                )}
-              </ul>
-            )}
-          </div>
-
-
+              <Marker position={currentLocation} />
+              
+              <Circle
+                center={fixedLocation}
+                radius={100}
+                options={{
+                  fillColor: "rgba(0, 123, 255, 0.3)", 
+                  fillOpacity: 0.3,
+                  strokeColor: "#007BFF", 
+                  strokeOpacity: 0.7,
+                  strokeWeight: 2
+                }}
+              />
+            </GoogleMap>
+          </LoadScript>
         </div>
-      </LoadScript>
+
+        {}
+        <div className="games-list-container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <Title level={4} style={{ margin: 0 }}>Games</Title>
+          </div>
+
+          <List
+            dataSource={games}
+            loading={loading}
+            renderItem={(game) => (
+              <Card className="game-card" size="small">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>{game.gamename}</div>
+                    <div>
+                      <Tag color={getStatusColor(game.status)} className="game-status-tag">
+                        {game.status}
+                      </Tag>
+                      <Text type="secondary">
+                        {game.players.length} players
+                      </Text>
+                    </div>
+                    <div>
+                      <Text type="secondary">
+                        Radius: {game.radius}m
+                      </Text>
+                    </div>
+                  </div>
+                  
+                  {game.status === 'IN_LOBBY' && (
+                    <Button 
+                      type="primary" 
+                      size="middle" 
+                      className="join-button"
+                      onClick={() => handleJoinGame(game.gameId)}
+                    >
+                      Join
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            )}
+            locale={{ emptyText: 'No active games found' }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
-
-const buttonStyle = (color: string, marginTop = false) => ({
-  backgroundColor: color,
-  color: 'white',
-  border: 'none',
-  padding: '8px 12px',
-  borderRadius: '4px',
-  cursor: 'pointer',
-  marginTop: marginTop ? '10px' : '0',
-  width: '100%',
-  transition: 'opacity 0.2s',
-  ':disabled': {
-    opacity: 0.6,
-    cursor: 'not-allowed'
-  }
-});
