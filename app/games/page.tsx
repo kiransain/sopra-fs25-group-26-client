@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Avatar, Button, Card, Typography, Tag } from 'antd'; // Added Tag import
 import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
-import "@/styles/overview.css";
+import "@/styles/games.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 interface PlayerGetDTO {
