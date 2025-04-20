@@ -189,7 +189,7 @@ export default function Page() {
             icon={<UserOutlined />} 
             size="large" 
             style={{ cursor: 'pointer' }}
-            onClick={() => router.push('/users/me')} 
+            onClick={() => router.push('/overview/profile')} 
           />
         </Tooltip>
       </header>

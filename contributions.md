@@ -82,9 +82,9 @@ reason).
 
 ---
 
-## Contributions Week 4 - [Begin Date] to [End Date]
+## Contributions Week 4 - 15.04.2025 to 22.04.2025
 
-_Continue with the same table format as above._
+| **@GentJash**  | 16.04.2025   | [Game Overview](https://github.com/kiransain/sopra-fs25-group-26-client/commit/0ff1f6a7cae04659f2f12be6265a9fc824c42931)                                                                                                             | Implemented user overview page and made list for retrieving all existing games(also each game gets tagged with its current status), made a css file for the home page and fixed overall bugs                           | User need to be able too see all joinable games and to access their profile                                                                              |
 
 ---
 
