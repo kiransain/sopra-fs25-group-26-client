@@ -31,6 +31,8 @@ export default function UserProfile() {
   const { value: token } = useLocalStorage<string | null>("token", null);
 
   useEffect(() => {
+    if (!token)
+      return;
     const fetchUser = async () => {
       try {
         const userData = await apiService.get<UserGetDTO>("/users/me", {

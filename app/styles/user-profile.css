@@ -55,6 +55,7 @@
   .profile-details {
     display: flex;
     flex-direction: column;
+    margin-left: 20px; /* Adjust the value as needed */
   }
   
   .profile-details h4 {
