@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
-import { Avatar, Button, Card, Typography, Tag } from 'antd'; // Added Tag import
-import { UserOutlined } from '@ant-design/icons';
+import { Avatar, Button, List, Tag, Tooltip, Typography, Collapse, Badge, message } from 'antd';
+import { UserOutlined, ReloadOutlined, PlayCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/games.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
+const { Panel } = Collapse;
+
 interface PlayerGetDTO {
   playerId: number;
   userId: number;
+  username: string;
   role: 'HUNTER' | 'HIDER';
   status: 'HIDING' | 'HUNTING' | 'FOUND';
   outOfArea: boolean;
@@ -32,166 +34,214 @@ interface GameGetDTO {
   players: PlayerGetDTO[];
 }
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
-export default function Page({ params }: { params: { id: string } }) {
-  const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [apiKey, setApiKey] = useState<string | null>(null);
-  const [game, setGame] = useState<GameGetDTO | null>(null);
+export default function Page() {
+  const [games, setGames] = useState<GameGetDTO[]>([]);
   const { value: token } = useLocalStorage<string | null>("token", null);
+  const [activePanels, setActivePanels] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [exiting, setExiting] = useState<boolean>(false);
+  const [starting, setStarting] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
 
-  const fetchGame = async () => {
+  const fetchGames = async () => {
     try {
-      const gameData = await apiService.get<GameGetDTO>(`/games/${params.id}`, {
+      const gamesData = await apiService.get<GameGetDTO[]>('/games', {
         Authorization: `Bearer ${token}`,
       });
-      setGame(gameData);
+      setGames(gamesData);
     } catch (error) {
-      console.error("Failed to fetch game:", error);
-      router.push('/games');
+      console.error("Failed to fetch games:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    const fetchApiKey = async () => {
-      const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      if (envKey) {
-        setApiKey(envKey);
-        return;
-      }
+    fetchGames();
+    const interval = setInterval(fetchGames, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
-      try {
-        const backendUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:8080' 
-          : 'https://your-production-url.com';
-        
-        const response = await fetch(`${backendUrl}/api/maps/key`);
-        const data = await response.json();
-        setApiKey(data.apiKey);
-      } catch (error) {
-        console.error("Failed to fetch API key:", error);
-      }
-    };
-
-    fetchApiKey();
-    fetchGame();
-    
-    if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setCurrentLocation(newLocation);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
-        },
-        { enableHighAccuracy: true }
-      );
-
-      return () => navigator.geolocation.clearWatch(watchId);
-    } else {
-      console.log('Geolocation not supported');
-      setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'IN_LOBBY': return 'blue';
+      case 'IN_GAME': return 'green';
+      case 'FINISHED': return 'gray';
+      default: return 'default';
     }
-  }, [params.id]);
+  };
 
-  if (!currentLocation || !apiKey || !game) {
-    return <div className="loading-container">Loading game...</div>;
-  }
+  const getPlayerStatusColor = (status: string) => {
+    switch(status) {
+      case 'HIDING': return 'blue';
+      case 'HUNTING': return 'red';
+      case 'FOUND': return 'green';
+      default: return 'default';
+    }
+  };
+
+  const getPlayerRoleIcon = (role: string) => {
+    return role === 'HUNTER' ? '🔍' : '🏃';
+  };
+
+  const handleStartGame = async (gameId: number) => {
+    setStarting(true);
+    try {
+      await apiService.put(`/games/${gameId}/start`, {}, {
+        Authorization: `Bearer ${token}`,
+      });
+      message.success('Game started successfully!');
+      fetchGames();
+    } catch (error) {
+      message.error('Failed to start game');
+      console.error(error);
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const handleExitGame = async (gameId: number) => {
+    setExiting(true);
+    try {
+      await apiService.delete(`/games/${gameId}/players`);
+      message.success('Left the game successfully');
+      fetchGames();
+    } catch (error) {
+      message.error('Failed to leave game');
+      console.error(error);
+    } finally {
+      setExiting(false);
+    }
+  };
+
+  const handlePanelChange = (keys: string | string[]) => {
+    setActivePanels(Array.isArray(keys) ? keys : [keys]);
+  };
+
+  // Check if current user is in any game
+  const isPlayerInGame = games.some(game => 
+    game.players.some(player => player.userId.toString() === localStorage.getItem("userId"))
+  );
 
   return (
-    <div className="overview-container">
-      <header className="header">
-        <Title level={3}>{game.gamename}</Title>
-        <Avatar 
-          icon={<UserOutlined />} 
-          size="large" 
-          style={{ cursor: 'pointer' }}
-          onClick={() => router.push('/users/me')} 
-        />
+    <div className="games-page">
+      <header className="games-header">
+        <Title level={3} className="games-title">ManHunt</Title>
+        <Tooltip title="Profile">
+          <Avatar 
+            icon={<UserOutlined />} 
+            size="large" 
+            className="profile-avatar"
+            onClick={() => router.push('/overview/profile')} 
+          />
+        </Tooltip>
       </header>
 
-      <div className="content-container">
-        <div className="map-container">
-          <LoadScript googleMapsApiKey={apiKey}>
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '100%' }}
-              center={currentLocation}
-              zoom={18}
-              options={{
-                disableDefaultUI: true,
-                zoomControl: false,
-                styles: [
-                  {
-                    featureType: "poi",
-                    stylers: [{ visibility: "off" }]
-                  }
-                ]
-              }}
-            >
-              <Marker position={currentLocation} />
-              
-              {game && (
-                <Circle
-                  center={{
-                    lat: game.centerLatitude,
-                    lng: game.centerLongitude
-                  }}
-                  radius={game.radius}
-                  options={{
-                    fillColor: "rgba(0, 123, 255, 0.3)",
-                    fillOpacity: 0.3,
-                    strokeColor: "#007BFF",
-                    strokeOpacity: 0.7,
-                    strokeWeight: 2
-                  }}
-                />
-              )}
-
-              {game?.players.map(player => (
-                player.locationLat && player.locationLong && (
-                  <Marker 
-                    key={player.playerId}
-                    position={{ 
-                      lat: player.locationLat, 
-                      lng: player.locationLong 
-                    }}
-                    icon={{
-                      url: player.role === 'HUNTER' 
-                        ? '/hunter-icon.png' 
-                        : '/hider-icon.png',
-                      scaledSize: new google.maps.Size(32, 32)
-                    }}
-                  />
-                )
-              ))}
-            </GoogleMap>
-          </LoadScript>
+      <div className="games-content">
+      <div className="games-card">
+        <div className="games-list-header">
+          <Title level={4} className="games-list-title">
+            {games.length > 0 ? games[0].gamename : 'No Active Games'}
+          </Title>
+          <Button 
+            icon={<ReloadOutlined />} 
+            onClick={fetchGames}
+            loading={loading}
+            className="refresh-button"
+          />
         </div>
 
-        <div className="game-panel">
-          <Card title="Game Info" className="game-card">
-            <p>Status: <Tag color={game.status === 'IN_GAME' ? 'green' : 'blue'}>{game.status}</Tag></p>
-            <p>Players: {game.players.length}</p>
-            <p>Radius: {game.radius}m</p>
+        <div className="games-list">
+          {games.map(game => {
+            const isCreator = game.creatorId.toString() === localStorage.getItem("userId");
+            const isInThisGame = game.players.some(p => p.userId.toString() === localStorage.getItem("userId"));
             
-            <Button 
-              type="primary" 
-              danger
-              block
-              onClick={() => router.push('/games')}
-            >
-              Leave Game
-            </Button>
-          </Card>
+            return (
+              <div key={game.gameId.toString()} className="game-panel">
+                <div className="game-panel-header">
+                  <div>
+                    <Text strong>{game.gamename}</Text>
+                    <Tag color={getStatusColor(game.status)} className="game-status-tag">
+                      {game.status}
+                    </Tag>
+                  </div>
+                  <Badge 
+                    count={game.players.length} 
+                    showZero 
+                    color={game.status === 'IN_LOBBY' ? '#1890ff' : '#52c41a'}
+                    className="player-count-badge"
+                  />
+                </div>
+
+                {isInThisGame && (
+                  <div className="game-actions">
+                    {isCreator && game.status === 'IN_LOBBY' && (
+                      <Button
+                        type="primary"
+                        icon={<PlayCircleOutlined />}
+                        loading={starting}
+                        onClick={() => handleStartGame(game.gameId)}
+                        className="start-game-button"
+                      >
+                        Start Game
+                      </Button>
+                    )}
+                    <Button
+                      danger
+                      icon={<CloseCircleOutlined />}
+                      loading={exiting}
+                      onClick={() => handleExitGame(game.gameId)}
+                      className="exit-game-button"
+                    >
+                      Exit
+                    </Button>
+                  </div>
+                )}
+
+                <div className="game-details">
+                  <Text type="secondary">Radius: {game.radius}m</Text>
+                  <Text strong className="players-title">Players:</Text>
+                  <List
+                    dataSource={game.players}
+                    renderItem={player => (
+                      <List.Item className="player-item">
+                        <div className="player-info">
+                          <Avatar 
+                            size="small" 
+                            icon={<UserOutlined />}
+                            className="player-avatar"
+                          />
+                          <Text className="player-name">
+                            {player.username || `Player ${player.userId}`}
+                            {player.userId === game.creatorId && (
+                              <Tag color="gold" className="creator-tag">Creator</Tag>
+                            )}
+                          </Text>
+                          <div className="player-status-container">
+                            <Tooltip title={player.role}>
+                              <span className="player-role-icon">{getPlayerRoleIcon(player.role)}</span>
+                            </Tooltip>
+                            <Tag color={getPlayerStatusColor(player.status)} className="player-status-tag">
+                              {player.status}
+                            </Tag>
+                            {player.outOfArea && <Tag color="orange">Out of Area</Tag>}
+                          </div>
+                        </div>
+                      </List.Item>
+                    )}
+                    locale={{ emptyText: 'No players in this game' }}
+                    className="players-list"
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
+    </div>
     </div>
   );
 }

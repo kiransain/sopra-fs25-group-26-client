@@ -1,108 +1,178 @@
-/* In this css file all css-related elements for main game. */
+.games-page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+}
 
-.overview-container {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
+.games-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.games-title {
+  margin: 0;
+  color: #1890ff;
+}
+
+.profile-avatar {
+  cursor: pointer;
+  background-color: #1890ff;
+}
+
+.games-content {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.games-card {
+  width: 100%;
+  max-width: 800px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.games-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.games-list-title {
+  margin: 0;
+}
+
+.refresh-button {
+  border: none;
+  box-shadow: none;
+}
+
+.games-collapse {
+  width: 100%;
+}
+
+.game-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.game-status-tag {
+  margin-left: 8px;
+}
+
+.player-count-badge {
+  margin-left: 8px;
+}
+
+.game-actions {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.start-game-button, .exit-game-button {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.game-details {
+  margin-top: 8px;
+}
+
+.players-title {
+  display: block;
+  margin: 12px 0 8px 0;
+}
+
+.player-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.player-item:last-child {
+  border-bottom: none;
+}
+
+.player-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.player-avatar {
+  margin-right: 12px;
+  background-color: #1890ff;
+}
+
+.player-name {
+  flex: 1;
+  margin-right: 12px;
+}
+
+.creator-tag {
+  margin-left: 8px;
+}
+
+.player-status-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.player-role-icon {
+  font-size: 16px;
+}
+
+.player-status-tag {
+  margin-left: 8px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .games-content {
+    padding: 12px;
+  }
+  
+  .games-card {
+    padding: 16px;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .game-actions {
     flex-direction: column;
-    position: relative;
+    gap: 4px;
   }
   
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 2;
+  .exit-game-button {
+    margin-left: 0;
   }
-  
-  .app-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-  }
-  
-  .create-game-button {
-    width: 30%;
-    height: 50px;
-    border-radius: 5px;
-    background-color: #000;
-    border: none;
-    color: white;
-    font-weight: 500;
-  }
-  
-  .content-container {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - 56px);
-  }
-  
-  .map-container {
-    height: 70%; 
-    width: 100%;
-    position: relative;
-  }
-  
-  .games-list-container {
-    height: 30%; 
-    overflow-y: auto;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border-top: 1px solid #e0e0e0;
-  }
-  
-  .game-card {
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
-  }
-  
-  .game-card:hover {
-    transform: translateY(-2px);
-  }
-  
-  .location-info {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    max-width: 300px;
-  }
-  
-  .button-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  
-  .button-container button {
-    flex: 1;
-    min-width: 100px;
-  }
-  
-  
-  .loading-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .game-status-tag {
-    margin-right: 8px;
-  }
-  
-  .join-button {
-    margin-left: auto;
-    width: 150px;
-  }
+}
+
+.global-game-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px;
+  background: #f0f2f5;
+  border-radius: 8px;
+}
+
+.start-game-button,
+.exit-game-button {
+  flex: 1;
+}

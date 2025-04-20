@@ -128,9 +128,32 @@ export default function Page() {
     }
   };
   
-  const handleJoinGame = (gameId: number) => {
-    
-    router.push(`/games/${gameId}`);
+  // handleJoinGame: player can join game and game info is updated.
+  const handleJoinGame = async (gameId: number) => {
+    try {
+      if (!currentLocation) {
+        console.error("Current location not available");
+        return;
+      }
+  
+      // PUT request to update/add the player to the game
+      const response = await apiService.put<GameGetDTO>(
+        `/games/${gameId}`,
+        {
+          locationLat: currentLocation.lat,
+          locationLong: currentLocation.lng,
+          startGame: false // just joining not starting the game
+        },
+        {
+          Authorization: `Bearer ${token}`,
+        }
+      );
+  
+      //successful -> navigate to the game page
+      router.push(`/games/${gameId}`);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+    }
   };
 
   const mapOptions = {
