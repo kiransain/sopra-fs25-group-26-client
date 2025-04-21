@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Avatar, Button, List, Tag, Tooltip, Typography, Collapse, Badge, message } from 'antd';
 import { UserOutlined, ReloadOutlined, PlayCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
-import "@/styles/games.css";
+import "@/styles/lobby.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 const { Panel } = Collapse;
@@ -45,6 +45,8 @@ export default function Page() {
   const [starting, setStarting] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+
 
   const fetchGames = async () => {
     try {
@@ -63,6 +65,24 @@ export default function Page() {
     fetchGames();
     const interval = setInterval(fetchGames, 10000);
     return () => clearInterval(interval);
+  }, []);
+
+  // To get the current location.
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          message.warning('Could not get your location');
+        }
+      );
+    }
   }, []);
 
   const getStatusColor = (status: string) => {
@@ -87,21 +107,46 @@ export default function Page() {
     return role === 'HUNTER' ? '🔍' : '🏃';
   };
 
+
   const handleStartGame = async (gameId: number) => {
     setStarting(true);
     try {
-      await apiService.put(`/games/${gameId}/start`, {}, {
-        Authorization: `Bearer ${token}`,
-      });
+      if (!currentLocation) {
+        throw new Error('Current location not available');
+      }
+        const updatedGame = await apiService.put<GameGetDTO>(
+        `/games/${gameId}`, 
+        {
+          startGame: true,
+          locationLat: currentLocation.lat,
+          locationLong: currentLocation.lng
+        });
+  
       message.success('Game started successfully!');
-      fetchGames();
-    } catch (error) {
-      message.error('Failed to start game');
-      console.error(error);
+      router.push(`/games/${gameId}/game`);
+      
+    } catch (error: unknown) {
+      let errorMessage = 'Failed to start game';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error('Error starting game:', error);
+        
+        // Handle API error responses
+        if (typeof error === 'object' && error !== null && 'response' in error) {
+          const apiError = error as { response?: { data?: { message?: string } } };
+          if (apiError.response?.data?.message) {
+            errorMessage = apiError.response.data.message;
+          }
+        }
+      }
+      
+      message.error(errorMessage);
     } finally {
       setStarting(false);
     }
   };
+
 
   const handleExitGame = async (gameId: number) => {
     setExiting(true);
@@ -171,8 +216,8 @@ export default function Page() {
               icon={<CloseCircleOutlined />}
               loading={exiting}
               onClick={async () => {
-                await handleExitGame(games[0]?.gameId); // 👈 First exit the game
-                router.push('/overview');         // 👈 Then redirect
+                await handleExitGame(games[0]?.gameId); 
+                router.push('/overview');         
               }}
               className="exit-game-button"
             >
