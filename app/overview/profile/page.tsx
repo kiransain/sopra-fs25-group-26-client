@@ -35,7 +35,7 @@ export default function UserProfile() {
       return;
     const fetchUser = async () => {
       try {
-        const userData = await apiService.get<UserGetDTO>("/users/me", {
+        const userData = await apiService.get<UserGetDTO>("/me", {
           Authorization: `Bearer ${token}`,
         });
         setUser(userData);

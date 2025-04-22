@@ -297,7 +297,7 @@ export default function Page() {
                             className="player-avatar"
                           />
                           <Text className="player-name">
-                            {player.username || `Player ${player.userId}`}
+                          {player.username || `Player ${player.userId}`}
                             {player.userId === game.creatorId && (
                               <Tag color="gold" className="creator-tag">Creator</Tag>
                             )}

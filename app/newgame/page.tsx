@@ -61,7 +61,7 @@ const NewGame: React.FC = () => {
         Authorization: `Bearer ${token}`,
       });
       
-      router.push("/overview");
+      router.push(`/games/${response.gameId}`);
     } catch (error) {
       if (error instanceof Error) {
         alert(`Failed to create game:\n${error.message}`);
