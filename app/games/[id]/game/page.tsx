@@ -75,7 +75,6 @@ export default function GameComponent() {
     } catch (error) {
       console.error("Failed to fetch game:", error);
       message.error("Failed to load game data");
-      router.push('/overview');
     } finally {
       setLoading(false);
     }

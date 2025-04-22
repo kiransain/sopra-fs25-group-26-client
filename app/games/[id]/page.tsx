@@ -61,11 +61,16 @@ export default function Page() {
     }
   };
 
+  // this is a guard. to avoid 401 Error, first wait till token is available and then fetch games.
   useEffect(() => {
+    if (!token) return; // Wait until token is available
+  
     fetchGames();
     const interval = setInterval(fetchGames, 10000);
+  
     return () => clearInterval(interval);
-  }, []);
+  }, [token]); // <-- Depend on token
+  
 
   // To get the current location.
   useEffect(() => {
@@ -109,43 +114,47 @@ export default function Page() {
 
 
   const handleStartGame = async (gameId: number) => {
+    if (!currentLocation) {
+      console.error("Current location not available");
+      return;
+    }
+  
+    if (!token) {
+      message.error("Authentication token missing");
+      return;
+    }
+  
     setStarting(true);
+  
     try {
-      if (!currentLocation) {
-        throw new Error('Current location not available');
-      }
-        const updatedGame = await apiService.put<GameGetDTO>(
-        `/games/${gameId}`, 
+      const response = await apiService.put<GameGetDTO>(
+        `/games/${gameId}`,
         {
           startGame: true,
           locationLat: currentLocation.lat,
-          locationLong: currentLocation.lng
-        });
-  
-      message.success('Game started successfully!');
-      router.push(`/games/${gameId}/game`);
-      
-    } catch (error: unknown) {
-      let errorMessage = 'Failed to start game';
-      
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        console.error('Error starting game:', error);
-        
-        // Handle API error responses
-        if (typeof error === 'object' && error !== null && 'response' in error) {
-          const apiError = error as { response?: { data?: { message?: string } } };
-          if (apiError.response?.data?.message) {
-            errorMessage = apiError.response.data.message;
-          }
+          locationLong: currentLocation.lng,
+        },
+        {
+          Authorization: `Bearer ${token}`,
         }
+      );
+  
+      console.log("Game started:", response);
+  
+      if (response.status === "IN_GAME_PREPARATION") {
+        router.push(`/games/${gameId}/game`);
+      } else {
+        message.warning("Game is not ready yet");
       }
-      
-      message.error(errorMessage);
+    } catch (error) {
+      console.error("Failed to start game:", error);
+      message.error(error instanceof Error ? error.message : "Failed to start game");
     } finally {
       setStarting(false);
     }
   };
+  
+  
 
 
   const handleExitGame = async (gameId: number) => {
