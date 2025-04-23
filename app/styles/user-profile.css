@@ -1,0 +1,125 @@
+.profile-container {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+  }
+  
+  .profile-title {
+    margin: 0;
+    text-align: center;
+    flex-grow: 1;
+  }
+  
+  .back-button {
+    font-size: 16px;
+  }
+  
+  .profile-content {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .profile-card {
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .profile-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-avatar {
+    background-color: #000;
+    margin-right: 20px;
+  }
+  
+  .profile-details {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px; /* Adjust the value as needed */
+  }
+  
+  .profile-details h4 {
+    margin: 0;
+    margin-bottom: 4px;
+  }
+  
+  .stats-title {
+    margin-bottom: 16px;
+  }
+  
+  .stats-container {
+    margin-bottom: 24px;
+  }
+  
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .profile-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .logout-button {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .profile-loading, .profile-error {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .loading-text {
+    margin-top: 16px;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 576px) {
+    .stats-container {
+      text-align: center;
+    }
+    
+    .profile-info {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .profile-avatar {
+      margin-right: 0;
+      margin-bottom: 16px;
+    }
+    
+    .profile-details {
+      align-items: center;
+    }
+  }

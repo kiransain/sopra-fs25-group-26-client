@@ -60,11 +60,12 @@ export class ApiService {
    * @param endpoint - The API endpoint (e.g. "/users").
    * @returns JSON data of type T.
    */
-  public async get<T>(endpoint: string): Promise<T> {
+  public async get<T>(endpoint: string, customHeaders? : { [key:string]: string}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    const headers={...this.defaultHeaders,...customHeaders};
     const res = await fetch(url, {
       method: "GET",
-      headers: this.defaultHeaders,
+      headers: headers,
     });
     return this.processResponse<T>(
       res,
@@ -73,23 +74,25 @@ export class ApiService {
   }
 
   /**
-   * POST request.
-   * @param endpoint - The API endpoint (e.g. "/users").
-   * @param data - The payload to post.
-   * @returns JSON data of type T.
-   */
-  public async post<T>(endpoint: string, data: unknown): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: this.defaultHeaders,
-      body: JSON.stringify(data),
-    });
-    return this.processResponse<T>(
-      res,
-      "An error occurred while posting the data.\n",
-    );
-  }
+ * POST request.
+ * @param endpoint - The API endpoint (e.g. "/users").
+ * @param data - The payload to post.
+ * @param customHeaders - Optional additional headers to include.
+ * @returns JSON data of type T.
+ */
+public async post<T>(endpoint: string, data: unknown, customHeaders?: { [key: string]: string }): Promise<T> {
+  const url = `${this.baseURL}${endpoint}`;
+  const headers = { ...this.defaultHeaders, ...customHeaders };
+  const res = await fetch(url, {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify(data),
+  });
+  return this.processResponse<T>(
+    res,
+    "An error occurred while posting the data.\n",
+  );
+}
 
   /**
    * PUT request.
@@ -97,11 +100,12 @@ export class ApiService {
    * @param data - The payload to update.
    * @returns JSON data of type T.
    */
-  public async put<T>(endpoint: string, data: unknown): Promise<T> {
+  public async put<T>(endpoint: string, data: unknown, customHeaders? : { [key:string]: string}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    const headers={...this.defaultHeaders,...customHeaders};
     const res = await fetch(url, {
       method: "PUT",
-      headers: this.defaultHeaders,
+      headers: headers,
       body: JSON.stringify(data),
     });
     return this.processResponse<T>(
