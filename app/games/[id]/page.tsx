@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
-import { Avatar, Button, List, Tag, Tooltip, Typography, Collapse, Badge, message } from 'antd';
+import { Avatar, Button, List, Tag, Tooltip, Typography, Badge, message } from 'antd';
 import { UserOutlined, ReloadOutlined, PlayCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/lobby.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
-const { Panel } = Collapse;
 
 interface PlayerGetDTO {
   playerId: number;
@@ -39,14 +38,12 @@ const { Title, Text } = Typography;
 export default function Page() {
   const [games, setGames] = useState<GameGetDTO[]>([]);
   const { value: token } = useLocalStorage<string | null>("token", null);
-  const [activePanels, setActivePanels] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [exiting, setExiting] = useState<boolean>(false);
   const [starting, setStarting] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
-
 
   const fetchGames = async () => {
     try {
@@ -64,12 +61,25 @@ export default function Page() {
   // this is a guard. to avoid 401 Error, first wait till token is available and then fetch games.
   useEffect(() => {
     if (!token) return; // Wait until token is available
-  
+
+    const fetchGames = async () => {
+      try {
+        const gamesData = await apiService.get<GameGetDTO[]>('/games', {
+          Authorization: `Bearer ${token}`,
+        });
+        setGames(gamesData);
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchGames();
     const interval = setInterval(fetchGames, 10000);
   
     return () => clearInterval(interval);
-  }, [token]); // <-- Depend on token
+  }, [token,apiService]); // <-- Depend on token
   
 
   // To get the current location.
@@ -171,14 +181,10 @@ export default function Page() {
     }
   };
 
-  const handlePanelChange = (keys: string | string[]) => {
-    setActivePanels(Array.isArray(keys) ? keys : [keys]);
-  };
-
   // this checks if current user is in any game.
-  const isPlayerInGame = games.some(game => 
-    game.players.some(player => player.userId.toString() === localStorage.getItem("userId"))
-  );
+  //const isPlayerInGame = games.some(game => 
+  //  game.players.some(player => player.userId.toString() === localStorage.getItem("userId"))
+  //);
 
   return (
     <div className="games-page">

@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { LoadScript, GoogleMap, Marker, Circle, InfoWindow } from '@react-google-maps/api';
 import { useRouter, useParams } from 'next/navigation';
-import { Avatar, Button, Card, List, Tag, Tooltip, Typography, message, Spin, Progress } from 'antd';
-import { UserOutlined, AimOutlined, ClockCircleOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Avatar, Button, Card, List, Tag, Typography, message, Spin, Progress } from 'antd';
+import { TrophyOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game.css";
@@ -78,7 +78,7 @@ export default function GameComponent() {
     } finally {
       setLoading(false);
     }
-  }, [gameId, token, userId]);
+  }, [gameId, token, userId, apiService]);
 
   //this should update player location
   const updateLocation = useCallback(async () => {
@@ -157,6 +157,7 @@ export default function GameComponent() {
   }, []);
 
   // Poll game updates
+
   useEffect(() => {
     fetchGame();
     const interval = setInterval(fetchGame, 5000);
@@ -170,6 +171,7 @@ export default function GameComponent() {
   }, [updateLocation]);
 
   // Handle preparation timer
+ 
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (game?.status === 'IN_GAME_PREPARATION' && timeLeft > 0) {
@@ -197,7 +199,7 @@ export default function GameComponent() {
 
   const currentPlayer = game.players.find(p => p.userId === userId);
   const isHunter = currentPlayer?.role === 'HUNTER';
-  const isCreator = game.creatorId === userId;
+  //const isCreator = game.creatorId === userId;
 
   const mapCenter = game.status !== 'IN_LOBBY' 
     ? { lat: game.centerLatitude, lng: game.centerLongitude }
@@ -382,7 +384,7 @@ export default function GameComponent() {
       {isFound && (
         <div className="game-found-notice">
           <Card className="found-card">
-            <Title level={3}>You've been found!</Title>
+            <Title level={3}>You have been found!</Title>
             <Text>Wait for the game to finish to see the results.</Text>
           </Card>
         </div>

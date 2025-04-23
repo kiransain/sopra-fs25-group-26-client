@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Card, List, Tag, Tooltip, Typography } from 'antd';
-import { UserOutlined, ReloadOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -46,19 +46,6 @@ export default function Page() {
   const router = useRouter();
   const apiService = useApi();
 
-  // Fetch games from the API
-  const fetchGames = async () => {
-    try {
-      const gamesData = await apiService.get<GameGetDTO[]>('/games', {
-        Authorization: `Bearer ${token}`,
-      });
-      setGames(gamesData);
-    } catch (error) {
-      console.error("Failed to fetch games:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     // Fetch Google Maps API key
@@ -84,6 +71,20 @@ export default function Page() {
     };
 
     fetchApiKey();
+
+    const fetchGames = async () => {
+      try {
+        const gamesData = await apiService.get<GameGetDTO[]>('/games', {
+          Authorization: `Bearer ${token}`,
+        });
+        setGames(gamesData);
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchGames();
     
     if (navigator.geolocation) {
@@ -148,7 +149,7 @@ export default function Page() {
           Authorization: `Bearer ${token}`,
         }
       );
-  
+      console.log("Joined game:", response);
       //successful -> navigate to the game page
       router.push(`/games/${gameId}`);
     } catch (error) {
