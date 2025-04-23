@@ -12,6 +12,16 @@ interface GamePostDTO {
   locationLat: number;
   locationLong: number;
 }
+interface GameGetDTO {
+  gameId: number;
+  gamename: string;
+  status: 'IN_GAME' | 'IN_GAME_PREPARATION' | 'FINISHED' | 'IN_LOBBY';
+  centerLatitude: number;
+  centerLongitude: number;
+  timer: string; // LocalDateTime as string
+  radius: number;
+  creatorId: number;
+}
 
 const NewGame: React.FC = () => {
   const router = useRouter();
@@ -57,7 +67,7 @@ const NewGame: React.FC = () => {
       };
 
       
-      const response = await apiService.post<any>("/games", gameData,{
+      const response = await apiService.post<GameGetDTO>("/games", gameData,{
         Authorization: `Bearer ${token}`,
       });
       

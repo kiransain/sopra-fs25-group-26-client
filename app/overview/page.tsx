@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Card, List, Tag, Tooltip, Typography } from 'antd';
-import { UserOutlined, ReloadOutlined } from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -46,19 +46,6 @@ export default function Page() {
   const router = useRouter();
   const apiService = useApi();
 
-  // Fetch games from the API
-  const fetchGames = async () => {
-    try {
-      const gamesData = await apiService.get<GameGetDTO[]>('/games', {
-        Authorization: `Bearer ${token}`,
-      });
-      setGames(gamesData);
-    } catch (error) {
-      console.error("Failed to fetch games:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     // Fetch Google Maps API key
@@ -84,6 +71,20 @@ export default function Page() {
     };
 
     fetchApiKey();
+
+    const fetchGames = async () => {
+      try {
+        const gamesData = await apiService.get<GameGetDTO[]>('/games', {
+          Authorization: `Bearer ${token}`,
+        });
+        setGames(gamesData);
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchGames();
     
     if (navigator.geolocation) {
@@ -128,7 +129,7 @@ export default function Page() {
     }
   };
   
-  // handleJoinGame: player can join [playerId] and [playerId] info is updated.
+  // handleJoinGame: player can join game and game info is updated.
   const handleJoinGame = async (gameId: number) => {
     try {
       if (!currentLocation) {
@@ -136,23 +137,23 @@ export default function Page() {
         return;
       }
   
-      // PUT request to update/add the player to the [playerId]
+      // PUT request to update/add the player to the game
       const response = await apiService.put<GameGetDTO>(
         `/games/${gameId}`,
         {
           locationLat: currentLocation.lat,
           locationLong: currentLocation.lng,
-          startGame: false // just joining not starting the [playerId]
+          startGame: false // just joining not starting the game
         },
         {
           Authorization: `Bearer ${token}`,
         }
       );
-  
-      //successful -> navigate to the [playerId] page
+      console.log("Joined game:", response);
+      //successful -> navigate to the game page
       router.push(`/games/${gameId}`);
     } catch (error) {
-      console.error("Failed to join [playerId]:", error);
+      console.error("Failed to join game:", error);
     }
   };
 
