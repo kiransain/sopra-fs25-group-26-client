@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { LoadScript, GoogleMap, Marker, Circle, InfoWindow } from '@react-google-maps/api';
 import { useRouter, useParams } from 'next/navigation';
-import { Avatar, Button, Card, List, Tag, Tooltip, Typography, message, Spin, Progress } from 'antd';
+import { Avatar, Button, Card, List, Tag, Result, Typography, message, Spin, Progress } from 'antd';
 import { UserOutlined, AimOutlined, ClockCircleOutlined, TrophyOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -38,7 +38,7 @@ const { Title, Text } = Typography;
 
 export default function GameComponent() {
   const params = useParams();
-  const gameId = params?.id as string;
+  const gameId = params?.id;
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [game, setGame] = useState<GameGetDTO | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -70,7 +70,7 @@ export default function GameComponent() {
       });
       setGame(gameData);
       
-      // this chhecks if [playerId] is in preparation and calculate time left
+      // this checks if [playerId] is in preparation and calculate time left
       if (gameData.status === 'IN_GAME_PREPARATION') {
         const timer = new Date(gameData.timer);
         const now = new Date();
@@ -167,7 +167,7 @@ export default function GameComponent() {
     }
   }, []);
 
-  // Poll [playerId] updates
+  // Poll game updates
   useEffect(() => {
     fetchGame();
     const interval = setInterval(fetchGame, 5000);
@@ -188,7 +188,7 @@ export default function GameComponent() {
         setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(timer);
-            fetchGame(); // Refresh [playerId] status when timer ends
+            fetchGame(); // Refresh game status when timer ends
             return 0;
           }
           return prev - 1;
@@ -203,7 +203,30 @@ export default function GameComponent() {
   }
 
   if (!game) {
-    return <div className="game-error">Game not found</div>;
+    return (
+      <div className="game-container">
+        <div className="game-header">
+          <Title level={2}>Game Not Found</Title>
+        </div>
+        
+        <div className="content-container">
+          <Card className="error-message" style={{ width: '100%' }}>
+            <Result
+              status="404"
+              title="Game Not Available"
+              extra={
+                <Button 
+                  type="primary" 
+                  onClick={() => router.push('/overview')}
+                >
+                  Back to Overview
+                </Button>
+              }
+            />
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   const currentPlayer = game.players.find(p => p.userId === userId);
@@ -229,12 +252,13 @@ export default function GameComponent() {
       <div className="game-header">
         <Title level={2}>{game.gamename}</Title>
         <Tag color={game.status === 'IN_GAME' ? 'green' : 
-                     game.status === 'IN_GAME_PREPARATION' ? 'orange' : 
-                     game.status === 'FINISHED' ? 'red' : 'blue'}>
+                    game.status === 'IN_GAME_PREPARATION' ? 'orange' : 
+                    game.status === 'FINISHED' ? 'red' : 'blue'}>
           {game.status.replace('_', ' ')}
         </Tag>
       </div>
-
+  
+      {/* Game timer or results */}
       {game.status === 'IN_GAME_PREPARATION' && (
         <div className="game-timer">
           <Progress
@@ -246,7 +270,7 @@ export default function GameComponent() {
           <Text strong>Game starts in {timeLeft} seconds</Text>
         </div>
       )}
-
+  
       {game.status === 'FINISHED' && (
         <Card className="game-results">
           <Title level={3}><TrophyOutlined /> Game Results</Title>
@@ -268,128 +292,138 @@ export default function GameComponent() {
           </Button>
         </Card>
       )}
-
-      <div className="game-map-container">
-        <LoadScript googleMapsApiKey={apiKey}>
-          <GoogleMap
-            mapContainerStyle={{ width: '100%', height: '500px' }}
-            center={mapCenter}
-            zoom={15}
-            options={{
-              streetViewControl: false,
-              mapTypeControl: false,
-              fullscreenControl: false
-            }}
-          >
-            {game.status !== 'IN_LOBBY' && (
-              <Circle
-                center={mapCenter}
-                radius={game.radius}
-                options={{
-                  strokeColor: '#FF0000',
-                  strokeOpacity: 0.8,
-                  strokeWeight: 2,
-                  fillColor: '#FF0000',
-                  fillOpacity: 0.2,
-                }}
-              />
-            )}
-
-            {game.players.map((player) => (
-              player.locationLat && player.locationLong && (
+  
+      {/* Main content area */}
+      <div className="content-container">
+        {/* Map Section */}
+        <div className="game-map-container">
+          <LoadScript googleMapsApiKey={apiKey}>
+            <GoogleMap
+              mapContainerStyle={{ width: '100%', height: '500px' }}
+              center={mapCenter}
+              zoom={15}
+              options={{
+                streetViewControl: false,
+                mapTypeControl: false,
+                fullscreenControl: false
+              }}
+            >
+              {/* Game area circle */}
+              {game.status !== 'IN_LOBBY' && (
+                <Circle
+                  center={mapCenter}
+                  radius={game.radius}
+                  options={{
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.2,
+                  }}
+                />
+              )}
+  
+              {/* Player markers */}
+              {game.players.map((player) => (
+                player.locationLat && player.locationLong && (
+                  <Marker
+                    key={player.playerId}
+                    position={{ lat: player.locationLat, lng: player.locationLong }}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: 8,
+                      fillColor: getPlayerColor(player),
+                      fillOpacity: 1,
+                      strokeWeight: 1,
+                      strokeColor: '#ffffff'
+                    }}
+                    label={getPlayerIcon(player)}
+                    onClick={() => setSelectedPlayer(player)}
+                  />
+                )
+              ))}
+  
+              {/* Current player marker */}
+              {currentLocation && (
                 <Marker
-                  key={player.playerId}
-                  position={{ lat: player.locationLat, lng: player.locationLong }}
+                  position={currentLocation}
                   icon={{
                     path: google.maps.SymbolPath.CIRCLE,
                     scale: 8,
-                    fillColor: getPlayerColor(player),
+                    fillColor: '#722ed1',
                     fillOpacity: 1,
                     strokeWeight: 1,
                     strokeColor: '#ffffff'
                   }}
-                  label={getPlayerIcon(player)}
-                  onClick={() => setSelectedPlayer(player)}
+                  label="📍"
                 />
-              )
-            ))}
-
-            {currentLocation && (
-              <Marker
-                position={currentLocation}
-                icon={{
-                  path: google.maps.SymbolPath.CIRCLE,
-                  scale: 8,
-                  fillColor: '#722ed1',
-                  fillOpacity: 1,
-                  strokeWeight: 1,
-                  strokeColor: '#ffffff'
-                }}
-                label="📍"
-              />
+              )}
+  
+              {/* Info window for selected player */}
+              {selectedPlayer && selectedPlayer.locationLat && selectedPlayer.locationLong && (
+                <InfoWindow
+                  position={{ 
+                    lat: selectedPlayer.locationLat, 
+                    lng: selectedPlayer.locationLong 
+                  }}
+                  onCloseClick={() => setSelectedPlayer(null)}
+                >
+                  <div>
+                    <Text strong>{selectedPlayer.username || 'Player'}</Text>
+                    <br />
+                    <Text>Role: {selectedPlayer.role}</Text>
+                    <br />
+                    <Text>Status: {selectedPlayer.status}</Text>
+                    {isHunter && selectedPlayer.role === 'HIDER' && selectedPlayer.status === 'HIDING' && (
+                      <Button 
+                        size="small" 
+                        type="primary" 
+                        danger
+                        onClick={() => handleFound(selectedPlayer.playerId)}
+                        style={{ marginTop: '8px' }}
+                      >
+                        Mark as Found
+                      </Button>
+                    )}
+                  </div>
+                </InfoWindow>
+              )}
+            </GoogleMap>
+          </LoadScript>
+        </div>
+  
+        {/* Players list */}
+        <div className="game-players">
+          <Title level={4}>Players</Title>
+          <List
+            dataSource={game.players}
+            renderItem={(player) => (
+              <List.Item>
+                <List.Item.Meta
+                  avatar={<Avatar src={`https://i.pravatar.cc/150?u=${player.userId}`} />}
+                  title={`${player.username || 'Player'} ${player.userId === userId ? '(You)' : ''}`}
+                  description={
+                    <>
+                      <Tag color={player.role === 'HUNTER' ? 'green' : 'blue'}>
+                        {player.role}
+                      </Tag>
+                      <Tag color={
+                        player.status === 'HIDING' ? 'blue' : 
+                        player.status === 'HUNTING' ? 'green' : 'red'
+                      }>
+                        {player.status}
+                      </Tag>
+                      {player.rank && <Tag>Rank: {player.rank}</Tag>}
+                    </>
+                  }
+                />
+              </List.Item>
             )}
-
-            {selectedPlayer && (
-              <InfoWindow
-                position={{ 
-                  lat: selectedPlayer.locationLat || 0, 
-                  lng: selectedPlayer.locationLong || 0 
-                }}
-                onCloseClick={() => setSelectedPlayer(null)}
-              >
-                <div>
-                  <Text strong>{selectedPlayer.username || 'Player'}</Text>
-                  <br />
-                  <Text>Role: {selectedPlayer.role}</Text>
-                  <br />
-                  <Text>Status: {selectedPlayer.status}</Text>
-                  {isHunter && selectedPlayer.role === 'HIDER' && selectedPlayer.status === 'HIDING' && (
-                    <Button 
-                      size="small" 
-                      type="primary" 
-                      danger
-                      onClick={() => handleFound(selectedPlayer.playerId)}
-                      style={{ marginTop: '8px' }}
-                    >
-                      Mark as Found
-                    </Button>
-                  )}
-                </div>
-              </InfoWindow>
-            )}
-          </GoogleMap>
-        </LoadScript>
+          />
+        </div>
       </div>
-
-      <div className="game-players">
-        <Title level={4}>Players</Title>
-        <List
-          dataSource={game.players}
-          renderItem={(player) => (
-            <List.Item>
-              <List.Item.Meta
-                avatar={<Avatar src={`https://i.pravatar.cc/150?u=${player.userId}`} />}
-                title={`${player.username || 'Player'} ${player.userId === userId ? '(You)' : ''}`}
-                description={
-                  <>
-                    <Tag color={player.role === 'HUNTER' ? 'green' : 'blue'}>
-                      {player.role}
-                    </Tag>
-                    <Tag color={
-                      player.status === 'HIDING' ? 'blue' : 
-                      player.status === 'HUNTING' ? 'green' : 'red'
-                    }>
-                      {player.status}
-                    </Tag>
-                    {player.rank && <Tag>Rank: {player.rank}</Tag>}
-                  </>
-                }
-              />
-            </List.Item>
-          )}
-        />
-      </div>
-
+  
+      {/* Found notice */}
       {isFound && (
         <div className="game-found-notice">
           <Card className="found-card">
