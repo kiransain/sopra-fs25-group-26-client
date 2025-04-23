@@ -113,7 +113,7 @@ export default function Page() {
     }
   };
 
-  // this is a guard. to avoid 401 Error, first wait till token is available and then fetch [playerId].
+  // this is a guard. to avoid 401 Error, first wait till token is available and then fetch [gameID].
   useEffect(() => {
     if (!token || !gameId || !currentUser || !currentLocation) return; // Wait until token and gameId is available
 

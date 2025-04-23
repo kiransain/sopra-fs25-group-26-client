@@ -9,7 +9,7 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game.css";
 
-interface Player {
+interface PlayerGetDTO {
   playerId: number;
   userId: number;
   username?: string;
@@ -22,7 +22,7 @@ interface Player {
   rank?: number;
 }
 
-interface Game {
+interface GameGetDTO {
   gameId: number;
   gamename: string;
   status: 'IN_LOBBY' | 'IN_GAME_PREPARATION' | 'IN_GAME' | 'FINISHED';
@@ -30,7 +30,7 @@ interface Game {
   centerLongitude: number;
   timer: string;
   radius: number;
-  players: Player[];
+  players: PlayerGetDTO[];
   creatorId: number;
 }
 
@@ -40,9 +40,9 @@ export default function GameComponent() {
   const params = useParams();
   const gameId = params?.id as string;
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [game, setGame] = useState<Game | null>(null);
+  const [game, setGame] = useState<GameGetDTO | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerGetDTO | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isFound, setIsFound] = useState<boolean>(false);
   const { value: token } = useLocalStorage<string | null>("token", null);
@@ -51,10 +51,21 @@ export default function GameComponent() {
   const router = useRouter();
   const apiService = useApi();
 
+  // Guard condition to avoid authorization errors. See gameID/page.tsx.
+  // In short: wait until gameID is received.
+  useEffect(() => {
+    if (!token || !gameId || !currentLocation) return; // Wait until token and gameId is available
+
+    fetchGame();
+    const interval = setInterval(fetchGame, 10000);
+
+    return () => clearInterval(interval);
+  }, [token, gameId, currentLocation]);
+
   // fetch [playerId] data
   const fetchGame = useCallback(async () => {
     try {
-      const gameData = await apiService.get<Game>(`/games/${gameId}`, {
+      const gameData = await apiService.get<GameGetDTO>(`/games/${gameId}`, {
         Authorization: `Bearer ${token}`,
       });
       setGame(gameData);
@@ -203,12 +214,12 @@ export default function GameComponent() {
     ? { lat: game.centerLatitude, lng: game.centerLongitude }
     : currentLocation || { lat: 47.3769, lng: 8.5417 };
 
-  const getPlayerColor = (player: Player) => {
+  const getPlayerColor = (player: PlayerGetDTO) => {
     if (player.status === 'FOUND') return '#ff4d4f'; // red
     return player.role === 'HUNTER' ? '#52c41a' : '#1890ff'; // green for hunter, blue for hider
   };
 
-  const getPlayerIcon = (player: Player) => {
+  const getPlayerIcon = (player: PlayerGetDTO) => {
     if (player.status === 'FOUND') return '🚩';
     return player.role === 'HUNTER' ? '🏹' : '👤';
   };
