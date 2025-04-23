@@ -51,7 +51,7 @@ export default function GameComponent() {
   const router = useRouter();
   const apiService = useApi();
 
-  // fetch game data
+  // fetch [playerId] data
   const fetchGame = useCallback(async () => {
     try {
       const gameData = await apiService.get<Game>(`/games/${gameId}`, {
@@ -59,7 +59,7 @@ export default function GameComponent() {
       });
       setGame(gameData);
       
-      // this chhecks if game is in preparation and calculate time left
+      // this chhecks if [playerId] is in preparation and calculate time left
       if (gameData.status === 'IN_GAME_PREPARATION') {
         const timer = new Date(gameData.timer);
         const now = new Date();
@@ -73,8 +73,8 @@ export default function GameComponent() {
         setIsFound(true);
       }
     } catch (error) {
-      console.error("Failed to fetch game:", error);
-      message.error("Failed to load game data");
+      console.error("Failed to fetch [playerId]:", error);
+      message.error("Failed to load [playerId] data");
     } finally {
       setLoading(false);
     }
@@ -156,7 +156,7 @@ export default function GameComponent() {
     }
   }, []);
 
-  // Poll game updates
+  // Poll [playerId] updates
   useEffect(() => {
     fetchGame();
     const interval = setInterval(fetchGame, 5000);
@@ -177,7 +177,7 @@ export default function GameComponent() {
         setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(timer);
-            fetchGame(); // Refresh game status when timer ends
+            fetchGame(); // Refresh [playerId] status when timer ends
             return 0;
           }
           return prev - 1;

@@ -128,7 +128,7 @@ export default function Page() {
     }
   };
   
-  // handleJoinGame: player can join game and game info is updated.
+  // handleJoinGame: player can join [playerId] and [playerId] info is updated.
   const handleJoinGame = async (gameId: number) => {
     try {
       if (!currentLocation) {
@@ -136,23 +136,23 @@ export default function Page() {
         return;
       }
   
-      // PUT request to update/add the player to the game
+      // PUT request to update/add the player to the [playerId]
       const response = await apiService.put<GameGetDTO>(
         `/games/${gameId}`,
         {
           locationLat: currentLocation.lat,
           locationLong: currentLocation.lng,
-          startGame: false // just joining not starting the game
+          startGame: false // just joining not starting the [playerId]
         },
         {
           Authorization: `Bearer ${token}`,
         }
       );
   
-      //successful -> navigate to the game page
+      //successful -> navigate to the [playerId] page
       router.push(`/games/${gameId}`);
     } catch (error) {
-      console.error("Failed to join game:", error);
+      console.error("Failed to join [playerId]:", error);
     }
   };
 
