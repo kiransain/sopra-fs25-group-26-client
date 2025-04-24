@@ -45,34 +45,10 @@ export default function Page() {
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
-
+  const [scriptLoaded, setScriptLoaded] = useState(false);
 
   useEffect(() => {
-    // Fetch Google Maps API key
-    if (!token) return;
-    const fetchApiKey = async () => {
-      const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      
-      if (envKey) {
-        setApiKey(envKey);
-        return;
-      }
-
-      try {
-        const backendUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:8080' 
-          : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
-        
-        const response = await fetch(`${backendUrl}/api/maps/key`);
-        const data = await response.json();
-        setApiKey(data.apiKey);
-      } catch (error) {
-        console.error("Failed to fetch API key:", error);
-      }
-    };
-
-    fetchApiKey();
-
+    
     const fetchGames = async () => {
       try {
         const gamesData = await apiService.get<GameGetDTO[]>('/games', {
@@ -181,7 +157,7 @@ export default function Page() {
     ]
   };
 
-  if (!currentLocation || !apiKey || !fixedLocation) { 
+  if (!currentLocation || !fixedLocation) { 
     return (
       <div className="loading-container">
         Loading map...
@@ -218,18 +194,18 @@ export default function Page() {
       <div className="content-container">
         {}
         <div className="map-container">
-          <LoadScript googleMapsApiKey={apiKey}>
+          {typeof window !== 'undefined' && window.google && (
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '100%' }}
               center={currentLocation}
               zoom={18}
               options={mapOptions}
-              onLoad={(map: google.maps.Map) => {
-                console.log('Map Loaded:', map);
-              }}
+              onLoad={() => setScriptLoaded(true)}
             >
+              {scriptLoaded && (
+                <>
               <Marker position={currentLocation} />
-              
+          
               <Circle
                 center={fixedLocation}
                 radius={100}
@@ -241,8 +217,10 @@ export default function Page() {
                   strokeWeight: 2
                 }}
               />
+              </> 
+              )}
             </GoogleMap>
-          </LoadScript>
+          )}
         </div>
 
         {}

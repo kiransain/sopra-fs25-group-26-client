@@ -39,8 +39,10 @@ interface GameGetDTO {
 const { Title, Text } = Typography;
 
 export default function GamePlay() {
+  const [scriptLoaded, setScriptLoaded] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [game, setGame] = useState<GameGetDTO | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<PlayerGetDTO | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -52,30 +54,11 @@ export default function GamePlay() {
   const gameId = params?.gameId as string;
   const playerId = params?.playerId as string;
   const apiService = useApi();
-
+  
   useEffect(() => {
-    const fetchApiKey = async () => {
-      const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      
-      if (envKey) {
-        setApiKey(envKey);
-        return;
-      }
-
-      try {
-        const backendUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:8080' 
-          : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
-        
-        const response = await fetch(`${backendUrl}/api/maps/key`);
-        const data = await response.json();
-        setApiKey(data.apiKey);
-      } catch (error) {
-        console.error("Failed to fetch API key:", error);
-      }
-    };
-
-    fetchApiKey();
+    if (typeof window !== 'undefined' && window.google) {
+      setScriptLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -210,14 +193,10 @@ export default function GamePlay() {
     ]
   };
 
-  if (!currentLocation || !apiKey || !game) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <Text className="loading-text">Loading game...</Text>
-      </div>
-    );
-  }
+
+  if (!currentLocation) {return <div>Getting your location...</div>;}
+  
+  if (!game) {return <div>Loading game data...</div>;}
 
   const gameCenter = game.centerLatitude && game.centerLongitude 
     ? { lat: game.centerLatitude, lng: game.centerLongitude } 
@@ -238,34 +217,38 @@ export default function GamePlay() {
 
       <div className="game-play-content">
         <div className="map-container">
-          <LoadScript googleMapsApiKey={apiKey as string}>
+          {typeof window !== 'undefined' && window.google && (
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '100%' }}
               center={currentLocation}
               zoom={17}
               options={mapOptions}
+              onLoad={() => setScriptLoaded(true)}
             >
-              <Marker 
-                position={currentLocation} 
-                icon={{
-                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                  scaledSize: new window.google.maps.Size(40, 40)
-                }}
-              />
-              
-              <Circle
-                center={gameCenter}
-                radius={game.radius}
-                options={{
-                  fillColor: "rgba(0, 123, 255, 0.2)",
-                  fillOpacity: 0.3,
-                  strokeColor: "#007BFF",
-                  strokeOpacity: 0.8,
-                  strokeWeight: 2
-                }}
-              />
+              {scriptLoaded && (
+                <>
+                  <Marker 
+                    position={currentLocation}
+                    icon={{
+                      url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                      scaledSize: new google.maps.Size(40, 40)
+                    }}
+                  />
+                  <Circle
+                    center={gameCenter}
+                    radius={game.radius}
+                    options={{
+                      fillColor: "rgba(0, 123, 255, 0.2)",
+                      fillOpacity: 0.3,
+                      strokeColor: "#007BFF",
+                      strokeOpacity: 0.8,
+                      strokeWeight: 2
+                    }}
+                  />
+                </>
+              )}
             </GoogleMap>
-          </LoadScript>
+          )}
         </div>
         
         <div className="game-play-info">
