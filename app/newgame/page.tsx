@@ -76,7 +76,7 @@ const NewGame: React.FC = () => {
       if (error instanceof Error) {
         alert(`Failed to create game:\n${error.message}`);
       } else {
-        console.error("An unknown error occurred while creating the [playerId].");
+        console.error("An unknown error occurred while creating the game.");
       }
     } finally {
       setIsLoading(false);
@@ -105,7 +105,7 @@ const NewGame: React.FC = () => {
         >
           <Form.Item
             name="gameName"
-            rules={[{ required: true, message: "Please input a [playerId] name!" }]}
+            rules={[{ required: true, message: "Please input a game name!" }]}
           >
             <Input placeholder="Game Name" className="game-name-input" />
           </Form.Item>

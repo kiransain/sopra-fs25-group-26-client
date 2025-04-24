@@ -1,162 +1,62 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { LoadScript, GoogleMap, Marker, Circle, InfoWindow } from '@react-google-maps/api';
-import { useRouter, useParams } from 'next/navigation';
-import { Avatar, Button, Card, List, Tag, Result, Typography, message, Spin, Progress } from 'antd';
-import { UserOutlined, AimOutlined, ClockCircleOutlined, TrophyOutlined } from '@ant-design/icons';
+import { useEffect, useState } from "react";
+import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
+import { useRouter } from 'next/navigation';
+import { Avatar, Button, Tag, Typography, message, Modal, Tooltip } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import "@/styles/game.css";
+import "@/styles/game-play.css";
+import { useParams } from "next/navigation";
 
-interface UserGetDTO {
-  userId: number;
-  username: string;
-  token: string;
-  stats: Record<string, string>;
-}
 
 interface PlayerGetDTO {
   playerId: number;
   userId: number;
-  username?: string;
+  displayName: string;
   role: 'HUNTER' | 'HIDER';
   status: 'HIDING' | 'HUNTING' | 'FOUND';
   outOfArea: boolean;
   foundTime: string | null;
   locationLat: number | null;
   locationLong: number | null;
-  rank?: number;
+  rank: number | null;
 }
 
 interface GameGetDTO {
   gameId: number;
   gamename: string;
-  status: 'IN_LOBBY' | 'IN_GAME_PREPARATION' | 'IN_GAME' | 'FINISHED';
+  status: 'IN_GAME' | 'IN_GAME_PREPARATION' | 'FINISHED' | 'IN_LOBBY';
   centerLatitude: number;
   centerLongitude: number;
-  timer: string;
+  timer: string | null;
   radius: number;
-  players: PlayerGetDTO[];
   creatorId: number;
+  players: PlayerGetDTO[];
 }
 
 const { Title, Text } = Typography;
 
-export default function GameComponent() {
-  const[currentUser, setCurrentUser] = useState<UserGetDTO | null>(null);
-  const params = useParams();
-  const gameId = params?.id; 
+export default function GamePlay() {
+  const [messageApi, contextHolder] = message.useMessage();
+  const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [game, setGame] = useState<GameGetDTO | null>(null);
+  const [currentPlayer, setCurrentPlayer] = useState<PlayerGetDTO | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
-  const [selectedPlayer, setSelectedPlayer] = useState<PlayerGetDTO | null>(null);
-  const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [isFound, setIsFound] = useState<boolean>(false);
+  const [caughtModalVisible, setCaughtModalVisible] = useState(false);
+  const [updateInterval, setUpdateInterval] = useState<NodeJS.Timeout | null>(null);
   const { value: token } = useLocalStorage<string | null>("token", null);
-  const { value: userId } = useLocalStorage<number | null>("userId", null);
-  const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
+  const params = useParams();
+  const gameId = params?.gameId as string;
+  const playerId = params?.playerId as string;
   const apiService = useApi();
-  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  const fetchGame = useCallback(async () => {
-
-    if (!currentLocation) return;
-
-    try {
-      const gameData = await apiService.put<GameGetDTO>(`/games/${gameId}`,
-        {
-          locationLat: currentLocation.lat,
-          locationLong: currentLocation.lng,
-          startGame: true,
-
-        },
-        {
-        Authorization: `Bearer ${token}`,
-      });
-      setGame(gameData);
-      
-      // this checks if game is in preparation and calculate time left
-      if (gameData.status === 'IN_GAME_PREPARATION') {
-        const timer = new Date(gameData.timer);
-        const now = new Date();
-        const diff = Math.max(0, 60 - Math.floor((now.getTime() - timer.getTime()) / 1000));
-        setTimeLeft(diff);
-      }
-      
-      // check if current player is found
-      const currentPlayer = gameData.players.find(p => p.userId === userId);
-      if (currentPlayer?.status === 'FOUND') {
-        setIsFound(true);
-      }
-    } catch (error) {
-      console.error("Failed to fetch [playerId]:", error);
-      message.error("Failed to load [playerId] data");
-    } finally {
-      setLoading(false);
-    }
-  }, [gameId, token, userId]);
-
-  useEffect(() => {
-      if (!token) return;
-      (async () => {
-        try {
-          const user = await apiService.get<UserGetDTO>('/me', {
-            Authorization: `Bearer ${token}`
-          });
-          setCurrentUser(user);
-        } catch (e) {
-          console.error('Could not load /me', e);
-        }
-      })();
-    }, [token]);
-
-  // Guard condition to avoid authorization errors. See gameID/page.tsx.
-  // In short: wait until gameID is received.
-  useEffect(() => {
-    if (!token || !gameId || !currentLocation) return; // Wait until token and gameId is available
-
-    fetchGame();
-    const interval = setInterval(fetchGame, 5000);
-
-    return () => clearInterval(interval);
-  }, [token, gameId, currentLocation, fetchGame]);
-
- 
-
-  //this should update player location
-  const updateLocation = useCallback(async () => {
-    if (!currentLocation || !game) return;
-
-    try {
-      await apiService.put(`/games/${gameId}`, {
-        locationLat: currentLocation.lat,
-        locationLong: currentLocation.lng,
-        startGame: false
-      }); 
-    } catch (error) {
-      console.error("Failed to update location:", error);
-    }
-  }, [currentLocation, gameId, token]);
-
-  // Handle found action
-  const handleFound = async (playerId: number) => {
-    try {
-      await apiService.put(`/games/${gameId}/players/${playerId}`, {}, {
-        
-      });
-      message.success("Player marked as found!");
-      fetchGame();
-    } catch (error) {
-      console.error("Failed to mark player as found:", error);
-      message.error("Failed to mark player");
-    }
-  };
-
-  // THE MAP.
   useEffect(() => {
     const fetchApiKey = async () => {
       const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      
       if (envKey) {
         setApiKey(envKey);
         return;
@@ -176,301 +76,257 @@ export default function GameComponent() {
     };
 
     fetchApiKey();
-
-    if (!token) {
-      console.error("No token found");
-      return;
-    }
-  
-
-    if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setCurrentLocation(newLocation);
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setCurrentLocation({ lat: 47.3769, lng: 8.5417 }); // Default to Zurich
-        },
-        { enableHighAccuracy: true }
-      );
-
-      return () => navigator.geolocation.clearWatch(watchId);
-    } else {
-      console.log('Geolocation is not supported by this browser.');
-      setCurrentLocation({ lat: 47.3769, lng: 8.5417 }); // Default to Zurich
-    }
   }, []);
 
-  // Poll game updates
   useEffect(() => {
-    fetchGame();
-    const interval = setInterval(fetchGame, 5000);
-    return () => clearInterval(interval);
-  }, [fetchGame]);
-
-  // Update location periodically
-  useEffect(() => {
-    const locationInterval = setInterval(updateLocation, 5000);
-    return () => clearInterval(locationInterval);
-  }, [updateLocation]);
-
-  // Handle preparation timer
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (game?.status === 'IN_GAME_PREPARATION' && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            fetchGame(); // Refresh game status when timer ends
-            return 0;
-          }
-          return prev - 1;
+    if (!navigator.geolocation) return;
+    
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setCurrentLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
         });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [game?.status, timeLeft, fetchGame]);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        messageApi.error("Couldn't get your location. Please enable location services.");
+      },
+      { enableHighAccuracy: true }
+    );
+    
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [messageApi]);
 
-  if (loading || !apiKey) {
-    return <Spin size="large" className="game-loading" />;
-  }
+  useEffect(() => {
+    if (!currentLocation || !token || !gameId || !playerId) return;
 
-  if (!game) {
-    return (
-      <div className="game-container">
-        <div className="game-header">
-          <Title level={2}>Game Not Found</Title>
-        </div>
+    const updateGameState = async () => {
+      try {
+        const response = await apiService.put<GameGetDTO>(
+          `/games/${gameId}`,
+          {
+            locationLat: currentLocation.lat,
+            locationLong: currentLocation.lng,
+            startGame: true
+          },
+          { Authorization: `Bearer ${token}` }
+        );
         
-        <div className="content-container">
-          <Card className="error-message" style={{ width: '100%' }}>
-            <Result
-              status="404"
-              title="Game Not Available"
-              extra={
-                <Button 
-                  type="primary" 
-                  onClick={() => router.push('/overview')}
-                >
-                  Back to Overview
-                </Button>
-              }
-            />
-          </Card>
-        </div>
+        setGame(response);
+        
+        const player = response.players.find(p => p.playerId === parseInt(playerId));
+        if (player) {
+          setCurrentPlayer(player);
+        } else {
+          messageApi.error("Player not found in this game");
+          router.push("/overview");
+        }
+
+        if (response.status === 'IN_LOBBY') {
+          messageApi.info("Game hasn't started yet");
+          router.push(`/lobby/${gameId}`);
+          return;
+        }
+        
+        if (response.status === 'FINISHED') {
+          if (updateInterval) {
+            clearInterval(updateInterval);
+          }
+          router.push(`/games/${gameId}/leaderboard`);
+        }
+      } catch (error) {
+        console.error("Failed to update game state:", error);
+        messageApi.error("Failed to update game state");
+      }
+    };
+
+    updateGameState();
+    
+    const interval = setInterval(updateGameState, 5000);
+    setUpdateInterval(interval);
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [currentLocation, token, gameId, playerId, apiService, router, messageApi]);
+
+  const handleCaughtAction = async () => {
+    if (!gameId || !playerId || !token) return;
+    
+    try {
+      setCaughtModalVisible(false);
+      
+      const response = await apiService.put<GameGetDTO>(
+        `/games/${gameId}/players/${playerId}`,
+        {},
+        { Authorization: `Bearer ${token}` }
+      );
+      
+      setGame(response);
+      
+      const player = response.players.find(p => p.playerId === parseInt(playerId));
+      if (player) {
+        setCurrentPlayer(player);
+        messageApi.success("You've been marked as caught!");
+      }
+      
+      if (response.status === 'FINISHED') {
+        if (updateInterval) {
+          clearInterval(updateInterval);
+        }
+        router.push(`/leaderboard`);
+      }
+    } catch (error) {
+      console.error("Failed to mark player as caught:", error);
+      messageApi.error("Failed to mark you as caught");
+    }
+  };
+
+  const getRoleColor = (role: string) => {
+    return role === 'HUNTER' ? 'red' : 'green';
+  };
+
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'HUNTING': return 'red';
+      case 'HIDING': return 'green';
+      case 'FOUND': return 'gray';
+      default: return 'blue';
+    }
+  };
+
+  const mapOptions = {
+    disableDefaultUI: true,
+    zoomControl: true,
+    streetViewControl: false,
+    fullscreenControl: false,
+    mapTypeControl: false,
+    styles: [
+      {
+        featureType: "poi",
+        stylers: [{ visibility: "off" }]
+      }
+    ]
+  };
+
+  if (!currentLocation || !apiKey || !game) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <Text className="loading-text">Loading game...</Text>
       </div>
     );
   }
 
-  const currentPlayer = game.players.find(p => p.userId === userId);
-  const isHunter = currentPlayer?.role === 'HUNTER';
-  const isCreator = game.creatorId === userId;
-
-  const mapCenter = game.status !== 'IN_LOBBY' 
-    ? { lat: game.centerLatitude, lng: game.centerLongitude }
-    : currentLocation || { lat: 47.3769, lng: 8.5417 };
-
-  const getPlayerColor = (player: PlayerGetDTO) => {
-    if (player.status === 'FOUND') return '#ff4d4f'; // red
-    return player.role === 'HUNTER' ? '#52c41a' : '#1890ff'; // green for hunter, blue for hider
-  };
-
-  const getPlayerIcon = (player: PlayerGetDTO) => {
-    if (player.status === 'FOUND') return '🚩';
-    return player.role === 'HUNTER' ? '🏹' : '👤';
-  };
-
+  const gameCenter = game.centerLatitude && game.centerLongitude 
+    ? { lat: game.centerLatitude, lng: game.centerLongitude } 
+    : currentLocation;
+  
   return (
-    <div className="game-container">
-      <div className="game-header">
-        <Title level={2}>{game.gamename}</Title>
-        <Tag color={game.status === 'IN_GAME' ? 'green' : 
-                    game.status === 'IN_GAME_PREPARATION' ? 'orange' : 
-                    game.status === 'FINISHED' ? 'red' : 'blue'}>
-          {game.status.replace('_', ' ')}
-        </Tag>
-      </div>
-  
-      {/* Game timer or results */}
-      {game.status === 'IN_GAME_PREPARATION' && (
-        <div className="game-timer">
-          <Progress
-            type="circle"
-            percent={(timeLeft / 60) * 100}
-            format={() => `${timeLeft}s`}
-            strokeColor={timeLeft > 10 ? '#52c41a' : '#ff4d4f'}
-          />
-          <Text strong>Game starts in {timeLeft} seconds</Text>
-        </div>
-      )}
-  
-      {game.status === 'FINISHED' && (
-        <Card className="game-results">
-          <Title level={3}><TrophyOutlined /> Game Results</Title>
-          <List
-            dataSource={[...game.players].sort((a, b) => (a.rank || 0) - (b.rank || 0))}
-            renderItem={(player) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={<Avatar src={`https://i.pravatar.cc/150?u=${player.userId}`} />}
-                  title={`${player.username || 'Player'} (${player.role})`}
-                  description={`Rank: ${player.rank}`}
-                />
-                {player.rank === 1 && <Tag color="gold">Winner</Tag>}
-              </List.Item>
-            )}
-          />
-          <Button type="primary" onClick={() => router.push('/overview')}>
-            Return to Overview
-          </Button>
-        </Card>
-      )}
-  
-      {/* Main content area */}
-      <div className="content-container">
-        {/* Map Section */}
-        <div className="game-map-container">
-          <LoadScript googleMapsApiKey={apiKey}>
+    <div className="game-play-container">
+      {contextHolder}
+      
+      <header className="game-play-header">
+        <Title level={3} className="game-title">{game.gamename}</Title>
+        {currentPlayer && (
+          <Tag color={getRoleColor(currentPlayer.role)} className="role-tag">
+            {currentPlayer.role}
+          </Tag>
+        )}
+      </header>
+
+      <div className="game-play-content">
+        <div className="map-container">
+          <LoadScript googleMapsApiKey={apiKey as string}>
             <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '500px' }}
-              center={mapCenter}
-              zoom={15}
-              options={{
-                streetViewControl: false,
-                mapTypeControl: false,
-                fullscreenControl: false
-              }}
+              mapContainerStyle={{ width: '100%', height: '100%' }}
+              center={currentLocation}
+              zoom={17}
+              options={mapOptions}
             >
-              {/* Game area circle */}
-              {game.status !== 'IN_LOBBY' && (
-                <Circle
-                  center={mapCenter}
-                  radius={game.radius}
-                  options={{
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: '#FF0000',
-                    fillOpacity: 0.2,
-                  }}
-                />
-              )}
-  
-              {/* Player markers */}
-              {game.players.map((player) => (
-                player.locationLat && player.locationLong && (
-                  <Marker
-                    key={player.playerId}
-                    position={{ lat: player.locationLat, lng: player.locationLong }}
-                    icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
-                      scale: 8,
-                      fillColor: getPlayerColor(player),
-                      fillOpacity: 1,
-                      strokeWeight: 1,
-                      strokeColor: '#ffffff'
-                    }}
-                    label={getPlayerIcon(player)}
-                    onClick={() => setSelectedPlayer(player)}
-                  />
-                )
-              ))}
-  
-              {/* Current player marker */}
-              {currentLocation && (
-                <Marker
-                  position={currentLocation}
-                  icon={{
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 8,
-                    fillColor: '#722ed1',
-                    fillOpacity: 1,
-                    strokeWeight: 1,
-                    strokeColor: '#ffffff'
-                  }}
-                  label="📍"
-                />
-              )}
-  
-              {/* Info window for selected player */}
-              {selectedPlayer && selectedPlayer.locationLat && selectedPlayer.locationLong && (
-                <InfoWindow
-                  position={{ 
-                    lat: selectedPlayer.locationLat, 
-                    lng: selectedPlayer.locationLong 
-                  }}
-                  onCloseClick={() => setSelectedPlayer(null)}
-                >
-                  <div>
-                    <Text strong>{selectedPlayer.username || 'Player'}</Text>
-                    <br />
-                    <Text>Role: {selectedPlayer.role}</Text>
-                    <br />
-                    <Text>Status: {selectedPlayer.status}</Text>
-                    {isHunter && selectedPlayer.role === 'HIDER' && selectedPlayer.status === 'HIDING' && (
-                      <Button 
-                        size="small" 
-                        type="primary" 
-                        danger
-                        onClick={() => handleFound(selectedPlayer.playerId)}
-                        style={{ marginTop: '8px' }}
-                      >
-                        Mark as Found
-                      </Button>
-                    )}
-                  </div>
-                </InfoWindow>
-              )}
+              <Marker 
+                position={currentLocation} 
+                icon={{
+                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                  scaledSize: new window.google.maps.Size(40, 40)
+                }}
+              />
+              
+              <Circle
+                center={gameCenter}
+                radius={game.radius}
+                options={{
+                  fillColor: "rgba(0, 123, 255, 0.2)",
+                  fillOpacity: 0.3,
+                  strokeColor: "#007BFF",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2
+                }}
+              />
             </GoogleMap>
           </LoadScript>
         </div>
-  
-        {/* Players list */}
-        <div className="game-players">
-          <Title level={4}>Players</Title>
-          <List
-            dataSource={game.players}
-            renderItem={(player) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={<Avatar src={`https://i.pravatar.cc/150?u=${player.userId}`} />}
-                  title={`${player.username || 'Player'} ${player.userId === userId ? '(You)' : ''}`}
-                  description={
-                    <>
-                      <Tag color={player.role === 'HUNTER' ? 'green' : 'blue'}>
-                        {player.role}
-                      </Tag>
-                      <Tag color={
-                        player.status === 'HIDING' ? 'blue' : 
-                        player.status === 'HUNTING' ? 'green' : 'red'
-                      }>
-                        {player.status}
-                      </Tag>
-                      {player.rank && <Tag>Rank: {player.rank}</Tag>}
-                    </>
-                  }
-                />
-              </List.Item>
+        
+        <div className="game-play-info">
+          <div className="player-status">
+            {currentPlayer && (
+              <div className="status-item">
+                <Text strong>Status:</Text>
+                <Tag color={getStatusColor(currentPlayer.status)}>
+                  {currentPlayer.status}
+                </Tag>
+                {currentPlayer.outOfArea && (
+                  <Tag color="orange">OUT OF AREA</Tag>
+                )}
+              </div>
             )}
-          />
+            
+            <div className="status-item">
+              <Text strong>Players:</Text>
+              <div className="player-avatars">
+                {game.players.map(player => (
+                  <Tooltip key={player.playerId} title={`${player.displayName} (${player.status})`}>
+                    <Avatar 
+                      icon={<UserOutlined />} 
+                      style={{ 
+                        backgroundColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                        opacity: player.status === 'FOUND' ? 0.5 : 1
+                      }}
+                      size="small"
+                    />
+                  </Tooltip>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {currentPlayer && 
+           currentPlayer.role === 'HIDER' && 
+           currentPlayer.status !== 'FOUND' && (
+            <Button 
+              danger
+              type="primary"
+              size="large"
+              className="caught-button"
+              onClick={() => setCaughtModalVisible(true)}
+            >
+              I have Been Caught!
+            </Button>
+          )}
         </div>
       </div>
-  
-      {/* Found notice */}
-      {isFound && (
-        <div className="game-found-notice">
-          <Card className="found-card">
-            <Title level={3}>You've been found!</Title>
-            <Text>Wait for the game to finish to see the results.</Text>
-          </Card>
-        </div>
-      )}
+      
+      <Modal
+        title="Confirm Caught"
+        open={caughtModalVisible}
+        onOk={handleCaughtAction}
+        onCancel={() => setCaughtModalVisible(false)}
+        okText="Yes, I'm caught"
+        cancelText="Cancel"
+      >
+        <p>Are you sure you want to mark yourself as caught? This action cannot be undone.</p>
+      </Modal>
     </div>
   );
 }
