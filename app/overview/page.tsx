@@ -75,8 +75,7 @@ export default function Page() {
     const fetchGames = async () => {
       try {
         const gamesData = await apiService.get<GameGetDTO[]>('/games', {
-          Authorization: `Bearer ${token}`,
-        });
+          Authorization: `Bearer ${token}`});
         setGames(gamesData);
       } catch (error) {
         console.error("Failed to fetch games:", error);
@@ -145,10 +144,7 @@ export default function Page() {
           locationLong: currentLocation.lng,
           startGame: false // just joining not starting the game
         },
-        {
-          Authorization: `Bearer ${token}`,
-        }
-      );
+        {Authorization: `Bearer ${token}`});
       console.log("Joined game:", response);
       //successful -> navigate to the game page
       router.push(`/games/${gameId}`);

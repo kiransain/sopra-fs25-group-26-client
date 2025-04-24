@@ -9,6 +9,13 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game.css";
 
+interface UserGetDTO {
+  userId: number;
+  username: string;
+  token: string;
+  stats: Record<string, string>;
+}
+
 interface PlayerGetDTO {
   playerId: number;
   userId: number;
@@ -37,9 +44,9 @@ interface GameGetDTO {
 const { Title, Text } = Typography;
 
 export default function GameComponent() {
+  const[currentUser, setCurrentUser] = useState<UserGetDTO | null>(null);
   const params = useParams();
-  const gameId = params?.id;
-  const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const gameId = params?.id; 
   const [game, setGame] = useState<GameGetDTO | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerGetDTO | null>(null);
@@ -50,27 +57,26 @@ export default function GameComponent() {
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
   const apiService = useApi();
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Guard condition to avoid authorization errors. See gameID/page.tsx.
-  // In short: wait until gameID is received.
-  useEffect(() => {
-    if (!token || !gameId || !currentLocation) return; // Wait until token and gameId is available
-
-    fetchGame();
-    const interval = setInterval(fetchGame, 10000);
-
-    return () => clearInterval(interval);
-  }, [token, gameId, currentLocation]);
-
-  // fetch [playerId] data
   const fetchGame = useCallback(async () => {
+
+    if (!currentLocation) return;
+
     try {
-      const gameData = await apiService.get<GameGetDTO>(`/games/${gameId}`, {
+      const gameData = await apiService.put<GameGetDTO>(`/games/${gameId}`,
+        {
+          locationLat: currentLocation.lat,
+          locationLong: currentLocation.lng,
+          startGame: true,
+
+        },
+        {
         Authorization: `Bearer ${token}`,
       });
       setGame(gameData);
       
-      // this checks if [playerId] is in preparation and calculate time left
+      // this checks if game is in preparation and calculate time left
       if (gameData.status === 'IN_GAME_PREPARATION') {
         const timer = new Date(gameData.timer);
         const now = new Date();
@@ -90,6 +96,33 @@ export default function GameComponent() {
       setLoading(false);
     }
   }, [gameId, token, userId]);
+
+  useEffect(() => {
+      if (!token) return;
+      (async () => {
+        try {
+          const user = await apiService.get<UserGetDTO>('/me', {
+            Authorization: `Bearer ${token}`
+          });
+          setCurrentUser(user);
+        } catch (e) {
+          console.error('Could not load /me', e);
+        }
+      })();
+    }, [token]);
+
+  // Guard condition to avoid authorization errors. See gameID/page.tsx.
+  // In short: wait until gameID is received.
+  useEffect(() => {
+    if (!token || !gameId || !currentLocation) return; // Wait until token and gameId is available
+
+    fetchGame();
+    const interval = setInterval(fetchGame, 5000);
+
+    return () => clearInterval(interval);
+  }, [token, gameId, currentLocation, fetchGame]);
+
+ 
 
   //this should update player location
   const updateLocation = useCallback(async () => {
@@ -144,6 +177,12 @@ export default function GameComponent() {
 
     fetchApiKey();
 
+    if (!token) {
+      console.error("No token found");
+      return;
+    }
+  
+
     if (navigator.geolocation) {
       const watchId = navigator.geolocation.watchPosition(
         (position) => {
@@ -176,7 +215,7 @@ export default function GameComponent() {
 
   // Update location periodically
   useEffect(() => {
-    const locationInterval = setInterval(updateLocation, 10000);
+    const locationInterval = setInterval(updateLocation, 5000);
     return () => clearInterval(locationInterval);
   }, [updateLocation]);
 
