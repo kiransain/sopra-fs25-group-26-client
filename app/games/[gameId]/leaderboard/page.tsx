@@ -1,7 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react";
-import { useApi } from "@/hooks/useApi";
 import { Table, Button, Card } from 'antd';
 import { useRouter } from 'next/navigation';
 import '@/styles/leaderboard.css';

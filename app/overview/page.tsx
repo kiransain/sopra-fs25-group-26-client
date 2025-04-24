@@ -49,6 +49,7 @@ export default function Page() {
 
   useEffect(() => {
     // Fetch Google Maps API key
+    if (!token) return;
     const fetchApiKey = async () => {
       const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
       
@@ -117,7 +118,7 @@ export default function Page() {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
-  }, [fixedLocation]);
+  }, [fixedLocation, token]);
 
   const getStatusColor = (status: string) => {
     switch(status) {
