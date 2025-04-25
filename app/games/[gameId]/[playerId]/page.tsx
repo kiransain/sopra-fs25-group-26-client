@@ -53,8 +53,8 @@ export default function GamePlay() {
   const playerId = params?.playerId as string;
   const apiService = useApi();
   const { apiKey, isLoaded } = useGoogleMaps();
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  
+  
 
 
 
@@ -235,6 +235,10 @@ export default function GamePlay() {
   if (!currentLocation) {return <div>Getting your location...</div>;}
 
   if (!game) {return <div>Loading game data...</div>;}
+
+  if (!apiKey || !isLoaded) {
+    return <div>Loading map...</div>;
+  }
 
   const gameCenter = game.centerLatitude && game.centerLongitude
     ? { lat: game.centerLatitude, lng: game.centerLongitude }

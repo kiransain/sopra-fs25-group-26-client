@@ -84,9 +84,10 @@ export default function Page() {
         setCurrentUser(user);
       } catch (e) {
         console.error('Could not load /me', e);
+        messageApi.error('Failed to load user data'); 
       }
     })();
-  }, [token]);
+  }, [token, apiService, messageApi]);
 
   const fetchGame = async () => {
     if (!currentLocation || !currentUser) {

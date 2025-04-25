@@ -152,7 +152,7 @@ export default function Page() {
     ]
   };
 
-  if (!currentLocation || !fixedLocation) { 
+  if (!currentLocation || !fixedLocation || !isLoaded || !apiKey) { 
     return (
       <div className="loading-container">
         Loading map...
