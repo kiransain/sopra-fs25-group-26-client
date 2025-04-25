@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState  } from "react";
-import { GoogleMap, Marker, Circle, LoadScript } from '@react-google-maps/api';
+import { GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Tag, Typography, message, Modal, Alert} from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -172,8 +172,8 @@ export default function GamePlay() {
 
   // Phase durations in seconds
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-  const PREP_DURATION = 60;  // 1 minute
-  const GAME_DURATION = 60;  // 1 minute
+  const PREP_DURATION = 45;
+  const GAME_DURATION = 60;
 
   useEffect(() => {
     if (!game?.timer) {
@@ -306,7 +306,6 @@ export default function GamePlay() {
       <div className="game-play-content">
         <div className="map-container">
           {isLoaded ? (
-            <LoadScript googleMapsApiKey={apiKey}>
               <GoogleMap
                 mapContainerStyle={{ width: '100%', height: '100%' }}
                 center={currentLocation}
@@ -318,7 +317,6 @@ export default function GamePlay() {
               >
                 <Marker
                   position={currentLocation}
-                  icon={{ url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png" }}
                 />
                 <Circle
                   key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
@@ -333,7 +331,6 @@ export default function GamePlay() {
                   }}
                 />
               </GoogleMap>
-            </LoadScript>
           ) : (
             <div>Loading map...</div>
           )}
