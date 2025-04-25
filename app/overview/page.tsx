@@ -8,7 +8,7 @@ import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
-
+import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 
 
 // Game related interfaces matching the backend DTOs
@@ -43,11 +43,10 @@ export default function Page() {
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [games, setGames] = useState<GameGetDTO[]>([]);
   const { value: token } = useLocalStorage<string | null>("token", null);
-
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
-
+  const { apiKey, isLoaded } = useGoogleMaps();
 
 
 

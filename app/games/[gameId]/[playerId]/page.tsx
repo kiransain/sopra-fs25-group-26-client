@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState  } from "react";
-import {GoogleMap, Marker, Circle } from '@react-google-maps/api';
+import { GoogleMap, Marker, Circle, LoadScript } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Tag, Typography, message, Modal, Alert} from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -9,6 +9,7 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
 import { useParams } from "next/navigation";
+import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 
 
 interface PlayerGetDTO {
@@ -51,6 +52,11 @@ export default function GamePlay() {
   const gameId = params?.gameId as string;
   const playerId = params?.playerId as string;
   const apiService = useApi();
+  const { apiKey, isLoaded } = useGoogleMaps();
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
+
+
 
 
 
@@ -299,32 +305,38 @@ export default function GamePlay() {
       </header>
       <div className="game-play-content">
         <div className="map-container">
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '100%' }}
-              center={currentLocation}
-              zoom={18}
-              options={mapOptions}
-              onLoad={(map: google.maps.Map) => {
-                console.log('Map Loaded:', map);
-              }}
-            >
-              <Marker
-                position={currentLocation}
-              />
-
-              <Circle
-                  key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
-                center={gameCenter}
-                radius={game.radius}
-                options={{
-                  fillColor: "rgba(255, 0, 0, 0.2)",
-                  fillOpacity: 0.3,
-                  strokeColor: "#FF0000",
-                  strokeOpacity: 0.8,
-                  strokeWeight: 2
+          {isLoaded ? (
+            <LoadScript googleMapsApiKey={apiKey}>
+              <GoogleMap
+                mapContainerStyle={{ width: '100%', height: '100%' }}
+                center={currentLocation}
+                zoom={18}
+                options={mapOptions}
+                onLoad={(map: google.maps.Map) => {
+                  console.log('Map Loaded:', map);
                 }}
-              />
-            </GoogleMap>
+              >
+                <Marker
+                  position={currentLocation}
+                  icon={{ url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png" }}
+                />
+                <Circle
+                  key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
+                  center={gameCenter}
+                  radius={game.radius}
+                  options={{
+                    fillColor: "rgba(255, 0, 0, 0.2)",
+                    fillOpacity: 0.3,
+                    strokeColor: "#FF0000",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2
+                  }}
+                />
+              </GoogleMap>
+            </LoadScript>
+          ) : (
+            <div>Loading map...</div>
+          )}
         </div>
 
         <div className="game-play-info">
