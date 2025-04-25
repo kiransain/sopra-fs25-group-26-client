@@ -1,0 +1,50 @@
+.leaderboard-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #ffffff;
+  }
+  
+  .leaderboard-card {
+    width: 600px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    background-color: #ffffff;
+  }
+  
+  .leaderboard-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .leaderboard-table {
+    margin-bottom: 20px;
+  }
+  
+  .leaderboard-buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .leaderboard-button {
+    width: 45%;
+    height: 40px;
+    font-weight: bold;
+  }
+  
+  .black-button {
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border: none !important;
+  }
+  
+  .red-button {
+    background-color: #ff4d4f !important;
+    color: #ffffff !important;
+    border: none !important;
+  }
+  

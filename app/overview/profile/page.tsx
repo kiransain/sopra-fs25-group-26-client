@@ -9,9 +9,10 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/user-profile.css";
 
 interface UserStats {
-  games_played: string;
+  gamesPlayed: string;
   creation_date: string;
-  games_won: string;
+  wins: string;
+
 }
 
 interface UserGetDTO {
@@ -117,7 +118,7 @@ export default function UserProfile() {
             <Col xs={24} sm={8}>
               <Statistic 
                 title="Games Played" 
-                value={user.stats.games_played} 
+                value={user.stats.gamesPlayed}
                 prefix={<RocketOutlined />} 
                 className="stat-item"
               />
@@ -125,7 +126,7 @@ export default function UserProfile() {
             <Col xs={24} sm={8}>
               <Statistic 
                 title="Games Won" 
-                value={user.stats.games_won} 
+                value={user.stats.wins}
                 prefix={<TrophyOutlined />} 
                 className="stat-item"
               />

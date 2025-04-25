@@ -117,13 +117,15 @@ public async post<T>(endpoint: string, data: unknown, customHeaders?: { [key: st
   /**
    * DELETE request.
    * @param endpoint - The API endpoint (e.g. "/users/123").
+   * @param customHeaders - Optional additional headers to include.
    * @returns JSON data of type T.
    */
-  public async delete<T>(endpoint: string): Promise<T> {
+  public async delete<T>(endpoint: string, customHeaders?: { [key:string]: string}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
+    const headers={...this.defaultHeaders,...customHeaders};
     const res = await fetch(url, {
       method: "DELETE",
-      headers: this.defaultHeaders,
+      headers,
     });
     return this.processResponse<T>(
       res,

@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
-import { Avatar, Button, Card, List, Tag, Tooltip, Typography } from 'antd';
+import { Avatar, Button, Card, List, Tooltip, Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { useGoogleMaps } from "@/hooks/useGoogleMaps";
+
 
 // Game related interfaces matching the backend DTOs
 interface PlayerGetDTO {
@@ -19,6 +21,7 @@ interface PlayerGetDTO {
   foundTime: string; // LocalDateTime as string
   locationLat: number | null;
   locationLong: number | null;
+  displayName: string | null;
 }
 
 interface GameGetDTO {
@@ -38,45 +41,22 @@ const { Title, Text } = Typography;
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [games, setGames] = useState<GameGetDTO[]>([]);
   const { value: token } = useLocalStorage<string | null>("token", null);
-
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
+  const { apiKey, isLoaded } = useGoogleMaps();
+
 
 
   useEffect(() => {
-    // Fetch Google Maps API key
-    const fetchApiKey = async () => {
-      const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      
-      if (envKey) {
-        setApiKey(envKey);
-        return;
-      }
-
-      try {
-        const backendUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:8080' 
-          : 'https://sopra-fs25-group-26-server.oa.r.appspot.com';
-        
-        const response = await fetch(`${backendUrl}/api/maps/key`);
-        const data = await response.json();
-        setApiKey(data.apiKey);
-      } catch (error) {
-        console.error("Failed to fetch API key:", error);
-      }
-    };
-
-    fetchApiKey();
+    if (!token) return;
 
     const fetchGames = async () => {
       try {
         const gamesData = await apiService.get<GameGetDTO[]>('/games', {
-          Authorization: `Bearer ${token}`,
-        });
+          Authorization: `Bearer ${token}`});
         setGames(gamesData);
       } catch (error) {
         console.error("Failed to fetch games:", error);
@@ -108,7 +88,7 @@ export default function Page() {
       );
 
       
-      const interval = setInterval(fetchGames, 10000);
+      const interval = setInterval(fetchGames, 5000);
 
       return () => {
         navigator.geolocation.clearWatch(watchId);
@@ -118,16 +98,7 @@ export default function Page() {
       console.log('Geolocation is not supported by this browser.');
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
-  }, [fixedLocation]);
-
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'IN_LOBBY': return 'blue';
-      case 'IN_GAME': return 'green';
-      case 'FINISHED': return 'gray';
-      default: return 'default';
-    }
-  };
+  }, [fixedLocation, token]);
   
   // handleJoinGame: player can join game and game info is updated.
   const handleJoinGame = async (gameId: number) => {
@@ -145,10 +116,7 @@ export default function Page() {
           locationLong: currentLocation.lng,
           startGame: false // just joining not starting the game
         },
-        {
-          Authorization: `Bearer ${token}`,
-        }
-      );
+        {Authorization: `Bearer ${token}`});
       console.log("Joined game:", response);
       //successful -> navigate to the game page
       router.push(`/games/${gameId}`);
@@ -184,7 +152,7 @@ export default function Page() {
     ]
   };
 
-  if (!currentLocation || !apiKey || !fixedLocation) { 
+  if (!currentLocation || !fixedLocation || !isLoaded || !apiKey) { 
     return (
       <div className="loading-container">
         Loading map...
@@ -219,33 +187,19 @@ export default function Page() {
       </header>
 
       <div className="content-container">
-        {}
         <div className="map-container">
-          <LoadScript googleMapsApiKey={apiKey}>
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '100%' }}
-              center={currentLocation}
-              zoom={18}
-              options={mapOptions}
-              onLoad={(map: google.maps.Map) => {
-                console.log('Map Loaded:', map);
-              }}
-            >
-              <Marker position={currentLocation} />
-              
-              <Circle
-                center={fixedLocation}
-                radius={100}
-                options={{
-                  fillColor: "rgba(0, 123, 255, 0.3)", 
-                  fillOpacity: 0.3,
-                  strokeColor: "#007BFF", 
-                  strokeOpacity: 0.7,
-                  strokeWeight: 2
-                }}
-              />
-            </GoogleMap>
-          </LoadScript>
+          {/* Remove LoadScript since we're handling it globally */}
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={currentLocation}
+            zoom={18}
+            options={mapOptions}
+            onLoad={(map: google.maps.Map) => {
+              console.log('Map Loaded:', map);
+            }}
+          >
+            <Marker position={currentLocation} />
+          </GoogleMap>
         </div>
 
         {}
@@ -257,22 +211,21 @@ export default function Page() {
           <List
             dataSource={games}
             loading={loading}
-            renderItem={(game) => (
+            renderItem={(game) => {
+              const creator = game.players.find(p => p.playerId === game.creatorId);
+              return (
               <Card className="game-card" size="small">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontWeight: 'bold' }}>{game.gamename}</div>
                     <div>
-                      <Tag color={getStatusColor(game.status)} className="game-status-tag">
-                        {game.status}
-                      </Tag>
                       <Text type="secondary">
-                        {game.players.length} players
+                        {game.players.length} / 5
                       </Text>
                     </div>
                     <div>
                       <Text type="secondary">
-                        Radius: {game.radius}m
+                        Created by {creator ? creator.displayName : `Player ${game.creatorId}`}
                       </Text>
                     </div>
                   </div>
@@ -289,8 +242,8 @@ export default function Page() {
                   )}
                 </div>
               </Card>
-            )}
-            locale={{ emptyText: 'No active games found' }}
+            )}}
+            locale={{ emptyText: 'No joinable games' }}
           />
         </div>
       </div>
