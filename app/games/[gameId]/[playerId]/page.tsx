@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef  } from "react";
-import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
+import { useEffect, useState  } from "react";
+import {GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
-import { Avatar, Button, Tag, Typography, message, Modal, Tooltip } from 'antd';
+import { Avatar, Button, Tag, Typography, message, Modal, Alert} from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
 import { useParams } from "next/navigation";
-import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 
 
 interface PlayerGetDTO {
@@ -40,10 +39,8 @@ interface GameGetDTO {
 const { Title, Text } = Typography;
 
 export default function GamePlay() {
-  const [scriptLoaded, setScriptLoaded] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [game, setGame] = useState<GameGetDTO | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<PlayerGetDTO | null>(null);
   const [caughtModalVisible, setCaughtModalVisible] = useState(false);
@@ -54,14 +51,13 @@ export default function GamePlay() {
   const gameId = params?.gameId as string;
   const playerId = params?.playerId as string;
   const apiService = useApi();
-  const { apiKey, isLoaded } = useGoogleMaps();
-  const [timeLeft, setTimeLeft] = useState<string>("02:00");
+
 
 
 
   useEffect(() => {
     if (!navigator.geolocation) return;
-    
+
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setCurrentLocation({
@@ -75,7 +71,7 @@ export default function GamePlay() {
       },
       { enableHighAccuracy: true }
     );
-    
+
     return () => navigator.geolocation.clearWatch(watchId);
   }, [messageApi]);
 
@@ -89,13 +85,13 @@ export default function GamePlay() {
           {
             locationLat: currentLocation.lat,
             locationLong: currentLocation.lng,
-            startGame: true
+            startGame: false
           },
           { Authorization: `Bearer ${token}` }
         );
-        
+
         setGame(response);
-        
+
         const player = response.players.find(p => p.playerId === parseInt(playerId));
         if (player) {
           setCurrentPlayer(player);
@@ -109,7 +105,7 @@ export default function GamePlay() {
           router.push(`/lobby/${gameId}`);
           return;
         }
-        
+
         if (response.status === 'FINISHED') {
           if (updateInterval) {
             clearInterval(updateInterval);
@@ -123,10 +119,10 @@ export default function GamePlay() {
     };
 
     updateGameState();
-    
-    const interval = setInterval(updateGameState, 5000);
+
+    const interval = setInterval(updateGameState, 3000);
     setUpdateInterval(interval);
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -134,24 +130,24 @@ export default function GamePlay() {
 
   const handleCaughtAction = async () => {
     if (!gameId || !playerId || !token) return;
-    
+
     try {
       setCaughtModalVisible(false);
-      
+
       const response = await apiService.put<GameGetDTO>(
         `/games/${gameId}/players/${playerId}`,
         {},
         { Authorization: `Bearer ${token}` }
       );
-      
+
       setGame(response);
-      
+
       const player = response.players.find(p => p.playerId === parseInt(playerId));
       if (player) {
         setCurrentPlayer(player);
         messageApi.success("You've been marked as caught!");
       }
-      
+
       if (response.status === 'FINISHED') {
         if (updateInterval) {
           clearInterval(updateInterval);
@@ -168,105 +164,56 @@ export default function GamePlay() {
     return role === 'HUNTER' ? 'red' : 'green';
   };
 
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'HUNTING': return 'red';
-      case 'HIDING': return 'green';
-      case 'FOUND': return 'gray';
-      default: return 'blue';
+  // Phase durations in seconds
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
+  const PREP_DURATION = 60;  // 1 minute
+  const GAME_DURATION = 60;  // 1 minute
+
+  useEffect(() => {
+    if (!game?.timer) {
+      setRemainingSeconds(0);
+      return;
     }
+    const startTime = Date.parse(game.timer);
+    let totalDuration: number;
+    if (game.status === 'IN_GAME_PREPARATION') {
+      totalDuration = PREP_DURATION;
+    } else if (game.status === 'IN_GAME') {
+      totalDuration = GAME_DURATION;
+    } else {
+      setRemainingSeconds(0);
+      return;
+    }
+
+    const tick = () => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const secs = Math.max(0, totalDuration - elapsed);
+      setRemainingSeconds(secs);
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [game?.timer, game?.status]);
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const COUNTDOWN_DURATION = 120; // 2 min in sec
-
-  const CountdownTimer = () => {
-    const [remainingTime, setRemainingTime] = useState<number>(COUNTDOWN_DURATION);
-    const timerRef = useRef<NodeJS.Timeout | null>(null);
-    const endTimeRef = useRef<number>(0);
-  
-    // 1. Initialize timer
-    useEffect(() => {
-      // timer checked in existing localstorage
-      const savedEndTime = localStorage.getItem('countdownEndTime');
-      const currentTime = Date.now();
-  
-      if (savedEndTime) {
-        const endTime = parseInt(savedEndTime, 10);
-        const remaining = Math.max(0, Math.floor((endTime - currentTime) / 1000));
-        
-        if (remaining > 0) {
-          endTimeRef.current = endTime;
-          setRemainingTime(remaining);
-          return;
-        }
-      }
-  
-      // new timer started
-      const newEndTime = currentTime + COUNTDOWN_DURATION * 1000;
-      endTimeRef.current = newEndTime;
-      localStorage.setItem('countdownEndTime', newEndTime.toString());
-    }, []);
-  
-    // countdown logic
-    useEffect(() => {
-      const updateTimer = () => {
-        const now = Date.now();
-        const remaining = Math.max(0, Math.floor((endTimeRef.current - now) / 1000));
-        
-        setRemainingTime(remaining);
-  
-        if (remaining <= 0 && timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-      };
-  
-      //only start timer if time remains
-      if (remainingTime > 0) {
-        timerRef.current = setInterval(updateTimer, 1000);
-      }
-      updateTimer();
-  
-      // Cleanup
-      return () => {
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
-      };
-    }, [remainingTime]);
-  
-    // 3. display is formatted 
-    const formatTime = (seconds: number): string => {
-      const mins = Math.floor(seconds / 60);
-      const secs = seconds % 60;
-      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-  
-    // 4. Reset function (optional - recommended from AI)
-    const resetTimer = () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      const newEndTime = Date.now() + COUNTDOWN_DURATION * 1000;
-      endTimeRef.current = newEndTime;
-      localStorage.setItem('countdownEndTime', newEndTime.toString());
-      setRemainingTime(COUNTDOWN_DURATION);
-    };
-  
-    return (
-      <div className="game-timer">
-        <Text strong>Timer: </Text>
-        <Tag color={remainingTime === 0 ? "red" : "default"}>
-          {formatTime(remainingTime)}
-        </Tag>
-        {/* <button onClick={resetTimer} style={{ marginLeft: 8 }}>Reset</button> */}
-      </div>
-    );
-  };
+  const CountdownTimer = () => (
+    <div className="game-timer">
+      <Text strong>Timer: </Text>
+      <Tag color={remainingSeconds === 0 ? "red" : "default"}>
+        {formatTime(remainingSeconds)}
+      </Tag>
+    </div>
+  );
 
   const mapOptions = {
     disableDefaultUI: true,
-    zoomControl: true,
+    zoomControl: false,
     streetViewControl: false,
     fullscreenControl: false,
     mapTypeControl: false,
@@ -280,17 +227,64 @@ export default function GamePlay() {
 
 
   if (!currentLocation) {return <div>Getting your location...</div>;}
-  
+
   if (!game) {return <div>Loading game data...</div>;}
 
-  const gameCenter = game.centerLatitude && game.centerLongitude 
-    ? { lat: game.centerLatitude, lng: game.centerLongitude } 
+  const gameCenter = game.centerLatitude && game.centerLongitude
+    ? { lat: game.centerLatitude, lng: game.centerLongitude }
     : currentLocation;
-  
+
   return (
     <div className="game-play-container">
       {contextHolder}
-      
+      {game?.status === 'IN_GAME_PREPARATION' && (
+          currentPlayer?.role === 'HIDER' ? (
+              <Alert
+                  banner
+                  message="Get into the game area and hide!"
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+              />
+          ) : (
+              <Alert
+                  banner
+                  message="Prepare for your hunt!"
+                  type="warning"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+              />
+          )
+      )}
+      {game?.status === 'IN_GAME' && (
+        currentPlayer?.role === 'HIDER' && currentPlayer.status !== 'FOUND' ? (
+          <Alert
+            banner
+            message="The hunt has begun! The hunter is on the loose."
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        ) : currentPlayer?.role === 'HUNTER' ? (
+          <Alert
+            banner
+            message="You can start hunting now!"
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        ) : null
+      )}
+      {currentPlayer?.role === 'HIDER' &&
+          currentPlayer.status === 'FOUND' && (
+              <Alert
+                  banner
+                  message="You have been found! Please wait and spectate until the game is over."
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+              />
+          )}
       <header className="game-play-header">
         <Title level={3} className="game-title">{game.gamename}</Title>
         {currentPlayer && (
@@ -308,67 +302,80 @@ export default function GamePlay() {
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '100%' }}
               center={currentLocation}
-              zoom={17}
+              zoom={18}
               options={mapOptions}
               onLoad={(map: google.maps.Map) => {
                 console.log('Map Loaded:', map);
               }}
             >
-              <Marker 
-                position={currentLocation} 
-                icon={{
-                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                }}
+              <Marker
+                position={currentLocation}
               />
-              
+
               <Circle
+                  key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
                 center={gameCenter}
                 radius={game.radius}
                 options={{
-                  fillColor: "rgba(0, 123, 255, 0.2)",
+                  fillColor: "rgba(255, 0, 0, 0.2)",
                   fillOpacity: 0.3,
-                  strokeColor: "#007BFF",
+                  strokeColor: "#FF0000",
                   strokeOpacity: 0.8,
                   strokeWeight: 2
                 }}
               />
             </GoogleMap>
         </div>
-        
+
         <div className="game-play-info">
           <div className="player-status">
             {currentPlayer && (
               <div className="status-item">
-                <Text strong>Status:</Text>
-                <Tag color={getStatusColor(currentPlayer.status)}>
-                  {currentPlayer.status}
-                </Tag>
                 {currentPlayer.outOfArea && (
-                  <Tag color="orange">OUT OF AREA</Tag>
+                  <Tag color="orange">OUT OF AREA, VISIBLE FOR HUNTER</Tag>
                 )}
               </div>
             )}
-            
+
             <div className="status-item">
               <Text strong>Players:</Text>
               <div className="player-avatars">
-                {game.players.map(player => (
-                  <Tooltip key={player.playerId} title={`${player.displayName} (${player.status})`}>
-                    <Avatar 
-                      icon={<UserOutlined />} 
-                      style={{ 
-                        backgroundColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
-                        opacity: player.status === 'FOUND' ? 0.5 : 1
-                      }}
-                      size="small"
-                    />
-                  </Tooltip>
-                ))}
+                {game.players.map(player => {
+                  const isMe = player.playerId === currentPlayer?.playerId;
+                  return (
+                    <div
+                      key={player.playerId}
+                      className="player-avatar-item"
+                      style={{ display: 'inline-block', textAlign: 'center', margin: '0 8px' }}
+                    >
+                      <Avatar
+                        icon={<UserOutlined />}
+                        size="small"
+                        style={{
+                          backgroundColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                          opacity: player.status === 'FOUND' ? 0.1 : 1,
+                          display: 'block',
+                          margin: '0 auto'
+                        }}
+                      />
+                      <Text
+                        style={{
+                          marginTop: 4,
+                          display: 'block',
+                          textDecoration: isMe ? 'underline' : 'none'
+                        }}
+                      >
+                        {player.displayName}
+                      </Text>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
           
-          {currentPlayer && 
+          {game?.status === 'IN_GAME' &&
+            currentPlayer &&
            currentPlayer.role === 'HIDER' && 
            currentPlayer.status !== 'FOUND' && (
             <Button 

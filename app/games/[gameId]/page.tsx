@@ -182,7 +182,7 @@ export default function Page() {
         messageApi.error("Game needs at least two players");
       }
     } catch (error) {
-      messageApi.error("Game needs at least three players");
+      messageApi.error("Game needs at least two players");
       console.error(error instanceof Error ? error.message : "Failed to start game");
     } finally {
       setStarting(false);

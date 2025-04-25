@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoadScript, GoogleMap, Marker, Circle } from '@react-google-maps/api';
+import { GoogleMap, Marker } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
-import { Avatar, Button, Card, List, Tag, Tooltip, Typography } from 'antd';
+import { Avatar, Button, Card, List, Tooltip, Typography } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import { useGoogleMaps } from "@/hooks/useGoogleMaps";
+
 
 
 // Game related interfaces matching the backend DTOs
@@ -21,6 +21,7 @@ interface PlayerGetDTO {
   foundTime: string; // LocalDateTime as string
   locationLat: number | null;
   locationLong: number | null;
+  displayName: string | null;
 }
 
 interface GameGetDTO {
@@ -48,7 +49,7 @@ export default function Page() {
   const apiService = useApi();
 
 
-  const { apiKey, isLoaded } = useGoogleMaps();
+
 
   useEffect(() => {
     if (!token) return;
@@ -88,7 +89,7 @@ export default function Page() {
       );
 
       
-      const interval = setInterval(fetchGames, 10000);
+      const interval = setInterval(fetchGames, 5000);
 
       return () => {
         navigator.geolocation.clearWatch(watchId);
@@ -99,15 +100,6 @@ export default function Page() {
       setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
     }
   }, [fixedLocation, token]);
-
-  const getStatusColor = (status: string) => {
-    switch(status) {
-      case 'IN_LOBBY': return 'blue';
-      case 'IN_GAME': return 'green';
-      case 'FINISHED': return 'gray';
-      default: return 'default';
-    }
-  };
   
   // handleJoinGame: player can join game and game info is updated.
   const handleJoinGame = async (gameId: number) => {
@@ -208,18 +200,6 @@ export default function Page() {
             }}
           >
             <Marker position={currentLocation} />
-            
-            <Circle
-              center={fixedLocation}
-              radius={100}
-              options={{
-                fillColor: "rgba(0, 123, 255, 0.3)", 
-                fillOpacity: 0.3,
-                strokeColor: "#007BFF", 
-                strokeOpacity: 0.7,
-                strokeWeight: 2
-              }}
-            />
           </GoogleMap>
         </div>
 
@@ -232,22 +212,21 @@ export default function Page() {
           <List
             dataSource={games}
             loading={loading}
-            renderItem={(game) => (
+            renderItem={(game) => {
+              const creator = game.players.find(p => p.playerId === game.creatorId);
+              return (
               <Card className="game-card" size="small">
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div>
                     <div style={{ fontWeight: 'bold' }}>{game.gamename}</div>
                     <div>
-                      <Tag color={getStatusColor(game.status)} className="game-status-tag">
-                        {game.status}
-                      </Tag>
                       <Text type="secondary">
-                        {game.players.length} players
+                        {game.players.length} / 5
                       </Text>
                     </div>
                     <div>
                       <Text type="secondary">
-                        Radius: {game.radius}m
+                        Created by {creator ? creator.displayName : `Player ${game.creatorId}`}
                       </Text>
                     </div>
                   </div>
@@ -264,8 +243,8 @@ export default function Page() {
                   )}
                 </div>
               </Card>
-            )}
-            locale={{ emptyText: 'No active games found' }}
+            )}}
+            locale={{ emptyText: 'No joinable games' }}
           />
         </div>
       </div>
