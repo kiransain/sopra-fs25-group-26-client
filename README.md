@@ -20,7 +20,7 @@ installation, therefore, save and close all your other work and programs
    ```shell
    C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File .\windows.ps1
    ```
----
+--- 
 
 3. If you experience any issues, try re-running the script a couple of times. If
    the installation remains unsuccessful, follow this
