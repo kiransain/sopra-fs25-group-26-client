@@ -8,6 +8,8 @@ import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { useGoogleMaps } from "@/hooks/useGoogleMaps";
+
 
 // Game related interfaces matching the backend DTOs
 interface PlayerGetDTO {
@@ -38,17 +40,19 @@ const { Title, Text } = Typography;
 export default function Page() {
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [games, setGames] = useState<GameGetDTO[]>([]);
   const { value: token } = useLocalStorage<string | null>("token", null);
 
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+
+
+  const { apiKey, isLoaded } = useGoogleMaps();
 
   useEffect(() => {
-    
+    if (!token) return;
+
     const fetchGames = async () => {
       try {
         const gamesData = await apiService.get<GameGetDTO[]>('/games', {
@@ -192,35 +196,31 @@ export default function Page() {
       </header>
 
       <div className="content-container">
-        {}
         <div className="map-container">
-          {typeof window !== 'undefined' && window.google && (
-            <GoogleMap
-              mapContainerStyle={{ width: '100%', height: '100%' }}
-              center={currentLocation}
-              zoom={18}
-              options={mapOptions}
-              onLoad={() => setScriptLoaded(true)}
-            >
-              {scriptLoaded && (
-                <>
-              <Marker position={currentLocation} />
-          
-              <Circle
-                center={fixedLocation}
-                radius={100}
-                options={{
-                  fillColor: "rgba(0, 123, 255, 0.3)", 
-                  fillOpacity: 0.3,
-                  strokeColor: "#007BFF", 
-                  strokeOpacity: 0.7,
-                  strokeWeight: 2
-                }}
-              />
-              </> 
-              )}
-            </GoogleMap>
-          )}
+          {/* Remove LoadScript since we're handling it globally */}
+          <GoogleMap
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            center={currentLocation}
+            zoom={18}
+            options={mapOptions}
+            onLoad={(map: google.maps.Map) => {
+              console.log('Map Loaded:', map);
+            }}
+          >
+            <Marker position={currentLocation} />
+            
+            <Circle
+              center={fixedLocation}
+              radius={100}
+              options={{
+                fillColor: "rgba(0, 123, 255, 0.3)", 
+                fillOpacity: 0.3,
+                strokeColor: "#007BFF", 
+                strokeOpacity: 0.7,
+                strokeWeight: 2
+              }}
+            />
+          </GoogleMap>
         </div>
 
         {}

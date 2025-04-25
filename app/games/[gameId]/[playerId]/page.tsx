@@ -9,6 +9,7 @@ import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
 import { useParams } from "next/navigation";
+import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 
 
 interface PlayerGetDTO {
@@ -45,7 +46,6 @@ export default function GamePlay() {
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [game, setGame] = useState<GameGetDTO | null>(null);
   const [currentPlayer, setCurrentPlayer] = useState<PlayerGetDTO | null>(null);
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [caughtModalVisible, setCaughtModalVisible] = useState(false);
   const [updateInterval, setUpdateInterval] = useState<NodeJS.Timeout | null>(null);
   const { value: token } = useLocalStorage<string | null>("token", null);
@@ -54,12 +54,9 @@ export default function GamePlay() {
   const gameId = params?.gameId as string;
   const playerId = params?.playerId as string;
   const apiService = useApi();
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.google) {
-      setScriptLoaded(true);
-    }
-  }, []);
+  const { apiKey, isLoaded } = useGoogleMaps();
+
+
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -158,7 +155,7 @@ export default function GamePlay() {
         if (updateInterval) {
           clearInterval(updateInterval);
         }
-        router.push(`/leaderboard`);
+        router.push(`/games/${gameId}/leaderboard`);
       }
     } catch (error) {
       console.error("Failed to mark player as caught:", error);
@@ -217,38 +214,34 @@ export default function GamePlay() {
 
       <div className="game-play-content">
         <div className="map-container">
-          {typeof window !== 'undefined' && window.google && (
             <GoogleMap
               mapContainerStyle={{ width: '100%', height: '100%' }}
               center={currentLocation}
               zoom={17}
               options={mapOptions}
-              onLoad={() => setScriptLoaded(true)}
+              onLoad={(map: google.maps.Map) => {
+                console.log('Map Loaded:', map);
+              }}
             >
-              {scriptLoaded && (
-                <>
-                  <Marker 
-                    position={currentLocation}
-                    icon={{
-                      url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-                      scaledSize: new google.maps.Size(40, 40)
-                    }}
-                  />
-                  <Circle
-                    center={gameCenter}
-                    radius={game.radius}
-                    options={{
-                      fillColor: "rgba(0, 123, 255, 0.2)",
-                      fillOpacity: 0.3,
-                      strokeColor: "#007BFF",
-                      strokeOpacity: 0.8,
-                      strokeWeight: 2
-                    }}
-                  />
-                </>
-              )}
+              <Marker 
+                position={currentLocation} 
+                icon={{
+                  url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                }}
+              />
+              
+              <Circle
+                center={gameCenter}
+                radius={game.radius}
+                options={{
+                  fillColor: "rgba(0, 123, 255, 0.2)",
+                  fillOpacity: 0.3,
+                  strokeColor: "#007BFF",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 2
+                }}
+              />
             </GoogleMap>
-          )}
         </div>
         
         <div className="game-play-info">
