@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, message } from "antd";
 import Link from "next/link";
 import "@/styles/login-module.css";
 
@@ -13,6 +13,7 @@ const Login: React.FC = () => {
   const apiService = useApi();
   const [form] = Form.useForm();
   const { set: setToken } = useLocalStorage<string>("token", "");
+  const [messageApi, contextHolder] = message.useMessage();
 
   const handleLogin = async (values: { username: string; password: string }) => {
     try {
@@ -28,15 +29,16 @@ const Login: React.FC = () => {
       router.push("/overview");
     } catch (error) {
       if (error instanceof Error) {
-        alert(`Login failed:\n${error.message}`);
+        messageApi.error(error.message);
       } else {
-        console.error("An unknown error occurred during login.");
+        messageApi.error("An unknown error occurred during login.");
       }
     }
   };
 
   return (
     <div className="manhunt-login-container">
+      {contextHolder}
       <div className="login-card">
         <h1 className="app-title">ManHunt</h1>
         
