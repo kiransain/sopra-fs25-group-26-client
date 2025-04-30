@@ -1,24 +1,26 @@
 **DTO Notes:** 
 
-- `UserPostDTO`: Requires `username`(string), `password`(string).
-- `UserGetDTO`: Contains `userId`(long), `username`(string), `token`(string), `stats`(Map<String, String>).
+- `UserPostDTO`: Requires `username`(string), `profilePicture`(string).
+- `UserGetDTO`: Contains `userId`(long), `profilePicture`(string), `username`(string), `token`(string), `stats`(Map<String, String>).
+- `UserPutDTO`: Contains `password`(string), `profilePicture`(string).
 - `GamePostDTO`: Requires `gamename`(string), `locationLat`(double), `locationLong`(double).
 - `GamePutDTO`: Requires `locationLat`(double), `locationLong`(double, `startGame`(boolean).
 - `GameGetDTO`: Contains `gameId`(long), `gamename`(string), `status`(GameStatus), `centerLatitude`(double), `centerLongitude`(double), `radius`(double), `creatorId` (long = playerId), `players` (List<PlayerGetDTO>), `timer` (LocalDateTime).
-- `PlayerGetDTO`: Contains `playerId`(long), `userId`(long),  `role`(PlayerRole), `status`(PlayerStatus), `locationLat`(double), `locationLong`(double), `isOutOfArea`(boolean), `foundTime`(LocalDateTime), `rank`(double), `displayName`(String).
+- `PlayerGetDTO`: Contains `playerId`(long), `userId`(long),  `role`(PlayerRole), `status`(PlayerStatus), `locationLat`(double), `locationLong`(double), `isOutOfArea`(boolean), `foundTime`(LocalDateTime), `rank`(double), `displayName`(String), , `displayPicture`(String).
 
 ---
 
 **User Endpoints**
 
-|            |                   |                                                            |                    |                    |                                                                    |                                                                                      |
-| ---------- |-------------------| ---------------------------------------------------------- | ------------------ | ------------------ |--------------------------------------------------------------------| ------------------------------------------------------------------------------------ |
-| **Method** | **Mapping**       | **Parameters (Type)**                                      | **Success Status** | **Response Body**  | **Description**                                                    | **Potential Errors**                                                                 |
-| POST       | `/users`          | Body: `UserPostDTO`                                        | 201 CREATED        | `UserGetDTO`       | Register a new user.                                               | 409 CONFLICT (Username exists)                                                       |
-| POST       | `/login`          | Body: `UserPostDTO`                                        | 202 ACCEPTED       | `UserGetDTO`       | Log in a user.                                                     | 401 UNAUTHORIZED (Invalid credentials)                                               |
-| GET        | `/users`          | _(None)_                                                   | 200 OK             | `List<UserGetDTO>` | Get a list of all users. _(No authentication shown in code)_       |                                                                                      |
-| GET        | `/users/{userId}` | Path: `userId` (Long)<br/>Header: `Authorization` (String) | 200 OK             | `UserGetDTO`       | Get user profile (only works if requested `userId` matches token). | 401 UNAUTHORIZED (Invalid token)<br/>404 NOT FOUND (Not own profile / User mismatch) |
-| GET        | `/me`              | `Authorization` (String) | 200 OK             | `UserGetDTO`       | Get own user profile                                               | 401 UNAUTHORIZED (Invalid token)<br/>404 NOT FOUND (Not own profile / User mismatch) |
+|            |                   |                                                                                   |                    |                    |                                                                       |                                                                                                                              |
+|------------|-------------------|-----------------------------------------------------------------------------------|--------------------|--------------------|-----------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| **Method** | **Mapping**       | **Parameters (Type)**                                                             | **Success Status** | **Response Body**  | **Description**                                                       | **Potential Errors**                                                                                                         |
+| POST       | `/users`          | Body: `UserPostDTO`                                                               | 201 CREATED        | `UserGetDTO`       | Register a new user.                                                  | 409 CONFLICT (Username exists)                                                                                               |
+| POST       | `/login`          | Body: `UserPostDTO`                                                               | 202 ACCEPTED       | `UserGetDTO`       | Log in a user.                                                        | 401 UNAUTHORIZED (Invalid credentials)                                                                                       |
+| GET        | `/users`          | Header: `Authorization` (String)                                                  | 200 OK             | `List<UserGetDTO>` | Get a list of all users.                                              | 401 UNAUTHORIZED (Invalid token)                                                                                             |
+| GET        | `/users/{userId}` | Body: `UserPutDTO`<br/>Path: `userId` (Long)<br/>Header: `Authorization` (String) | 204 NO CONTENT     | -                  | Update user profile (only works if requested `userId` matches token). | 401 UNAUTHORIZED (Invalid token)<br/>409 FORBIDDEN (Not own profile / User mismatch)<br/>404 NOT FOUND (userId not existing) |
+| PUT        | `/users/{userId}` | Path: `userId` (Long)<br/>Header: `Authorization` (String)                        | 200 OK             | `UserGetDTO`       | Get user profile (only works if requested `userId` matches token).    | 401 UNAUTHORIZED (Invalid token)<br/>404 NOT FOUND (Not own profile / User mismatch)                                         |
+| GET        | `/me`              | `Authorization` (String)                                                          | 200 OK             | `UserGetDTO`       | Get own user profile                                                  | 401 UNAUTHORIZED (Invalid token)<br/>404 NOT FOUND (Not own profile / User mismatch)                                         |
 
 **Game Endpoints**
 
