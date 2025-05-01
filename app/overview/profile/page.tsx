@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Avatar, Statistic, Row, Col, Button, Typography, Divider, Spin, Badge } from "antd";
-import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined } from "@ant-design/icons";
+import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined, FireOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/user-profile.css";
@@ -146,7 +146,15 @@ export default function UserProfile() {
     />
   </Col>
           </Row>
-
+          <Button 
+  type="primary"
+  icon={<FireOutlined />}
+  onClick={() => router.push('/rankings')}
+  className="view-rankings-button"
+  style={{ marginBottom: 10 }}
+>
+  View Leaderboard
+</Button>
           <div className="profile-actions">
             <Button 
               type="primary" 

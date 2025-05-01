@@ -1,0 +1,252 @@
+.leaderboard-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    background-color: #f5f5f5;
+  }
+  
+  .leaderboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .leaderboard-title {
+    margin: 0 !important; 
+    flex-grow: 1;
+    text-align: center;
+  }
+  
+  .back-button {
+    font-size: 16px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Loading and Error States */
+  .leaderboard-loading,
+  .leaderboard-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+    min-height: 60vh;
+    text-align: center;
+  }
+  
+  .loading-text {
+    margin-top: 20px;
+    font-size: 16px;
+  }
+  
+  /* Table Styling */
+  .leaderboard-table-card {
+    margin-bottom: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .leaderboard-table .ant-table-thead > tr > th {
+    background-color: #fafafa;
+    font-weight: 600;
+  }
+  
+  .current-user-row {
+    background-color: rgba(24, 144, 255, 0.05);
+  }
+  
+  .current-user-avatar {
+    background-color: #1890ff;
+    color: #fff;
+  }
+  
+  .current-user-name {
+    font-weight: 600;
+    color: #1890ff;
+  }
+  
+  .you-tag {
+    margin-left: 16px;
+    font-size: 11px;
+    padding: 0 6px;
+    height: 20px;
+    line-height: 20px;
+  }
+  
+  .points-value {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+  
+  .trophy-icon {
+    color: gold;
+    margin-right: 6px;
+  }
+  
+  .rank-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .rank-number {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  
+  .crown {
+    font-size: 18px;
+  }
+  
+  .crown.gold {
+    color: gold;
+  }
+  
+  .crown.silver {
+    color: silver;
+  }
+  
+  .crown.bronze {
+    color: #cd7f32;
+  }
+  
+  /* Podium Styling */
+  .podium-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .podium-row {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 20px;
+  }
+  
+  .podium-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+  
+  .podium-avatar-container {
+    position: relative;
+    margin-bottom: 10px;
+    z-index: 10;
+  }
+  
+  .podium-avatar {
+    border: 3px solid white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .crown-icon {
+    position: absolute;
+    top: -12px;
+    right: -5px;
+    font-size: 20px;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+  }
+  
+  .crown-icon.gold {
+    color: gold;
+    font-size: 24px;
+  }
+  
+  .crown-icon.silver {
+    color: silver;
+    font-size: 20px;
+  }
+  
+  .crown-icon.bronze {
+    color: #cd7f32;
+    font-size: 18px;
+  }
+  
+  .podium-block {
+    width: 80%;
+    border-radius: 4px 4px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    position: relative;
+  }
+  
+  .podium-block.gold {
+    background: linear-gradient(135deg, #ffd700, #ffb700);
+    height: 120px;
+  }
+  
+  .podium-block.silver {
+    background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+    height: 80px;
+  }
+  
+  .podium-block.bronze {
+    background: linear-gradient(135deg, #cd7f32, #a05a2c);
+    height: 60px;
+  }
+  
+  .podium-rank {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .podium-info {
+    text-align: center;
+    margin-top: 8px;
+  }
+  
+  .podium-name {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+  }
+  
+  .podium-points {
+    font-size: 12px;
+    color: #666;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .podium-section {
+      padding: 10px;
+    }
+  
+    .podium-block.gold {
+      height: 100px;
+    }
+  
+    .podium-block.silver {
+      height: 70px;
+    }
+  
+    .podium-block.bronze {
+      height: 50px;
+    }
+  
+    .podium-name {
+      max-width: 80px;
+      font-size: 12px;
+    }
+  
+    .podium-points {
+      font-size: 10px;
+    }
+  }
