@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { GoogleMap, Marker } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Card, List, Tooltip, Typography } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -175,6 +175,18 @@ export default function Page() {
         >
           Create Game
         </Button>
+
+        
+        <Tooltip title="Tutorial">
+          <Button 
+            type="text" 
+            icon={<QuestionCircleOutlined />} 
+            shape="circle" 
+            size="large"
+            onClick={() => router.push('/tutorial/1')}
+            style={{ color: 'rgba(0, 0, 0, 0.65)' }}
+          />
+        </Tooltip>
 
         <Tooltip title="Profile">
           <Avatar 
