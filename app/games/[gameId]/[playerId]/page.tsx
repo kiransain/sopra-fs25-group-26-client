@@ -53,11 +53,27 @@ export default function GamePlay() {
   const playerId = params?.playerId as string;
   const apiService = useApi();
   const { apiKey, isLoaded } = useGoogleMaps();
-  
-  
+  const [powerUpUsed, setPowerUpUsed] = useState(false);
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
 
 
 
+
+
+  const activateShowPlayersPowerUp = () => {
+    if (powerUpUsed) {
+      messageApi.warning("You've already used your power-up!");
+      return;
+    }
+    
+    setPowerUpUsed(true);
+    setShowAllPlayers(true);
+    
+    //players will be showed for 10s
+    setTimeout(() => {
+      setShowAllPlayers(false);
+    }, 10000);
+  };
 
 
 
@@ -334,6 +350,25 @@ export default function GamePlay() {
                     strokeWeight: 2
                   }}
                 />
+                {showAllPlayers && game.players.map(player => {
+                if (!player.locationLat || !player.locationLong || player.playerId === currentPlayer?.playerId) {
+                  return null;
+                }
+                
+                return (
+                  <Marker
+                    key={`player-${player.playerId}`}
+                    position={{ lat: player.locationLat, lng: player.locationLong }}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: 7,
+                      fillColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                      fillOpacity: 1,
+                      strokeWeight: 0
+                    }}
+                  />
+                );
+              })}
               </GoogleMap>
           ) : (
             <div>Loading map...</div>
@@ -400,6 +435,20 @@ export default function GamePlay() {
             >
               I have Been Caught!
             </Button>
+          )}
+
+          {game?.status === 'IN_GAME' &&
+            currentPlayer?.role === 'HUNTER' && 
+            !powerUpUsed && (
+              <Button 
+                type="primary"
+                size="large"
+                className="powerup-button"
+                onClick={activateShowPlayersPowerUp}
+                style={{ backgroundColor: '#722ed1', marginBottom: '10px' }}
+              >
+                Reveal All Players (10s)
+              </Button>
           )}
         </div>
       </div>

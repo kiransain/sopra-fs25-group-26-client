@@ -131,3 +131,13 @@
       margin-top: 0;
     }
   }
+
+  .powerup-button {
+    background-color: #722ed1;
+    border-color: #722ed1;
+  }
+  
+  .powerup-button:hover {
+    background-color: #5a1cb0 !important;
+    border-color: #5a1cb0 !important;
+  }
