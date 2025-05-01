@@ -1,10 +1,10 @@
 **DTO Notes:** 
 
-- `UserPostDTO`: Requires `username`(string), `profilePicture`(string).
+- `UserPostDTO`: Requires `username`(string), `password`(string), `profilePicture`(string).
 - `UserGetDTO`: Contains `userId`(long), `profilePicture`(string), `username`(string), `token`(string), `stats`(Map<String, String>).
 - `UserPutDTO`: Contains `password`(string), `profilePicture`(string).
 - `GamePostDTO`: Requires `gamename`(string), `locationLat`(double), `locationLong`(double).
-- `GamePutDTO`: Requires `locationLat`(double), `locationLong`(double, `startGame`(boolean).
+- `GamePutDTO`: Requires `locationLat`(double), `locationLong`(double), `startGame`(boolean).
 - `GameGetDTO`: Contains `gameId`(long), `gamename`(string), `status`(GameStatus), `centerLatitude`(double), `centerLongitude`(double), `radius`(double), `creatorId` (long = playerId), `players` (List<PlayerGetDTO>), `timer` (LocalDateTime).
 - `PlayerGetDTO`: Contains `playerId`(long), `userId`(long),  `role`(PlayerRole), `status`(PlayerStatus), `locationLat`(double), `locationLong`(double), `isOutOfArea`(boolean), `foundTime`(LocalDateTime), `rank`(double), `displayName`(String), , `displayPicture`(String).
 

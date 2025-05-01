@@ -4,9 +4,13 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
-import { Button, Form, Input, message } from "antd";
 import Link from "next/link";
+import { Button, Form, Input, Upload, message } from "antd";
+import { PlusOutlined } from '@ant-design/icons';
+import type { UploadFile } from 'antd/es/upload/interface';
 import "@/styles/login-module.css";
+import { useState } from "react";
+
 
 const Register: React.FC = () => {
   const router = useRouter();
@@ -14,8 +18,10 @@ const Register: React.FC = () => {
   const [form] = Form.useForm();
   const { set: setToken } = useLocalStorage<string>("token", "");
   const [messageApi, contextHolder] = message.useMessage();
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const logInAfterRegistration= async (username: string, password: string) => { // awaiting function executed when Login submitted, takes in values in form of FormFields
+  
+  const logInAfterRegistration = async (username: string, password: string) => { // awaiting function executed when Login submitted, takes in values in form of FormFields
     try {
         // Call the API service and let it handle JSON serialization and error handling
         const response = await apiService.post<User>("/login",{username, password}); // awaits the response of the POST to server with expected form of a User. It sends {values} (POST) to endpoint "/users"
@@ -35,11 +41,14 @@ const Register: React.FC = () => {
     }
 }
 
-  const handleRegister = async (values: { username: string; password: string }) => {
+  const handleRegister = async (values: { username: string; password: string}) => {
     try {
-        // Call the API service and let it handle JSON serialization and error handling
-        console.log(values);
-        const response = await apiService.post<User>("/users", values);
+      const userData = {
+        username: values.username,
+        password: values.password,
+        profilePicture: fileList.length > 0 ? fileList[0].thumbUrl : undefined
+      };
+        const response = await apiService.post<User>("/users", userData);
 
         if (response.username != null) {
             const loggedIn = await logInAfterRegistration(values.username, values.password);
@@ -57,6 +66,26 @@ const Register: React.FC = () => {
       }
   }
 };
+
+
+const handleChange = ({ fileList: newFileList }: { fileList: UploadFile[] }) => {
+  setFileList(newFileList);
+};
+
+const beforeUpload = (file: File) => {
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+  if (!isJpgOrPng) {
+    messageApi.error('You can only upload JPG/PNG files!');
+    return false;
+  }
+  const isLt1M = file.size / 1024 / 1024 < 1;
+  if (!isLt1M) {
+    messageApi.error('Image must be smaller than 1MB!');
+    return false;
+  }
+  return true;
+};
+
 
 return (
   <div className="manhunt-login-container">
@@ -83,7 +112,23 @@ return (
           layout="vertical"
           className="login-form"
         >
-         
+         <Form.Item className="avatar-upload-container">
+            <Upload
+              listType="picture-circle"
+              fileList={fileList}
+              onChange={handleChange}
+              beforeUpload={beforeUpload}
+              maxCount={1}
+            >
+              {fileList.length === 0 && (
+                <div>
+                  <PlusOutlined />
+                  <div style={{ marginTop: 8 }}>Upload</div>
+                </div>
+              )}
+            </Upload>
+          </Form.Item>
+
           <Form.Item 
             name="username" 
             className="form-item"

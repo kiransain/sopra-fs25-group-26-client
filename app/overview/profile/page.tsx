@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Avatar, Statistic, Row, Col, Button, Typography, Divider, Spin, Badge } from "antd";
-import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined } from "@ant-design/icons";
+import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/user-profile.css";
@@ -12,7 +12,7 @@ interface UserStats {
   gamesPlayed: string;
   creation_date: string;
   wins: string;
-
+  points: string;
 }
 
 interface UserGetDTO {
@@ -20,6 +20,7 @@ interface UserGetDTO {
   username: string;
   token: string;
   stats: UserStats;
+  profilePicture?: string;
 }
 
 const { Title, Text } = Typography;
@@ -61,6 +62,7 @@ export default function UserProfile() {
     localStorage.removeItem("token");
     router.push("/");
   };
+  
 
   if (loading) {
     return (
@@ -102,12 +104,16 @@ export default function UserProfile() {
               <Avatar 
                 size={80} 
                 icon={<UserOutlined />} 
+                src={user.profilePicture} 
                 className="profile-avatar" 
               />
             </Badge>
             <div className="profile-details">
               <Title level={4}>{user.username}</Title>
               <Text type="secondary">User ID: {user.userId}</Text>
+              <Text type="secondary" className="join-date">
+                <CalendarOutlined style={{ marginRight: 5 }} /> 
+                Member since: {user.stats.creation_date}</Text>
             </div>
           </div>
 
@@ -132,13 +138,13 @@ export default function UserProfile() {
               />
             </Col>
             <Col xs={24} sm={8}>
-              <Statistic 
-                title="Member Since" 
-                value={user.stats.creation_date} 
-                prefix={<CalendarOutlined />} 
-                className="stat-item"
-              />
-            </Col>
+    <Statistic 
+      title="Points" 
+      value={user.stats.points}
+      prefix={<StarOutlined />} 
+      className="stat-item"
+    />
+  </Col>
           </Row>
 
           <div className="profile-actions">
