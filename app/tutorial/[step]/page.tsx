@@ -45,6 +45,18 @@ const TUTORIAL_STEPS = [
       <>
         <Paragraph className="tutorial-text">Press <span className="text-blue-500">CREATE GAME</span> to start or join an available game in the lobby.</Paragraph>
         <Paragraph className="tutorial-text">Give your game a name and wait for at least <span className="text-orange-500">3 players</span> to begin.</Paragraph>
+        <img 
+          src="/tutorial/newgame_lobby.png" 
+          alt="New Game Lobby" 
+          style={{ 
+            width: '100%', 
+            maxWidth: '500px', 
+            margin: '10px auto', 
+            display: 'block',
+            borderRadius: '8px',
+            border: '1px solid #ddd'
+          }} 
+        />
       </>
     )
   },
@@ -53,6 +65,18 @@ const TUTORIAL_STEPS = [
     content: (
       <>
         <Paragraph className="tutorial-text">Below you'll see all available players.</Paragraph>
+        <img 
+          src="/tutorial/available_players.png" 
+          alt="New Game Lobby" 
+          style={{ 
+            width: '100%', 
+            maxWidth: '500px', 
+            margin: '10px auto', 
+            display: 'block',
+            borderRadius: '8px',
+            border: '1px solid #ddd'
+          }} 
+        />
         <Paragraph className="tutorial-text">The <span className="text-red-500">marker is you</span> and the game radius is created around the <span className="text-red-500">hunter</span>!</Paragraph>
       </>
     )

@@ -67,38 +67,59 @@ export default function Page() {
 
     fetchGames();
     
-    if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
-        (position) => {
-          const newLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          setCurrentLocation(newLocation);
+  let watchId: number | null = null;
+  let intervalId: NodeJS.Timeout;
+  let errorCount = 0;
 
+  if (navigator.geolocation) {
+    const geolocationOptions = {
+      enableHighAccuracy: true,
+      maximumAge: 30000,  // Accept cached positions up to 30 seconds old
+      timeout: 10000      // More generous timeout for Firefox
+    };
+
+    watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        errorCount = 0; // Reset error counter on success
+        const newLocation = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+
+        // Only update if coordinates changed significantly
+        if (!currentLocation || 
+            Math.abs(newLocation.lat - currentLocation.lat) > 0.0001 || 
+            Math.abs(newLocation.lng - currentLocation.lng) > 0.0001) {
+          setCurrentLocation(newLocation);
           if (!fixedLocation) {
             setFixedLocation(newLocation);
           }
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
-        },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-      );
+        }
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        errorCount++;
+        
+        // Only fallback after multiple consecutive errors
+        if (errorCount > 2) {
+          setCurrentLocation({ lat: 47.374444, lng: 8.541111 });
+        }
+      },
+      geolocationOptions
+    );
 
-      
-      const interval = setInterval(fetchGames, 5000);
+    // Set up polling with cleanup
+    intervalId = setInterval(fetchGames, 5000);
+  } else {
+    console.log('Geolocation is not supported by this browser.');
+    setCurrentLocation({ lat: 47.374444, lng: 8.541111 });
+  }
 
-      return () => {
-        navigator.geolocation.clearWatch(watchId);
-        clearInterval(interval);
-      };
-    } else {
-      console.log('Geolocation is not supported by this browser.');
-      setCurrentLocation({ lat: -33.860664, lng: 151.208138 });
-    }
-  }, [fixedLocation, token]);
+  return () => {
+    if (watchId) navigator.geolocation.clearWatch(watchId);
+    clearInterval(intervalId);
+  };
+}, [token, fixedLocation]);
   
   // handleJoinGame: player can join game and game info is updated.
   const handleJoinGame = async (gameId: number) => {
