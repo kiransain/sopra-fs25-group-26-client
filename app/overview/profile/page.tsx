@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Avatar, Statistic, Row, Col, Button, Typography, Divider, Spin, Badge } from "antd";
-import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined, FireOutlined } from "@ant-design/icons";
+import { Card, Avatar, Statistic, Row, Col, Button, Typography, Divider, Spin, Badge, Modal, Form, Input, message } from "antd";
+import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined, FireOutlined, SettingOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/user-profile.css";
@@ -28,6 +28,9 @@ const { Title, Text } = Typography;
 export default function UserProfile() {
   const [user, setUser] = useState<UserGetDTO | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isSettingsModalVisible, setIsSettingsModalVisible] = useState<boolean>(false);
+  const [form] = Form.useForm();
+  const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
   const { value: token } = useLocalStorage<string | null>("token", null);
@@ -41,10 +44,14 @@ export default function UserProfile() {
           Authorization: `Bearer ${token}`,
         });
         setUser(userData);
+        // Pre-fill the form with current username
+        form.setFieldsValue({
+          username: userData.username
+        });
       } catch (error) {
         console.error("Failed to fetch user data:", error);
         if (error instanceof Error) {
-          alert(`Error fetching user data: ${error.message}`);
+          message.error(`Error fetching user data: ${error.message}`);
         }
       } finally {
         setLoading(false);
@@ -52,7 +59,7 @@ export default function UserProfile() {
     };
 
     fetchUser();
-  }, [apiService,token,router]);
+  }, [apiService, token, router, form]);
 
   const handleBack = () => {
     router.push("/overview");
@@ -63,6 +70,39 @@ export default function UserProfile() {
     router.push("/");
   };
   
+  const showSettingsModal = () => {
+    setIsSettingsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsSettingsModalVisible(false);
+  };
+
+  const handleUpdateUsername = async (values: { username: string }) => {
+    if (!user) return;
+    
+    setUpdateLoading(true);
+    try {
+      await apiService.put(
+        `/users/${user.userId}`,
+        { username: values.username },
+        { Authorization: `Bearer ${token}` }
+      );
+      
+      setUser({
+        ...user,
+        username: values.username
+      });
+      
+      message.success("Username updated successfully!");
+      setIsSettingsModalVisible(false);
+    } catch (error) {
+      console.error("Failed to update username:", error);
+      message.error("Failed to update username. Please try again.");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -109,7 +149,16 @@ export default function UserProfile() {
               />
             </Badge>
             <div className="profile-details">
-              <Title level={4}>{user.username}</Title>
+              <div className="username-container">
+                <Title level={4}>{user.username}</Title>
+                <Button 
+                  type="text" 
+                  icon={<SettingOutlined />} 
+                  onClick={showSettingsModal}
+                  className="settings-button"
+                  aria-label="Settings"
+                />
+              </div>
               <Text type="secondary">User ID: {user.userId}</Text>
               <Text type="secondary" className="join-date">
                 <CalendarOutlined style={{ marginRight: 5 }} /> 
@@ -138,23 +187,23 @@ export default function UserProfile() {
               />
             </Col>
             <Col xs={24} sm={8}>
-    <Statistic 
-      title="Points" 
-      value={user.stats.points}
-      prefix={<StarOutlined />} 
-      className="stat-item"
-    />
-  </Col>
+              <Statistic 
+                title="Points" 
+                value={user.stats.points}
+                prefix={<StarOutlined />} 
+                className="stat-item"
+              />
+            </Col>
           </Row>
           <Button 
-  type="primary"
-  icon={<FireOutlined />}
-  onClick={() => router.push('/rankings')}
-  className="view-rankings-button"
-  style={{ marginBottom: 10 }}
->
-  View Leaderboard
-</Button>
+            type="primary"
+            icon={<FireOutlined />}
+            onClick={() => router.push('/rankings')}
+            className="view-rankings-button"
+            style={{ marginBottom: 10 }}
+          >
+            View Leaderboard
+          </Button>
           <div className="profile-actions">
             <Button 
               type="primary" 
@@ -167,6 +216,40 @@ export default function UserProfile() {
           </div>
         </Card>
       </div>
+
+      {/* Settings Modal */}
+      <Modal
+        title="Update Username"
+        open={isSettingsModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        className="settings-modal"
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleUpdateUsername}
+          initialValues={{ username: user.username }}
+        >
+          <Form.Item
+            name="username"
+            label="Username"
+            rules={[
+              { required: true, message: 'Please enter your username!' },
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="Enter your new username" />
+          </Form.Item>
+          <Form.Item className="modal-buttons">
+            <Button type="default" onClick={handleCancel} style={{ marginRight: 8 }}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={updateLoading}>
+              Update
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

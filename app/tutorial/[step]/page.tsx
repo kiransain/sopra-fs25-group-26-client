@@ -4,13 +4,12 @@ import { ArrowLeftOutlined, ArrowRightOutlined, CloseOutlined } from '@ant-desig
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
 import  "@/styles/tutorial.css";
 
 const { Title, Paragraph } = Typography;
 
 // Silky smooth transition animations
-const slideVariants = {
+/* const slideVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? '50%' : '-50%',
     opacity: 0.5,
@@ -36,7 +35,7 @@ const slideVariants = {
       ease: 'easeInOut'
     }
   })
-};
+}; */
 
 const TUTORIAL_STEPS = [
   {
@@ -64,7 +63,7 @@ const TUTORIAL_STEPS = [
     title: "Game Setup",
     content: (
       <>
-        <Paragraph className="tutorial-text">Below you'll see all available players.</Paragraph>
+        <Paragraph className="tutorial-text">Below you will see all available players.</Paragraph>
         <img 
           src="/tutorial/available_players.png" 
           alt="New Game Lobby" 
