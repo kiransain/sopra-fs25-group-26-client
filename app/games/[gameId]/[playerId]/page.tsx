@@ -3,7 +3,7 @@
 import { useEffect, useState  } from "react";
 import { GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
-import { Avatar, Button, Tag, Typography, message, Modal, Alert} from 'antd';
+import { Avatar, Button, Tag, Typography, message, Modal, Alert, Progress} from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -55,6 +55,9 @@ export default function GamePlay() {
   const { apiKey, isLoaded } = useGoogleMaps();
   const [powerUpUsed, setPowerUpUsed] = useState(false);
   const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [outOfAreaTimer, setOutOfAreaTimer] = useState<number | null>(null);
+  const [outOfAreaModalVisible, setOutOfAreaModalVisible] = useState(false);
+  const [outOfAreaTimerId, setOutOfAreaTimerId] = useState<NodeJS.Timeout | null>(null);
 
 
 
@@ -96,6 +99,114 @@ export default function GamePlay() {
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [messageApi]);
+
+   // Function to handle when a player is caught after being out of area
+   const handleOutOfAreaCaught = async () => {
+    if (!gameId || !playerId || !token) return;
+
+    try {
+      await apiService.put<GameGetDTO>(
+        `/games/${gameId}/players/${playerId}`,
+        {},
+        { Authorization: `Bearer ${token}` }
+      );
+
+      messageApi.error("You have lost for staying out of the game area!");
+      setOutOfAreaModalVisible(false);
+      
+      // Refresh game state
+      const response = await apiService.put<GameGetDTO>(
+        `/games/${gameId}`,
+        {
+          locationLat: currentLocation?.lat,
+          locationLong: currentLocation?.lng,
+          startGame: false
+        },
+        { Authorization: `Bearer ${token}` }
+      );
+      
+      setGame(response);
+      
+      const player = response.players.find(p => p.playerId === parseInt(playerId));
+      if (player) {
+        setCurrentPlayer(player);
+      }
+      
+      if (response.status === 'FINISHED') {
+        if (updateInterval) {
+          clearInterval(updateInterval);
+        }
+        router.push(`/games/${gameId}/leaderboard`);
+      }
+    } catch (error) {
+      console.error("Failed to mark player as caught:", error);
+      messageApi.error("Failed to mark you as caught");
+    }
+  };
+
+  
+  useEffect(() => {
+    
+    if (!currentPlayer || 
+        currentPlayer.role !== 'HIDER' || 
+        currentPlayer.status === 'FOUND' || 
+        (game && game.status !== 'IN_GAME')) {
+      
+      if (outOfAreaTimerId) {
+        clearInterval(outOfAreaTimerId);
+        setOutOfAreaTimerId(null);
+      }
+      if (outOfAreaTimer !== null) {
+        setOutOfAreaTimer(null);
+      }
+      if (outOfAreaModalVisible) {
+        setOutOfAreaModalVisible(false);
+      }
+      return;
+    }
+
+    
+    if (currentPlayer.outOfArea) {
+      if (outOfAreaTimer === null) {
+        setOutOfAreaTimer(10);
+        setOutOfAreaModalVisible(true);
+        
+        
+        const timerId = setInterval(() => {
+          setOutOfAreaTimer(prevTime => {
+            if (prevTime === null) return null;
+            if (prevTime <= 1) {
+              clearInterval(timerId);
+              handleOutOfAreaCaught();
+              return null;
+            }
+            return prevTime - 1;
+          });
+        }, 1000);
+        
+        setOutOfAreaTimerId(timerId);
+      }
+    } else {
+     
+      if (outOfAreaTimerId) {
+        clearInterval(outOfAreaTimerId);
+        setOutOfAreaTimerId(null);
+      }
+      if (outOfAreaTimer !== null) {
+        setOutOfAreaTimer(null);
+      }
+      if (outOfAreaModalVisible) {
+        setOutOfAreaModalVisible(false);
+      }
+    }
+    
+    return () => {
+      if (outOfAreaTimerId) {
+        clearInterval(outOfAreaTimerId);
+      }
+    };
+  }, [currentPlayer?.outOfArea, game?.status, currentPlayer?.role, currentPlayer?.status]);
+
 
   useEffect(() => {
     if (!currentLocation || !token || !gameId || !playerId) return;
@@ -380,7 +491,7 @@ export default function GamePlay() {
             {currentPlayer && (
               <div className="status-item">
                 {currentPlayer.outOfArea && (
-                  <Tag color="orange">OUT OF AREA, VISIBLE FOR HUNTER</Tag>
+                  <Tag color="orange">OUT OF AREA</Tag>
                 )}
               </div>
             )}
@@ -463,6 +574,40 @@ export default function GamePlay() {
       >
         <p>Are you sure you want to mark yourself as caught? This action cannot be undone.</p>
       </Modal>
+      <Modal
+  title="WARNING: OUT OF GAME AREA!"
+  open={outOfAreaModalVisible}
+  footer={null}
+  closable={false}
+  maskClosable={false}
+  style={{ top: 20 }}
+>
+  <Alert
+    message="You are outside the game area!"
+    description="Return to the game area immediately or you will lose!"
+    type="error"
+    showIcon
+    style={{ marginBottom: 16 }}
+  />
+  
+  {outOfAreaTimer !== null && (
+    <div style={{ textAlign: 'center', marginBottom: 16 }}>
+      <Text strong style={{ fontSize: 16, color: '#ff4d4f' }}>
+        Time remaining: {outOfAreaTimer} seconds
+      </Text>
+      <Progress 
+        percent={(outOfAreaTimer / 10) * 100} 
+        status="exception" 
+        showInfo={false} 
+        strokeColor="#ff4d4f"
+      />
+    </div>
+  )}
+  
+  <p style={{ textAlign: 'center' }}>
+    Return to the game area on the map to continue playing.
+  </p>
+</Modal>
     </div>
   );
 }
