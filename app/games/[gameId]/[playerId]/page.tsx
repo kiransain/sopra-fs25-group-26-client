@@ -16,6 +16,7 @@ interface PlayerGetDTO {
   playerId: number;
   userId: number;
   displayName: string;
+  displayPicture : string;
   role: 'HUNTER' | 'HIDER';
   status: 'HIDING' | 'HUNTING' | 'FOUND';
   outOfArea: boolean;
@@ -35,6 +36,8 @@ interface GameGetDTO {
   radius: number;
   creatorId: number;
   players: PlayerGetDTO[];
+  preparationTimeInSeconds: number;
+  gameTimeInSeconds: number;
 }
 
 const { Title, Text } = Typography;
@@ -299,8 +302,8 @@ export default function GamePlay() {
 
   // Phase durations in seconds
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-  const PREP_DURATION = 45;
-  const GAME_DURATION = 60;
+  // const PREP_DURATION = get preparationTimeInSeconds;
+  // const GAME_DURATION = get gameTimeInSeconds;
 
   useEffect(() => {
     if (!game?.timer) {
@@ -310,9 +313,9 @@ export default function GamePlay() {
     const startTime = Date.parse(game.timer);
     let totalDuration: number;
     if (game.status === 'IN_GAME_PREPARATION') {
-      totalDuration = PREP_DURATION;
+      totalDuration = game.preparationTimeInSeconds;
     } else if (game.status === 'IN_GAME') {
-      totalDuration = GAME_DURATION;
+      totalDuration = game.gameTimeInSeconds;
     } else {
       setRemainingSeconds(0);
       return;
@@ -327,7 +330,7 @@ export default function GamePlay() {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [game?.timer, game?.status]);
+  }, [game?.timer, game?.status, game?.preparationTimeInSeconds, game?.gameTimeInSeconds]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
