@@ -1,50 +1,74 @@
-.leaderboard-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #ffffff;
-  }
-  
-  .leaderboard-card {
-    width: 600px;
-    padding: 24px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 12px;
-    background-color: #ffffff;
-  }
-  
-  .leaderboard-title {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 24px;
-    font-weight: bold;
-  }
-  
-  .leaderboard-table {
-    margin-bottom: 20px;
-  }
-  
-  .leaderboard-buttons {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .leaderboard-button {
-    width: 45%;
-    height: 40px;
-    font-weight: bold;
-  }
-  
-  .black-button {
-    background-color: #000000 !important;
-    color: #ffffff !important;
-    border: none !important;
-  }
-  
-  .red-button {
-    background-color: #ff4d4f !important;
-    color: #ffffff !important;
-    border: none !important;
-  }
-  
+.game-page {
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.game-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.game-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+.exit-game-button {
+  border: none;
+  background: transparent;
+}
+
+.exit-game-button:hover {
+  color: #ff4d4f !important;
+  background: transparent !important;
+}
+
+.player-result-card {
+  border: 1px solid;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.leaderboard-card {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.player-item {
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.player-item:hover {
+  background-color: #fafafa;
+}
+
+.current-player {
+  background-color: #e6f7ff;
+}
+
+.current-player-avatar {
+  background-color: #1890ff;
+  color: white;
+}
+
+/* Medal colors */
+.medal-gold {
+  color: #ffd700;
+  font-size: 18px;
+}
+
+.medal-silver {
+  color: #c0c0c0;
+  font-size: 18px;
+}
+
+.medal-bronze {
+  color: #cd7f32;
+  font-size: 18px;
+}
