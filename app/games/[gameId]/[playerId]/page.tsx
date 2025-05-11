@@ -451,6 +451,7 @@ export default function GamePlay() {
               >
                 <Marker
                   position={currentLocation}
+                  animation={google.maps.Animation.DROP} 
                 />
                 <Circle
                   key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
@@ -552,14 +553,13 @@ export default function GamePlay() {
           )}
 
           {game?.status === 'IN_GAME' &&
-            currentPlayer?.role === 'HUNTER' && 
             !powerUpUsed && (
               <Button 
                 type="primary"
                 size="large"
                 className="powerup-button"
                 onClick={activateShowPlayersPowerUp}
-                style={{ backgroundColor: '#722ed1', marginBottom: '10px' }}
+                style={{ backgroundColor: '#722ed1'}}
               >
                 Reveal All Players (10s)
               </Button>
