@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Avatar, Statistic, Row, Col, Button, Typography, Divider, Spin, Badge, Modal, Form, Input, message } from "antd";
-import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined, FireOutlined, SettingOutlined } from "@ant-design/icons";
+import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined, FireOutlined, SettingOutlined, LockOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/user-profile.css";
@@ -44,10 +44,6 @@ export default function UserProfile() {
           Authorization: `Bearer ${token}`,
         });
         setUser(userData);
-        // Pre-fill the form with current username
-        form.setFieldsValue({
-          username: userData.username
-        });
       } catch (error) {
         console.error("Failed to fetch user data:", error);
         if (error instanceof Error) {
@@ -59,7 +55,7 @@ export default function UserProfile() {
     };
 
     fetchUser();
-  }, [apiService, token, router, form]);
+  }, [apiService, token, router]);
 
   const handleBack = () => {
     router.push("/overview");
@@ -71,6 +67,7 @@ export default function UserProfile() {
   };
   
   const showSettingsModal = () => {
+    form.resetFields();
     setIsSettingsModalVisible(true);
   };
 
@@ -78,27 +75,22 @@ export default function UserProfile() {
     setIsSettingsModalVisible(false);
   };
 
-  const handleUpdateUsername = async (values: { username: string }) => {
+  const handleUpdatePassword = async (values: { password: string }) => {
     if (!user) return;
     
     setUpdateLoading(true);
     try {
       await apiService.put(
         `/users/${user.userId}`,
-        { username: values.username },
+        { password: values.password },
         { Authorization: `Bearer ${token}` }
       );
       
-      setUser({
-        ...user,
-        username: values.username
-      });
-      
-      message.success("Username updated successfully!");
+      message.success("Password updated successfully!");
       setIsSettingsModalVisible(false);
     } catch (error) {
-      console.error("Failed to update username:", error);
-      message.error("Failed to update username. Please try again.");
+      console.error("Failed to update password:", error);
+      message.error("Failed to update password. Please try again.");
     } finally {
       setUpdateLoading(false);
     }
@@ -219,7 +211,7 @@ export default function UserProfile() {
 
       {/* Settings Modal */}
       <Modal
-        title="Update Username"
+        title="Update Password"
         open={isSettingsModalVisible}
         onCancel={handleCancel}
         footer={null}
@@ -228,24 +220,23 @@ export default function UserProfile() {
         <Form
           form={form}
           layout="vertical"
-          onFinish={handleUpdateUsername}
-          initialValues={{ username: user.username }}
+          onFinish={handleUpdatePassword}
         >
           <Form.Item
-            name="username"
-            label="Username"
-            rules={[
-              { required: true, message: 'Please enter your username!' },
-            ]}
+            name="password"
+            label="New Password"
           >
-            <Input prefix={<UserOutlined />} placeholder="Enter your new username" />
+            <Input.Password 
+              prefix={<LockOutlined />} 
+              placeholder="Enter your new password" 
+            />
           </Form.Item>
           <Form.Item className="modal-buttons">
             <Button type="default" onClick={handleCancel} style={{ marginRight: 8 }}>
               Cancel
             </Button>
             <Button type="primary" htmlType="submit" loading={updateLoading}>
-              Update
+              Update Password
             </Button>
           </Form.Item>
         </Form>
