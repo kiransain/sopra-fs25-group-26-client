@@ -1,9 +1,10 @@
 "use client";
-import { Button, Typography } from 'antd';
+import { Button, Typography, Tag } from 'antd';
 import { ArrowLeftOutlined, ArrowRightOutlined, CloseOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
 import  "@/styles/tutorial.css";
 
 const { Title, Paragraph } = Typography;
@@ -102,9 +103,10 @@ const TUTORIAL_STEPS = [
   }
 ];
 
-export default function TutorialPage({ params }: { params: { step: string } }) {
+export default function TutorialPage({ params }: { params: Promise<{ step: string }> }) {
   const router = useRouter();
-  const currentStep = parseInt(params.step) - 1;
+  const resolvedParams = React.use(params); 
+  const currentStep = parseInt(resolvedParams.step) - 1;
   const stepData = TUTORIAL_STEPS[currentStep];
 
   if (!stepData) {
@@ -114,6 +116,14 @@ export default function TutorialPage({ params }: { params: { step: string } }) {
 
   return (
     <div className="tutorial-container">
+      {/* Header Bar - Matches profile style */}
+      <header className="tutorial-header">
+        <Title level={3} className="tutorial-header-title">Game Tutorial</Title>
+        <Tag color="blue" className="tutorial-step-tag">
+          Step {currentStep + 1}/{TUTORIAL_STEPS.length}
+        </Tag>
+      </header>
+
       {/* Exit Button */}
       <Button 
         icon={<CloseOutlined />}
@@ -128,14 +138,14 @@ export default function TutorialPage({ params }: { params: { step: string } }) {
           <div className="tutorial-slide-container">
             <AnimatePresence mode="wait">
               <motion.div
-                key={params.step}
+                key={resolvedParams.step}
                 initial={{ opacity: 0, x: 100 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ delay: 0.2, type: 'spring'}}
                 className="text-center max-w-md w-full"
               >
-              <Title level={2} className="tutorial-title">{stepData.title}</Title>
+                <Title level={2} className="tutorial-title">{stepData.title}</Title>
                 <div className="tutorial-text-container">
                   {stepData.content}
                 </div>
@@ -154,7 +164,7 @@ export default function TutorialPage({ params }: { params: { step: string } }) {
             )}
           </div>
 
-        <div className="tutorial-dots">
+          <div className="tutorial-dots">
             {TUTORIAL_STEPS.map((_, i) => (
               <Link key={i} href={`/tutorial/${i + 1}`}>
                 <div className={`w-2 h-2 rounded-full ${currentStep === i ? 'bg-blue-500' : 'bg-gray-300'}`} />
