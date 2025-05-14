@@ -8,6 +8,7 @@ import { UserOutlined, PlayCircleOutlined, CloseCircleOutlined } from '@ant-desi
 import { useApi } from "@/hooks/useApi";
 import "@/styles/lobby.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { useAudio } from "@/hooks/useAudio";
 
 
 interface UserGetDTO {
@@ -64,6 +65,8 @@ export default function Page() {
   const gameId = params?.gameId;
   const apiService = useApi();
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
+
 
   useEffect(() => {
     if (!token) return;
@@ -229,10 +232,10 @@ export default function Page() {
               type="primary"
               icon={<PlayCircleOutlined />}
               loading={starting}
-              onClick={() => handleStartGame()}
+              onClick={() =>{playClick(); handleStartGame();}}
               className="start-game-button"
             >
-              Start Game
+              Start 
             </Button>
               )}
             <Button

@@ -7,12 +7,16 @@ import { User } from "@/types/user";
 import { Button, Form, Input } from "antd";
 import Link from "next/link";
 import "@/styles/login-module.css";
+import { useAudio } from "@/hooks/useAudio";
+
 
 const Register: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const [form] = Form.useForm();
   const { set: setToken } = useLocalStorage<string>("token", "");
+  const playClick = useAudio('/sounds/button-click.mp3', 0.5); // audio
+
 
   const logInAfterRegistration= async (username: string, password: string) => { // awaiting function executed when Login submitted, takes in values in form of FormFields
     try {
@@ -121,7 +125,7 @@ return (
           
          
           <Form.Item className="form-button">
-            <Button type="primary" htmlType="submit" className="login-button">
+            <Button type="primary" htmlType="submit" className="login-button" onClick = {playClick}>
               Sign Up
             </Button>
           </Form.Item>
@@ -133,7 +137,7 @@ return (
         
         
         <div className="signup-link">
-          <Link href="/" className="signup-button">
+          <Link href="/" className="signup-button" onClick = {playClick}>
             Log in
           </Link>
         </div>

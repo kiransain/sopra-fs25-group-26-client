@@ -6,6 +6,8 @@ import { Button, Form, Input, InputNumber } from "antd";
 import { useState, useEffect } from "react";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/newgame-module.css";
+import { useAudio } from "@/hooks/useAudio";
+
 
 interface GamePostDTO {
   gamename: string;
@@ -36,6 +38,8 @@ const NewGame: React.FC = () => {
   const { value: token } = useLocalStorage<string | null>("token", null);
   const [currentLocation, setCurrentLocation] = useState<{lat: number, lng: number} | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3); // audio
+
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -200,6 +204,7 @@ const NewGame: React.FC = () => {
               htmlType="submit" 
               className="create-button"
               loading={isLoading}
+              onClick = {playClick}
             >
               Create Game
             </Button>

@@ -9,6 +9,8 @@ import { useApi } from "@/hooks/useApi";
 import "@/styles/overview.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { useGoogleMaps } from "@/hooks/useGoogleMaps";
+import { useAudio } from "@/hooks/useAudio";
+
 
 
 // Game related interfaces matching the backend DTOs
@@ -47,6 +49,7 @@ export default function Page() {
   const router = useRouter();
   const apiService = useApi();
   const { apiKey, isLoaded } = useGoogleMaps();
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
 
 
 
@@ -123,6 +126,7 @@ export default function Page() {
   
   // handleJoinGame: player can join game and game info is updated.
   const handleJoinGame = async (gameId: number) => {
+    playClick();
     try {
       if (!currentLocation) {
         console.error("Current location not available");
@@ -192,7 +196,10 @@ export default function Page() {
           type="primary"
           size="large"
           className="create-game-button"
-          onClick={() => router.push('/newgame')}
+           onClick={() => {
+                          playClick();
+                          router.push('/newgame');
+                        }}
         >
           Create Game
         </Button>
@@ -204,7 +211,7 @@ export default function Page() {
             icon={<QuestionCircleOutlined />} 
             shape="circle" 
             size="large"
-            onClick={() => router.push('/tutorial/1')}
+            onClick={() => {playClick(); router.push('/tutorial/1');}}
             style={{ color: 'rgba(0, 0, 0, 0.65)' }}
           />
         </Tooltip>
@@ -214,7 +221,7 @@ export default function Page() {
             icon={<UserOutlined />} 
             size="large" 
             style={{ cursor: 'pointer' }}
-            onClick={() => router.push('/overview/profile')} 
+            onClick={() =>{playClick(); router.push('/overview/profile');}} 
           />
         </Tooltip>
       </header>
@@ -268,7 +275,7 @@ export default function Page() {
                       type="primary" 
                       size="middle" 
                       className="join-button"
-                      onClick={() => handleJoinGame(game.gameId)}
+                      onClick={() => {playClick(); handleJoinGame(game.gameId);}}
                     >
                       Join
                     </Button>

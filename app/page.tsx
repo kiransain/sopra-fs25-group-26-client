@@ -7,6 +7,7 @@ import { User } from "@/types/user";
 import { Button, Form, Input, message } from "antd";
 import Link from "next/link";
 import "@/styles/login-module.css";
+import { useAudio } from "@/hooks/useAudio";
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -14,6 +15,7 @@ const Login: React.FC = () => {
   const [form] = Form.useForm();
   const { set: setToken } = useLocalStorage<string>("token", "");
   const [messageApi, contextHolder] = message.useMessage();
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
 
   const handleLogin = async (values: { username: string; password: string }) => {
     try {
@@ -73,7 +75,7 @@ const Login: React.FC = () => {
            </Form.Item>
           
           <Form.Item className="form-button">
-            <Button type="primary" htmlType="submit" className="login-button">
+            <Button type="primary" htmlType="submit" className="login-button" onClick = {playClick}>
               Log in
             </Button>
           </Form.Item>
@@ -84,7 +86,7 @@ const Login: React.FC = () => {
         </div>
         
         <div className="signup-link">
-          <Link href="/register" className="signup-button">
+          <Link href="/register" className="signup-button" onClick = {playClick}>
             Sign up
           </Link>
         </div>

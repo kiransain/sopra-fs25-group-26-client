@@ -10,6 +10,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
 import { useParams } from "next/navigation";
 import { useGoogleMaps } from "@/hooks/useGoogleMaps";
+import { useAudio } from "@/hooks/useAudio";
 
 
 interface PlayerGetDTO {
@@ -61,6 +62,7 @@ export default function GamePlay() {
   const [outOfAreaTimer, setOutOfAreaTimer] = useState<number | null>(null);
   const [outOfAreaModalVisible, setOutOfAreaModalVisible] = useState(false);
   const [outOfAreaTimerId, setOutOfAreaTimerId] = useState<NodeJS.Timeout | null>(null);
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
 
 
 
@@ -338,14 +340,23 @@ export default function GamePlay() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const CountdownTimer = () => (
+  const CountdownTimer = () => {
+  if (!game?.timer) return null; // Don't show if no timer
+  
+  return (
     <div className="game-timer">
-      <Text strong>Timer: </Text>
-      <Tag color={remainingSeconds === 0 ? "red" : "default"}>
+      <Text strong>
+        {game.status === 'IN_GAME_PREPARATION' ? 'Prep Time: ' : 'Game Time: '}
+      </Text>
+      <Tag color={
+        remainingSeconds <= 10 ? 'red' : 
+        remainingSeconds <= 30 ? 'orange' : 'green'
+      }>
         {formatTime(remainingSeconds)}
       </Tag>
     </div>
   );
+};
 
   const mapOptions = {
     disableDefaultUI: true,

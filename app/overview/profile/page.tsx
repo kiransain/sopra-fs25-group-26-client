@@ -7,6 +7,8 @@ import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, Rock
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/user-profile.css";
+import { useAudio } from "@/hooks/useAudio";
+
 
 interface UserStats {
   gamesPlayed: string;
@@ -34,6 +36,8 @@ export default function UserProfile() {
   const router = useRouter();
   const apiService = useApi();
   const { value: token } = useLocalStorage<string | null>("token", null);
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
+
 
   useEffect(() => {
     if (!token)

@@ -8,6 +8,8 @@ import { UserOutlined, CrownFilled, TrophyFilled, FireFilled, CloseOutlined } fr
 import { useApi } from "@/hooks/useApi";
 import "@/styles/lobby.css";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { useAudio } from "@/hooks/useAudio";
+
 
 interface UserGetDTO {
   userId: number;
@@ -67,6 +69,8 @@ export default function Page() {
   const apiService = useApi();
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [messageApi, contextHolder] = message.useMessage();
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
+
 
   const fetchGame = useCallback(async () => {
     if (!currentLocation || !currentUser) {
