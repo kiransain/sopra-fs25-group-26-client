@@ -136,8 +136,12 @@ reason).
 | **@kiransain**    | 11.05.2025 | [Leaderboard redesign](https://github.com/kiransain/sopra-fs25-group-26-client/commit/16fc9deb2d617625f897278d372c95ee5dfad8c3)                        | Completely overhauled the in-game leaderboard UI, improving layout, typography, and responsiveness. Added player avatars and dynamic highlighting of top performers to increase clarity.                                          | Enhances user engagement by making competitive standings more accessible and visually appealing, reinforcing player motivation and retention.                       |
 
 
+---
+## Contributions Week 7 - 14.05.2025 to 20.05.2025
 
-
-
-
-
+| Student        | Date       | Link to Commit                                                                                                                   | Description                                                                                                                     | Relevance                |
+|-----------------|------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------------------|
+| **@kiransain**  | 14.05.2025 | [fix: make tutorial style consistent (#76) and node.js error fixes](https://github.com/kiransain/sopra-fs25-group-26-client/commit/29c3bdbeebe2a4c1f22b004bfb2b57b3f72e09cb) | Made the tutorial style consistent with the rest of the application, and fixed node.js errors for Vercel deployment. | Critical for stability.  |
+| **@kiransain**  | 14.05.2025 | [Bug fixes](https://github.com/kiransain/sopra-fs25-group-26-client/commit/fa586259082ca26c9abf28a992f676a5fd708618) | Bug fixes for Vercel deployment, npm run build errors. | Critical for deployment. |
+| **@kiransain**  | 14.05.2025 | [working on sound fx and bugs](https://github.com/kiransain/sopra-fs25-group-26-client/commit/3f6448beb80d27d491dbe6c2ca3e3fdc0ccdaef5) | Added button click sound effects for a more immersive UX, fixed more bugs. | Critical for user experience. |
+| **@kiransain**  | 14.05.2025 | [display game timer and sound effects bug](https://github.com/kiransain/sopra-fs25-group-26-client/commit/5ce352d1c5a66e6b1239a91106019b79163038db) | In-game timer now displayed correctly and synchronized across all players, fixed sound effect bugs. | Critical for real-time functionality. |
