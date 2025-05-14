@@ -204,7 +204,7 @@ export default function UserProfile() {
             <Button 
               type="primary" 
               danger
-              onClick={handleLogout}
+              onClick={() => {playClick(); handleLogout();}}
               className="logout-button"
             >
               Log Out
@@ -236,10 +236,10 @@ export default function UserProfile() {
             />
           </Form.Item>
           <Form.Item className="modal-buttons">
-            <Button type="default" onClick={handleCancel} style={{ marginRight: 8 }}>
+            <Button type="default" onClick={() => {playClick(); handleCancel();}} style={{ marginRight: 8 }}>
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit" loading={updateLoading}>
+            <Button type="primary" htmlType="submit" loading={updateLoading} onClick={playClick}>
               Update Password
             </Button>
           </Form.Item>

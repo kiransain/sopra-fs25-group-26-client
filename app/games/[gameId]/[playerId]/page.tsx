@@ -308,41 +308,49 @@ export default function GamePlay() {
   // const GAME_DURATION = get gameTimeInSeconds;
 
   useEffect(() => {
-    if (!game?.timer) {
-      setRemainingSeconds(0);
-      return;
-    }
-    const startTime = Date.parse(game.timer);
-    let totalDuration: number;
-    if (game.status === 'IN_GAME_PREPARATION') {
-      totalDuration = game.preparationTimeInSeconds;
-    } else if (game.status === 'IN_GAME') {
-      totalDuration = game.gameTimeInSeconds;
-    } else {
-      setRemainingSeconds(0);
-      return;
-    }
+  if (!game?.timer) {
+    setRemainingSeconds(0);
+    return;
+  }
+  // Parse the LocalDateTime string (assumes backend time is in server's local time)
+  const startTime = new Date(game.timer + 'Z').getTime(); // Treat as UTC
+  console.log("Parsed startTime:", startTime); // Debug log
 
-    const tick = () => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const secs = Math.max(0, totalDuration - elapsed);
-      setRemainingSeconds(secs);
-    };
+  let totalDuration: number;
+  if (game.status === 'IN_GAME_PREPARATION') {
+    totalDuration = game.preparationTimeInSeconds ;
+  } else if (game.status === 'IN_GAME') {
+    totalDuration = game.gameTimeInSeconds * 1000;
+  } else {
+    setRemainingSeconds(0);
+    return;
+  }
 
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [game?.timer, game?.status, game?.preparationTimeInSeconds, game?.gameTimeInSeconds]);
+  const updateTimer = () => {
+  const now = Date.now();
+  const elapsed = now - startTime;
+  const remaining = Math.max(0, totalDuration - elapsed);
+  setRemainingSeconds(Math.floor(remaining / 1000));
+};
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  updateTimer(); // Immediate update
+  const interval = setInterval(updateTimer, 1000);
+  
+  return () => clearInterval(interval);
+}, [game?.timer, game?.status, game?.preparationTimeInSeconds, game?.gameTimeInSeconds]);
+
+  
 
   const CountdownTimer = () => {
-  if (!game?.timer) return null; // Don't show if no timer
+  if (!game?.timer) {
+    console.log("Timer not available yet");
+    return null;
+  }
   
+  console.log("Timer value:", game.timer);
+  console.log("Game status:", game.status);
+  console.log("Remaining seconds:", remainingSeconds);
+
   return (
     <div className="game-timer">
       <Text strong>
@@ -352,7 +360,7 @@ export default function GamePlay() {
         remainingSeconds <= 10 ? 'red' : 
         remainingSeconds <= 30 ? 'orange' : 'green'
       }>
-        {formatTime(remainingSeconds)}
+        {remainingSeconds}
       </Tag>
     </div>
   );
@@ -569,7 +577,7 @@ export default function GamePlay() {
                 type="primary"
                 size="large"
                 className="powerup-button"
-                onClick={activateShowPlayersPowerUp}
+                onClick={() => {playClick(); activateShowPlayersPowerUp();}}
                 style={{ backgroundColor: '#722ed1'}}
               >
                 Reveal All Players (10s)

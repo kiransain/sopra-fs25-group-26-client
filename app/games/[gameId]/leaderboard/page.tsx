@@ -157,7 +157,7 @@ export default function Page() {
               <Button
                 type="text"
                 icon={<CloseOutlined />}
-                onClick={handleExitGame}
+                onClick={() => {playClick(); handleExitGame();}}
                 className="exit-game-button"
                 style={{ color: '#8c8c8c' }}
               />
