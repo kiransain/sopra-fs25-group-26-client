@@ -12,7 +12,19 @@ import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 import { useAudio } from "@/hooks/useAudio";
 
 
-
+interface UserGetDTO {
+  userId: number;
+  username: string;
+  token: string;
+  stats: UserStats;
+  profilePicture?: string;
+}
+interface UserStats {
+  gamesPlayed: string;
+  creation_date: string;
+  wins: string;
+  points: string;
+}
 // Game related interfaces matching the backend DTOs
 interface PlayerGetDTO {
   playerId: number;
@@ -41,6 +53,7 @@ interface GameGetDTO {
 const { Title, Text } = Typography;
 
 export default function Page() {
+   const [user, setUser] = useState<UserGetDTO | null>(null);
   const [currentLocation, setCurrentLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [fixedLocation, setFixedLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [games, setGames] = useState<GameGetDTO[]>([]);
@@ -52,6 +65,27 @@ export default function Page() {
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
 
 
+ useEffect(() => {
+    if (!token)
+      return;
+    const fetchUser = async () => {
+      try {
+        const userData = await apiService.get<UserGetDTO>("/me", {
+          Authorization: `Bearer ${token}`,
+        });
+        setUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        if (error instanceof Error) {
+          console.error(`Error fetching user data: ${error.message}`);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [apiService, token, router]);
 
   useEffect(() => {
     if (!token) return;
@@ -177,7 +211,7 @@ export default function Page() {
     ]
   };
 
-  if (!currentLocation || !fixedLocation || !isLoaded || !apiKey) { 
+  if (!currentLocation || !fixedLocation || !isLoaded || !apiKey || !user) { 
     return (
       <div className="loading-container">
         Loading map...
@@ -219,6 +253,7 @@ export default function Page() {
         <Tooltip title="Profile">
           <Avatar 
             icon={<UserOutlined />} 
+            src={user.profilePicture} 
             size="large" 
             style={{ cursor: 'pointer' }}
             onClick={() =>{playClick(); router.push('/overview/profile');}} 

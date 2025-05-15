@@ -31,7 +31,7 @@ const Login: React.FC = () => {
       router.push("/overview");
     } catch (error) {
       if (error instanceof Error) {
-        messageApi.error(error.message);
+        messageApi.error("Username or password is not correct");
       } else {
         messageApi.error("An unknown error occurred during login.");
       }

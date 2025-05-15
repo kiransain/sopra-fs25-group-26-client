@@ -65,7 +65,7 @@ export default function GamePlay() {
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [volume, setVolume] = useState(0.1);
+  const [volume] = useState(0.1);
 
 
 

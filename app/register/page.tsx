@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input,message } from "antd";
 import Link from "next/link";
 import "@/styles/login-module.css";
 import { useAudio } from "@/hooks/useAudio";
@@ -15,6 +15,7 @@ const Register: React.FC = () => {
   const apiService = useApi();
   const [form] = Form.useForm();
   const { set: setToken } = useLocalStorage<string>("token", "");
+  const [messageApi, contextHolder] = message.useMessage();
   const playClick = useAudio('/sounds/button-click.mp3', 0.5); // audio
 
 
@@ -54,15 +55,16 @@ const Register: React.FC = () => {
         }
     } catch (error) {
       if (error instanceof Error) {
-          alert(`Something went wrong during the login:\n${error.message}`);
+          messageApi.error(`Username already exists`);
       } else {
-          console.error("An unknown error occurred during login.");
+         messageApi.error("An unknown error occurred during login.");
       }
   }
 };
 
 return (
   <div className="manhunt-login-container">
+    {contextHolder}
     <div className="login-card">
       <h1 className="app-title">ManHunt</h1>
 
