@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState  } from "react";
+import { useEffect, useState, useRef  } from "react";
 import { GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Tag, Typography, message, Modal, Alert, Progress} from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { UserOutlined, SoundOutlined, SoundFilled } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
@@ -63,8 +63,9 @@ export default function GamePlay() {
   const [outOfAreaModalVisible, setOutOfAreaModalVisible] = useState(false);
   const [outOfAreaTimerId, setOutOfAreaTimerId] = useState<NodeJS.Timeout | null>(null);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
-
-
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [volume, setVolume] = useState(0.1);
 
 
 
@@ -83,6 +84,34 @@ export default function GamePlay() {
     }, 10000);
   };
 
+  useEffect(() => {
+  // Initialize audio element
+  audioRef.current = new Audio('/sounds/game-music.mp3');
+  audioRef.current.loop = true;
+  audioRef.current.volume = volume; // Set initial volume
+  
+  return () => {
+    // Cleanup on unmount
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
+}, []);
+
+useEffect(() => {
+  if (!audioRef.current) return;
+
+  // Update volume whenever it changes
+  audioRef.current.volume = isMuted ? 0 : volume; // Mute sets volume to 0
+
+  // Play/pause based on game status
+  if (game?.status === 'IN_GAME' || game?.status === 'IN_GAME_PREPARATION') {
+    audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+  } else {
+    audioRef.current.pause();
+  }
+}, [game?.status, isMuted, volume]);
 
 
   useEffect(() => {
@@ -340,7 +369,6 @@ export default function GamePlay() {
 }, [game?.timer, game?.status, game?.preparationTimeInSeconds, game?.gameTimeInSeconds]);
 
   
-
   const CountdownTimer = () => {
   if (!game?.timer) {
     console.log("Timer not available yet");
@@ -443,6 +471,7 @@ export default function GamePlay() {
                   showIcon
                   style={{ marginBottom: 16 }}
               />
+              
           )}
       <header className="game-play-header">
         <Title level={3} className="game-title">{game.gamename}</Title>
@@ -454,6 +483,22 @@ export default function GamePlay() {
         {/*frontend timer implemented here.*/}
          <div className="game-timer">
          <CountdownTimer/>
+        </div>
+        <div>
+          <Button 
+            shape="circle" 
+            icon={isMuted ? <SoundOutlined /> : <SoundFilled />} 
+            onClick={() => {
+              setIsMuted(!isMuted);
+              playClick();
+            }}
+            style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              zIndex: 1000
+            }}
+          />
         </div>
       </header>
       <div className="game-play-content">

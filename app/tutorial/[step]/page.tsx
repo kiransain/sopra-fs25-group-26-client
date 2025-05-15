@@ -1,11 +1,12 @@
 "use client";
 import { Button, Typography, Tag } from 'antd';
-import { ArrowLeftOutlined, ArrowRightOutlined, CloseOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import React from 'react';
-import  "@/styles/tutorial.css";
+import "@/styles/tutorial.css";
+import { useAudio } from "@/hooks/useAudio";
 
 const { Title, Paragraph } = Typography;
 
@@ -103,11 +104,14 @@ const TUTORIAL_STEPS = [
   }
 ];
 
+
+
 export default function TutorialPage({ params }: { params: Promise<{ step: string }> }) {
   const router = useRouter();
   const resolvedParams = React.use(params); 
   const currentStep = parseInt(resolvedParams.step) - 1;
   const stepData = TUTORIAL_STEPS[currentStep];
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
 
   if (!stepData) {
     router.push('/overview');
@@ -118,19 +122,19 @@ export default function TutorialPage({ params }: { params: Promise<{ step: strin
     <div className="tutorial-container">
       {/* Header Bar - Matches profile style */}
       <header className="tutorial-header">
+        {/* Exit arrow near header */}
+          <Button 
+            icon={<ArrowLeftOutlined />}
+            onClick={() =>{playClick(); router.push('/overview');}}
+            className="tutorial-back-button"
+            type="text"
+            size="large"
+          />
         <Title level={3} className="tutorial-header-title">Game Tutorial</Title>
         <Tag color="blue" className="tutorial-step-tag">
           Step {currentStep + 1}/{TUTORIAL_STEPS.length}
         </Tag>
       </header>
-
-      {/* Exit Button */}
-      <Button 
-        icon={<CloseOutlined />}
-        onClick={() => router.push('/overview')}
-        className="tutorial-close-button"
-        shape="circle"
-      />
 
       <div className="tutorial-content">
         <div className="tutorial-card">
@@ -159,7 +163,7 @@ export default function TutorialPage({ params }: { params: Promise<{ step: strin
           <div>
             {currentStep > 0 && (
               <Link href={`/tutorial/${currentStep}`}>
-                <Button className="tutorial-button" icon={<ArrowLeftOutlined />}>Previous</Button>
+                <Button className="tutorial-button" onClick={() => playClick()} icon={<ArrowLeftOutlined />}>Previous</Button>
               </Link>
             )}
           </div>
@@ -175,10 +179,10 @@ export default function TutorialPage({ params }: { params: Promise<{ step: strin
           <div>
             {currentStep < TUTORIAL_STEPS.length - 1 ? (
               <Link href={`/tutorial/${currentStep + 2}`}>
-                <Button type="primary" className="tutorial-button" icon={<ArrowRightOutlined />}>Next</Button>
+                <Button type="primary" className="tutorial-button" onClick={() => playClick()} icon={<ArrowRightOutlined />}>Next</Button>
               </Link>
             ) : (
-              <Button type="primary" className="tutorial-button" onClick={() => router.push('/overview')}>
+              <Button type="primary" className="tutorial-button" onClick={() => {playClick(); router.push('/overview');}}>
                 Start Playing
               </Button>
             )}

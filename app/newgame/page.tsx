@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { Button, Form, Input, InputNumber } from "antd";
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useState, useEffect } from "react";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/newgame-module.css";
@@ -102,12 +103,14 @@ const NewGame: React.FC = () => {
   return (
     <div className="newgame-container">
       <div className="newgame-header">
-        <button 
-          className="back-button" 
-          onClick={() => router.back()}
-        >
-          &lt;
-        </button>
+        {/* Exit arrow near header */}
+                  <Button 
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() =>{playClick(); router.push('/overview');}}
+                    className="tutorial-back-button"
+                    type="text"
+                    size="large"
+                  />
         <h1 className="newgame-title">ManHunt</h1>
       </div>
   
@@ -130,7 +133,7 @@ const NewGame: React.FC = () => {
           initialValues={{
             radius: 25.0,
             preparationTime: 30,
-            gameTime: 70
+            gameTime: 60
           }}
         >
           <Form.Item
