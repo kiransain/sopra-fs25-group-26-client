@@ -50,6 +50,14 @@
   max-width: 600px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  position: relative;
+}
+
+.profile-card-header {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
 }
 
 .profile-info {
@@ -74,24 +82,24 @@
   margin-bottom: 4px;
 }
 
-/* New styles for username container and settings button */
+
 .username-container {
   display: flex;
   align-items: center;
   margin-bottom: 4px;
 }
 
-.settings-button {
-  margin-left: 8px;
+
+.settings-button-top {
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
 }
 
-.settings-button:hover {
+.settings-button-top:hover {
   background-color: #f0f0f0;
-  border-radius: 50%;
 }
 
 .stats-title {

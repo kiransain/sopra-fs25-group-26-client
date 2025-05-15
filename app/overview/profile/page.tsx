@@ -135,6 +135,15 @@ export default function UserProfile() {
 
       <div className="profile-content">
         <Card className="profile-card">
+          <div className="profile-card-header">
+            <Button 
+              type="text" 
+              icon={<SettingOutlined />} 
+              onClick={showSettingsModal}
+              className="settings-button-top"
+              aria-label="Settings"
+            />
+          </div>
           <div className="profile-info">
             <Badge dot={false}>
               <Avatar 
@@ -147,15 +156,7 @@ export default function UserProfile() {
             <div className="profile-details">
               <div className="username-container">
                 <Title level={4}>{user.username}</Title>
-                <Button 
-                  type="text" 
-                  icon={<SettingOutlined />} 
-                  onClick={showSettingsModal}
-                  className="settings-button"
-                  aria-label="Settings"
-                />
               </div>
-              <Text type="secondary">User ID: {user.userId}</Text>
               <Text type="secondary" className="join-date">
                 <CalendarOutlined style={{ marginRight: 5 }} /> 
                 Member since: {user.stats.creation_date}</Text>
@@ -219,6 +220,7 @@ export default function UserProfile() {
         open={isSettingsModalVisible}
         onCancel={handleCancel}
         footer={null}
+        closable={false}
         className="settings-modal"
       >
         <Form
