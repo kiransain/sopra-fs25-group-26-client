@@ -4,7 +4,7 @@ import { useEffect, useState, useRef  } from "react";
 import { GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Tag, Typography, message, Modal, Alert, Progress} from 'antd';
-import { UserOutlined, SoundOutlined, SoundFilled } from '@ant-design/icons';
+import { UserOutlined, SoundOutlined, SoundFilled, AimOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
@@ -58,6 +58,7 @@ export default function GamePlay() {
   const apiService = useApi();
   const { apiKey, isLoaded } = useGoogleMaps();
   const [powerUpUsed, setPowerUpUsed] = useState(false);
+  const [hunterPowerUpUsed, setHunterPowerUpUsed] = useState(false);
   const [showAllPlayers, setShowAllPlayers] = useState(false);
   const [outOfAreaTimer, setOutOfAreaTimer] = useState<number | null>(null);
   const [outOfAreaModalVisible, setOutOfAreaModalVisible] = useState(false);
@@ -66,6 +67,7 @@ export default function GamePlay() {
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [volume] = useState(0.1);
+  const [isRecenteringArea, setIsRecenteringArea] = useState(false);
 
 
 
@@ -82,6 +84,36 @@ export default function GamePlay() {
     setTimeout(() => {
       setShowAllPlayers(false);
     }, 10000);
+  };
+
+  // Hunter's power-up to recenter the game area
+  const activateRecenterAreaPowerUp = async () => {
+    if (hunterPowerUpUsed || !currentLocation || !gameId || !token) {
+      messageApi.warning("You've already used your power-up!");
+      return;
+    }
+
+    try {
+      setIsRecenteringArea(true);
+      // Call the API to recenter the game area
+      const response = await apiService.put<GameGetDTO>(
+        `/games/${gameId}/center`,
+        {
+          latitude: currentLocation.lat,
+          longitude: currentLocation.lng,
+        },
+        { Authorization: `Bearer ${token}` }
+      );
+
+      setHunterPowerUpUsed(true);
+      setGame(response);
+      messageApi.success("Game area recentered to your location!");
+    } catch (error) {
+      console.error("Failed to recenter game area:", error);
+      messageApi.error("Failed to use power-up");
+    } finally {
+      setIsRecenteringArea(false);
+    }
   };
 
   useEffect(() => {
@@ -182,7 +214,6 @@ useEffect(() => {
   useEffect(() => {
     
     if (!currentPlayer || 
-        currentPlayer.role !== 'HIDER' || 
         currentPlayer.status === 'FOUND' || 
         (game && game.status !== 'IN_GAME')) {
       
@@ -616,18 +647,40 @@ useEffect(() => {
             </Button>
           )}
 
-          {game?.status === 'IN_GAME' &&
-            !powerUpUsed && (
+          {/* Power-up buttons */}
+          <div className="power-up-buttons-container">
+            {game?.status === 'IN_GAME' && !powerUpUsed && (
               <Button 
                 type="primary"
                 size="large"
                 className="powerup-button"
                 onClick={() => {playClick(); activateShowPlayersPowerUp();}}
-                style={{ backgroundColor: '#722ed1'}}
+                style={{ 
+                  backgroundColor: '#722ed1',
+                  marginRight: currentPlayer?.role === 'HUNTER' ? '8px' : '0'
+                }}
               >
                 Reveal All Players (10s)
               </Button>
-          )}
+            )}
+
+            {/* Hunter-specific power-up button */}
+            {game?.status === 'IN_GAME' && 
+              currentPlayer?.role === 'HUNTER' && 
+              !hunterPowerUpUsed && (
+              <Button 
+                type="primary"
+                size="large"
+                className="hunter-powerup-button"
+                icon={<AimOutlined />}
+                loading={isRecenteringArea}
+                onClick={() => {playClick(); activateRecenterAreaPowerUp();}}
+                style={{ backgroundColor: '#f5222d' }}
+              >
+                Recenter Game Area
+              </Button>
+            )}
+          </div>
         </div>
       </div>
       
