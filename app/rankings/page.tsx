@@ -36,6 +36,7 @@ interface UserGetDTO {
   username: string;
   token: string;
   stats: UserStats;
+  profilePicture?: string;
 }
 
 const { Title, Text } = Typography;
@@ -113,6 +114,7 @@ export default function Leaderboard() {
         <Space>
           <Avatar 
             icon={<UserOutlined />} 
+            src={record.profilePicture}
             className={currentUser?.userId === record.userId ? "current-user-avatar" : ""}
           />
           <span className={currentUser?.userId === record.userId ? "current-user-name" : ""}>
@@ -123,18 +125,15 @@ export default function Leaderboard() {
       ),
     },
     {
-      title: "Points",
-      dataIndex: ["stats", "points"],
-      key: "points",
-      sorter: (a: UserGetDTO, b: UserGetDTO) => 
-        parseInt(a.stats.points || "0") - parseInt(b.stats.points || "0"),
-      defaultSortOrder: 'descend',
-      render: (points: string) => (
-        <span className="points-value">
-          <TrophyOutlined className="trophy-icon" /> {points || "0"}
-        </span>
-      ),
-    },
+  title: "Points",
+  dataIndex: ["stats", "points"],
+  key: "points",
+  render: (points: string) => (
+    <span className="points-value">
+      <TrophyOutlined className="trophy-icon" /> {points || "0"}
+    </span>
+  ),
+},
     {
       title: "Games Played",
       dataIndex: ["stats", "gamesPlayed"],
