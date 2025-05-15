@@ -242,7 +242,11 @@ export default function Page() {
         <Tooltip title="Tutorial">
           <Button 
             type="text" 
-            icon={<QuestionCircleOutlined />} 
+             icon={
+    <span style={{ fontSize: '24px' }}>
+      <QuestionCircleOutlined />
+    </span>
+  }
             shape="circle" 
             size="large"
             onClick={() => {playClick(); router.push('/tutorial/1');}}
