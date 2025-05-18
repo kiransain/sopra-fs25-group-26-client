@@ -4,20 +4,25 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input,message } from "antd";
 import Link from "next/link";
 import "@/styles/login-module.css";
+import { useAudio } from "@/hooks/useAudio";
+
 
 const Register: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const [form] = Form.useForm();
   const { set: setToken } = useLocalStorage<string>("token", "");
+  const [messageApi, contextHolder] = message.useMessage();
+  const playClick = useAudio('/sounds/button-click.mp3', 0.5); // audio
+
 
   const logInAfterRegistration= async (username: string, password: string) => { // awaiting function executed when Login submitted, takes in values in form of FormFields
     try {
         // Call the API service and let it handle JSON serialization and error handling
-        const response = await apiService.post<User>("/login",{username, password}); // awaits the response of the POST to server with expected form of a User. It sends {values} (POST) to endpoint "/users"
+        const response = await apiService.post<User>("/login",{username, password, profilePicture: null}); // awaits the response of the POST to server with expected form of a User. It sends {values} (POST) to endpoint "/users"
 
         // Use the useLocalStorage hook that returned a setter function (setToken in line 41) to store the token if available
         if (response.token != null) {
@@ -50,22 +55,21 @@ const Register: React.FC = () => {
         }
     } catch (error) {
       if (error instanceof Error) {
-          alert(`Something went wrong during the login:\n${error.message}`);
+          messageApi.error(`Username already exists`);
       } else {
-          console.error("An unknown error occurred during login.");
+         messageApi.error("An unknown error occurred during login.");
       }
   }
 };
 
 return (
   <div className="manhunt-login-container">
+    {contextHolder}
     <div className="login-card">
       <h1 className="app-title">ManHunt</h1>
 
       <div className="logo-container">
-        <div className="man-logo-reg">
-          <div className="pin-marker-reg"></div>
-        </div>
+          <img src="/logo.svg" alt="ManHunt Logo" className="logo-image" />
       </div>
 
       <div className="intro-text">
@@ -121,7 +125,7 @@ return (
           
          
           <Form.Item className="form-button">
-            <Button type="primary" htmlType="submit" className="login-button">
+            <Button type="primary" htmlType="submit" className="login-button" onClick = {playClick}>
               Sign Up
             </Button>
           </Form.Item>
@@ -133,7 +137,7 @@ return (
         
         
         <div className="signup-link">
-          <Link href="/" className="signup-button">
+          <Link href="/" className="signup-button" onClick = {playClick}>
             Log in
           </Link>
         </div>

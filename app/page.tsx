@@ -4,15 +4,18 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { User } from "@/types/user";
-import { Button, Form, Input } from "antd";
+import { Button, Form, Input, message } from "antd";
 import Link from "next/link";
 import "@/styles/login-module.css";
+import { useAudio } from "@/hooks/useAudio";
 
 const Login: React.FC = () => {
   const router = useRouter();
   const apiService = useApi();
   const [form] = Form.useForm();
   const { set: setToken } = useLocalStorage<string>("token", "");
+  const [messageApi, contextHolder] = message.useMessage();
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
 
   const handleLogin = async (values: { username: string; password: string }) => {
     try {
@@ -28,22 +31,21 @@ const Login: React.FC = () => {
       router.push("/overview");
     } catch (error) {
       if (error instanceof Error) {
-        alert(`Login failed:\n${error.message}`);
+        messageApi.error("Username or password is not correct");
       } else {
-        console.error("An unknown error occurred during login.");
+        messageApi.error("An unknown error occurred during login.");
       }
     }
   };
 
   return (
     <div className="manhunt-login-container">
+      {contextHolder}
       <div className="login-card">
         <h1 className="app-title">ManHunt</h1>
         
         <div className="logo-container">
-          <div className="man-logo">
-            <div className="pin-marker"></div>
-          </div>
+          <img src="/logo.svg" alt="ManHunt Logo" className="logo-image" />
         </div>
         
         <Form
@@ -71,7 +73,7 @@ const Login: React.FC = () => {
            </Form.Item>
           
           <Form.Item className="form-button">
-            <Button type="primary" htmlType="submit" className="login-button">
+            <Button type="primary" htmlType="submit" className="login-button" onClick = {playClick}>
               Log in
             </Button>
           </Form.Item>
@@ -82,7 +84,7 @@ const Login: React.FC = () => {
         </div>
         
         <div className="signup-link">
-          <Link href="/register" className="signup-button">
+          <Link href="/register" className="signup-button" onClick = {playClick}>
             Sign up
           </Link>
         </div>

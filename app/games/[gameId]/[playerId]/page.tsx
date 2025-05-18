@@ -1,21 +1,24 @@
 "use client";
 
-import { useEffect, useState  } from "react";
+import { useEffect, useState, useRef  } from "react";
 import { GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
-import { Avatar, Button, Tag, Typography, message, Modal, Alert} from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { Avatar, Button, Tag, Typography, message, Modal, Alert, Progress} from 'antd';
+import { UserOutlined, SoundOutlined, SoundFilled, AimOutlined, EyeOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
 import { useParams } from "next/navigation";
 import { useGoogleMaps } from "@/hooks/useGoogleMaps";
+import { useAudio } from "@/hooks/useAudio";
+import { motion } from "framer-motion";
 
 
 interface PlayerGetDTO {
   playerId: number;
   userId: number;
   displayName: string;
+  displayPicture : string;
   role: 'HUNTER' | 'HIDER';
   status: 'HIDING' | 'HUNTING' | 'FOUND';
   outOfArea: boolean;
@@ -35,6 +38,8 @@ interface GameGetDTO {
   radius: number;
   creatorId: number;
   players: PlayerGetDTO[];
+  preparationTimeInSeconds: number;
+  gameTimeInSeconds: number;
 }
 
 const { Title, Text } = Typography;
@@ -53,12 +58,105 @@ export default function GamePlay() {
   const playerId = params?.playerId as string;
   const apiService = useApi();
   const { apiKey, isLoaded } = useGoogleMaps();
+  const [powerUpUsed, setPowerUpUsed] = useState(false);
+  const [hunterPowerUpUsed, setHunterPowerUpUsed] = useState(false);
+  const [showAllPlayers, setShowAllPlayers] = useState(false);
+  const [outOfAreaTimer, setOutOfAreaTimer] = useState<number | null>(null);
+  const [outOfAreaModalVisible, setOutOfAreaModalVisible] = useState(false);
+  const [outOfAreaTimerId, setOutOfAreaTimerId] = useState<NodeJS.Timeout | null>(null);
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
+  const playPowerUp = useAudio('/sounds/powerup.mp3', 0.3);
+  const playPowerUp2 = useAudio('/sounds/powerup2.mp3', 0.3);
+  const playExit = useAudio('/sounds/exit.mp3', 0.3);
+  const playOutOfArea = useAudio('/sounds/longPowerup.mp3', 0.3);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [volume] = useState(0.1);
+  const [isRecenteringArea, setIsRecenteringArea] = useState(false);
+
+
+
+  const activateShowPlayersPowerUp = () => {
+    if (powerUpUsed) {
+      messageApi.warning("You've already used your power-up!");
+      return;
+    }
+    
+    setPowerUpUsed(true);
+    setShowAllPlayers(true);
+    
+    //players will be showed for 10s
+    setTimeout(() => {
+      setShowAllPlayers(false);
+    }, 10000);
+  };
+
+  // Hunter's power-up to recenter the game area
+  const activateRecenterAreaPowerUp = async () => {
+    if (hunterPowerUpUsed || !currentLocation || !gameId || !token) {
+      messageApi.warning("You've already used your power-up!");
+      return;
+    }
+
+    try {
+      setIsRecenteringArea(true);
+      // Call the API to recenter the game area
+      const response = await apiService.put<GameGetDTO>(
+        `/games/${gameId}/center`,
+        {
+          latitude: currentLocation.lat,
+          longitude: currentLocation.lng,
+        },
+        { Authorization: `Bearer ${token}` }
+      );
+
+      setHunterPowerUpUsed(true);
+      setGame(response);
+      messageApi.success("Game area recentered to your location!");
+    } catch (error) {
+      console.error("Failed to recenter game area:", error);
+      messageApi.error("Failed to use power-up");
+    } finally {
+      setIsRecenteringArea(false);
+    }
+  };
+
+  useEffect(() => {
+  // Initialize audio element
+  audioRef.current = new Audio('/sounds/game-music.mp3');
+  audioRef.current.loop = true;
+  audioRef.current.volume = volume; // Set initial volume
   
-  
+  return () => {
+    // Cleanup on unmount
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
+}, []);
 
 
+useEffect(() => {
+  if (outOfAreaModalVisible) {
+    playOutOfArea(); // Play sound when modal opens
+  }
+}, [outOfAreaModalVisible]);
 
 
+useEffect(() => {
+  if (!audioRef.current) return;
+
+  // Update volume whenever it changes
+  audioRef.current.volume = isMuted ? 0 : volume; // Mute sets volume to 0
+
+  // Play/pause based on game status
+  if (game?.status === 'IN_GAME' || game?.status === 'IN_GAME_PREPARATION') {
+    audioRef.current.play().catch(e => console.log("Audio play failed:", e));
+  } else {
+    audioRef.current.pause();
+  }
+}, [game?.status, isMuted, volume]);
 
 
   useEffect(() => {
@@ -80,6 +178,113 @@ export default function GamePlay() {
 
     return () => navigator.geolocation.clearWatch(watchId);
   }, [messageApi]);
+
+   // Function to handle when a player is caught after being out of area
+   const handleOutOfAreaCaught = async () => {
+    if (!gameId || !playerId || !token) return;
+
+    try {
+      await apiService.put<GameGetDTO>(
+        `/games/${gameId}/players/${playerId}`,
+        {},
+        { Authorization: `Bearer ${token}` }
+      );
+
+      messageApi.error("You have lost for staying out of the game area!");
+      setOutOfAreaModalVisible(false);
+      
+      // Refresh game state
+      const response = await apiService.put<GameGetDTO>(
+        `/games/${gameId}`,
+        {
+          locationLat: currentLocation?.lat,
+          locationLong: currentLocation?.lng,
+          startGame: false
+        },
+        { Authorization: `Bearer ${token}` }
+      );
+      
+      setGame(response);
+      
+      const player = response.players.find(p => p.playerId === parseInt(playerId));
+      if (player) {
+        setCurrentPlayer(player);
+      }
+      
+      if (response.status === 'FINISHED') {
+        if (updateInterval) {
+          clearInterval(updateInterval);
+        }
+        router.push(`/games/${gameId}/leaderboard`);
+      }
+    } catch (error) {
+      console.error("Failed to mark player as caught:", error);
+      messageApi.error("Failed to mark you as caught");
+    }
+  };
+
+  
+  useEffect(() => {
+    
+    if (!currentPlayer || 
+        currentPlayer.status === 'FOUND' || 
+        (game && game.status !== 'IN_GAME')) {
+      
+      if (outOfAreaTimerId) {
+        clearInterval(outOfAreaTimerId);
+        setOutOfAreaTimerId(null);
+      }
+      if (outOfAreaTimer !== null) {
+        setOutOfAreaTimer(null);
+      }
+      if (outOfAreaModalVisible) {
+        setOutOfAreaModalVisible(false);
+      }
+      return;
+    }
+
+    
+    if (currentPlayer.outOfArea) {
+      if (outOfAreaTimer === null) {
+        setOutOfAreaTimer(10);
+        setOutOfAreaModalVisible(true);
+        
+        
+        const timerId = setInterval(() => {
+          setOutOfAreaTimer(prevTime => {
+            if (prevTime === null) return null;
+            if (prevTime <= 1) {
+              clearInterval(timerId);
+              handleOutOfAreaCaught();
+              return null;
+            }
+            return prevTime - 1;
+          });
+        }, 1000);
+        
+        setOutOfAreaTimerId(timerId);
+      }
+    } else {
+     
+      if (outOfAreaTimerId) {
+        clearInterval(outOfAreaTimerId);
+        setOutOfAreaTimerId(null);
+      }
+      if (outOfAreaTimer !== null) {
+        setOutOfAreaTimer(null);
+      }
+      if (outOfAreaModalVisible) {
+        setOutOfAreaModalVisible(false);
+      }
+    }
+    
+    return () => {
+      if (outOfAreaTimerId) {
+        clearInterval(outOfAreaTimerId);
+      }
+    };
+  }, [currentPlayer?.outOfArea, game?.status, currentPlayer?.role, currentPlayer?.status]);
+
 
   useEffect(() => {
     if (!currentLocation || !token || !gameId || !playerId) return;
@@ -172,50 +377,66 @@ export default function GamePlay() {
 
   // Phase durations in seconds
   const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
-  const PREP_DURATION = 45;
-  const GAME_DURATION = 60;
+  // const PREP_DURATION = get preparationTimeInSeconds;
+  // const GAME_DURATION = get gameTimeInSeconds;
 
   useEffect(() => {
-    if (!game?.timer) {
-      setRemainingSeconds(0);
-      return;
-    }
-    const startTime = Date.parse(game.timer);
-    let totalDuration: number;
-    if (game.status === 'IN_GAME_PREPARATION') {
-      totalDuration = PREP_DURATION;
-    } else if (game.status === 'IN_GAME') {
-      totalDuration = GAME_DURATION;
-    } else {
-      setRemainingSeconds(0);
-      return;
-    }
+  if (!game?.timer) {
+    setRemainingSeconds(0);
+    return;
+  }
+  // Parse the LocalDateTime string (assumes backend time is in server's local time)
+  const startTime = new Date(game.timer + 'Z').getTime(); // Treat as UTC
+  console.log("Parsed startTime:", startTime); // Debug log
 
-    const tick = () => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000);
-      const secs = Math.max(0, totalDuration - elapsed);
-      setRemainingSeconds(secs);
-    };
+  let totalDuration: number;
+  if (game.status === 'IN_GAME_PREPARATION') {
+    totalDuration = game.preparationTimeInSeconds ;
+  } else if (game.status === 'IN_GAME') {
+    totalDuration = game.gameTimeInSeconds * 1000;
+  } else {
+    setRemainingSeconds(0);
+    return;
+  }
 
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [game?.timer, game?.status]);
+  const updateTimer = () => {
+  const now = Date.now();
+  const elapsed = now - startTime;
+  const remaining = Math.max(0, totalDuration - elapsed);
+  setRemainingSeconds(Math.floor(remaining / 1000));
+};
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  updateTimer(); // Immediate update
+  const interval = setInterval(updateTimer, 1000);
+  
+  return () => clearInterval(interval);
+}, [game?.timer, game?.status, game?.preparationTimeInSeconds, game?.gameTimeInSeconds]);
 
-  const CountdownTimer = () => (
+  
+  const CountdownTimer = () => {
+  if (!game?.timer) {
+    console.log("Timer not available yet");
+    return null;
+  }
+  
+  console.log("Timer value:", game.timer);
+  console.log("Game status:", game.status);
+  console.log("Remaining seconds:", remainingSeconds);
+
+  return (
     <div className="game-timer">
-      <Text strong>Timer: </Text>
-      <Tag color={remainingSeconds === 0 ? "red" : "default"}>
-        {formatTime(remainingSeconds)}
+      <Text strong>
+        {game.status === 'IN_GAME_PREPARATION' ? 'Prep Time: ' : 'Game Time: '}
+      </Text>
+      <Tag color={
+        remainingSeconds <= 10 ? 'red' : 
+        remainingSeconds <= 30 ? 'orange' : 'green'
+      }>
+        {remainingSeconds}
       </Tag>
     </div>
   );
+};
 
   const mapOptions = {
     disableDefaultUI: true,
@@ -294,6 +515,7 @@ export default function GamePlay() {
                   showIcon
                   style={{ marginBottom: 16 }}
               />
+              
           )}
       <header className="game-play-header">
         <Title level={3} className="game-title">{game.gamename}</Title>
@@ -305,6 +527,22 @@ export default function GamePlay() {
         {/*frontend timer implemented here.*/}
          <div className="game-timer">
          <CountdownTimer/>
+        </div>
+        <div>
+          <Button 
+            shape="circle" 
+            icon={isMuted ? <SoundOutlined /> : <SoundFilled />} 
+            onClick={() => {
+              setIsMuted(!isMuted);
+              playClick();
+            }}
+            style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              zIndex: 1000
+            }}
+          />
         </div>
       </header>
       <div className="game-play-content">
@@ -321,6 +559,7 @@ export default function GamePlay() {
               >
                 <Marker
                   position={currentLocation}
+                  animation={google.maps.Animation.DROP} 
                 />
                 <Circle
                   key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
@@ -334,6 +573,25 @@ export default function GamePlay() {
                     strokeWeight: 2
                   }}
                 />
+                {showAllPlayers && game.players.map(player => {
+                if (!player.locationLat || !player.locationLong || player.playerId === currentPlayer?.playerId) {
+                  return null;
+                }
+                
+                return (
+                  <Marker
+                    key={`player-${player.playerId}`}
+                    position={{ lat: player.locationLat, lng: player.locationLong }}
+                    icon={{
+                      path: google.maps.SymbolPath.CIRCLE,
+                      scale: 7,
+                      fillColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                      fillOpacity: 1,
+                      strokeWeight: 0
+                    }}
+                  />
+                );
+              })}
               </GoogleMap>
           ) : (
             <div>Loading map...</div>
@@ -345,7 +603,7 @@ export default function GamePlay() {
             {currentPlayer && (
               <div className="status-item">
                 {currentPlayer.outOfArea && (
-                  <Tag color="orange">OUT OF AREA, VISIBLE FOR HUNTER</Tag>
+                  <Tag color="orange">OUT OF AREA</Tag>
                 )}
               </div>
             )}
@@ -396,24 +654,100 @@ export default function GamePlay() {
               type="primary"
               size="large"
               className="caught-button"
-              onClick={() => setCaughtModalVisible(true)}
+              onClick={() => {playExit(); setCaughtModalVisible(true)}}
             >
               I have Been Caught!
             </Button>
           )}
+
+          {/* Power-up buttons */}
+          <div className="power-up-buttons-container">
+            {game?.status === 'IN_GAME' && !powerUpUsed && (
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Button 
+                  type="primary"
+                  shape="circle"
+                  className="power-up-button reveal-players-button"
+                  onClick={() => {playPowerUp(); activateShowPlayersPowerUp();}}
+                  icon={<EyeOutlined />}
+                >
+                  Reveal
+                </Button>
+              </motion.div>
+            )}
+
+
+            {/* Hunter-specific power-up button */}
+            {game?.status === 'IN_GAME' && 
+              currentPlayer?.role === 'HUNTER' && 
+              !hunterPowerUpUsed && (
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Button 
+                  type="primary"
+                  shape="circle"
+                  className="power-up-button recenter-area-button"
+                  icon={<AimOutlined />}
+                  loading={isRecenteringArea}
+                  onClick={() => {playPowerUp2(); activateRecenterAreaPowerUp();}}
+                >
+                  Recenter
+                </Button>
+              </motion.div>
+            )}
+          </div>
         </div>
       </div>
       
       <Modal
         title="Confirm Caught"
         open={caughtModalVisible}
-        onOk={handleCaughtAction}
-        onCancel={() => setCaughtModalVisible(false)}
+        onOk={() => { playClick(); handleCaughtAction(); }}
+        onCancel={() => {playExit(); setCaughtModalVisible(false)}}
         okText="Yes, I'm caught"
         cancelText="Cancel"
       >
         <p>Are you sure you want to mark yourself as caught? This action cannot be undone.</p>
       </Modal>
+      <Modal
+  title="WARNING: OUT OF GAME AREA!"
+  open={outOfAreaModalVisible}
+  footer={null}
+  closable={false}
+  maskClosable={false}
+  style={{ top: 20 }}
+>
+  <Alert
+    message="You are outside the game area!"
+    description="Return to the game area immediately or you will lose!"
+    type="error"
+    showIcon
+    style={{ marginBottom: 16 }}
+  />
+  
+  {outOfAreaTimer !== null && (
+    <div style={{ textAlign: 'center', marginBottom: 16 }}>
+      <Text strong style={{ fontSize: 16, color: '#ff4d4f' }}>
+        Time remaining: {outOfAreaTimer} seconds
+      </Text>
+      <Progress 
+        percent={(outOfAreaTimer / 10) * 100} 
+        status="exception" 
+        showInfo={false} 
+        strokeColor="#ff4d4f"
+      />
+    </div>
+  )}
+  
+  <p style={{ textAlign: 'center' }}>
+    Return to the game area on the map to continue playing.
+  </p>
+</Modal>
     </div>
   );
 }

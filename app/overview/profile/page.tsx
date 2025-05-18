@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Avatar, Statistic, Row, Col, Button, Typography, Divider, Spin, Badge } from "antd";
-import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined } from "@ant-design/icons";
+import { Card, Avatar, Statistic, Row, Col, Button, Typography, Divider, Spin, Badge, Modal, Form, Input, message } from "antd";
+import { UserOutlined, ArrowLeftOutlined, TrophyOutlined, CalendarOutlined, RocketOutlined, StarOutlined, FireOutlined, SettingOutlined, LockOutlined } from "@ant-design/icons";
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/user-profile.css";
+import { useAudio } from "@/hooks/useAudio";
+
 
 interface UserStats {
   gamesPlayed: string;
   creation_date: string;
   wins: string;
-
+  points: string;
 }
 
 interface UserGetDTO {
@@ -20,6 +22,7 @@ interface UserGetDTO {
   username: string;
   token: string;
   stats: UserStats;
+  profilePicture?: string;
 }
 
 const { Title, Text } = Typography;
@@ -27,9 +30,14 @@ const { Title, Text } = Typography;
 export default function UserProfile() {
   const [user, setUser] = useState<UserGetDTO | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isSettingsModalVisible, setIsSettingsModalVisible] = useState<boolean>(false);
+  const [form] = Form.useForm();
+  const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
   const { value: token } = useLocalStorage<string | null>("token", null);
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
+  const playExit = useAudio('/sounds/exit.mp3', 0.3);
 
   useEffect(() => {
     if (!token)
@@ -43,7 +51,7 @@ export default function UserProfile() {
       } catch (error) {
         console.error("Failed to fetch user data:", error);
         if (error instanceof Error) {
-          alert(`Error fetching user data: ${error.message}`);
+          message.error(`Error fetching user data: ${error.message}`);
         }
       } finally {
         setLoading(false);
@@ -51,7 +59,7 @@ export default function UserProfile() {
     };
 
     fetchUser();
-  }, [apiService,token,router]);
+  }, [apiService, token, router]);
 
   const handleBack = () => {
     router.push("/overview");
@@ -60,6 +68,36 @@ export default function UserProfile() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/");
+  };
+  
+  const showSettingsModal = () => {
+    form.resetFields();
+    setIsSettingsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsSettingsModalVisible(false);
+  };
+
+  const handleUpdatePassword = async (values: { password: string }) => {
+    if (!user) return;
+    
+    setUpdateLoading(true);
+    try {
+      await apiService.put(
+        `/users/${user.userId}`,
+        { password: values.password },
+        { Authorization: `Bearer ${token}` }
+      );
+
+      message.success("Password updated successfully!");
+      setIsSettingsModalVisible(false);
+    } catch (error) {
+      console.error("Failed to update password:", error);
+      message.error("Failed to update password. Please try again.");
+    } finally {
+      setUpdateLoading(false);
+    }
   };
 
   if (loading) {
@@ -75,7 +113,7 @@ export default function UserProfile() {
     return (
       <div className="profile-error">
         <Text>User not found or error loading profile.</Text>
-        <Button type="primary" onClick={handleBack}>
+        <Button type="primary" onClick={() => {playExit(); handleBack();}}>
           Back to Overview
         </Button>
       </div>
@@ -87,7 +125,7 @@ export default function UserProfile() {
       <div className="profile-header">
         <Button 
           icon={<ArrowLeftOutlined />} 
-          onClick={handleBack}
+          onClick={() => {playClick(); handleBack();}}
           className="back-button"
           type="text"
         />
@@ -97,17 +135,31 @@ export default function UserProfile() {
 
       <div className="profile-content">
         <Card className="profile-card">
+          <div className="profile-card-header">
+            <Button 
+              type="text" 
+              icon={<SettingOutlined />} 
+              onClick={() => {playClick(); showSettingsModal();}}
+              className="settings-button-top"
+              aria-label="Settings"
+            />
+          </div>
           <div className="profile-info">
             <Badge dot={false}>
               <Avatar 
                 size={80} 
                 icon={<UserOutlined />} 
+                src={user.profilePicture} 
                 className="profile-avatar" 
               />
             </Badge>
             <div className="profile-details">
-              <Title level={4}>{user.username}</Title>
-              <Text type="secondary">User ID: {user.userId}</Text>
+              <div className="username-container">
+                <Title level={4}>{user.username}</Title>
+              </div>
+              <Text type="secondary" className="join-date">
+                <CalendarOutlined style={{ marginRight: 5 }} /> 
+                Member since: {user.stats.creation_date}</Text>
             </div>
           </div>
 
@@ -133,19 +185,27 @@ export default function UserProfile() {
             </Col>
             <Col xs={24} sm={8}>
               <Statistic 
-                title="Member Since" 
-                value={user.stats.creation_date} 
-                prefix={<CalendarOutlined />} 
+                title="Points" 
+                value={user.stats.points}
+                prefix={<StarOutlined />} 
                 className="stat-item"
               />
             </Col>
           </Row>
-
+          <Button 
+            type="primary"
+            icon={<FireOutlined />}
+            onClick={() => {playClick(); router.push('/rankings')}}
+            className="view-rankings-button"
+            style={{ marginBottom: 10 }}
+          >
+            View Leaderboard
+          </Button>
           <div className="profile-actions">
             <Button 
               type="primary" 
               danger
-              onClick={handleLogout}
+              onClick={() => {playClick(); handleLogout();}}
               className="logout-button"
             >
               Log Out
@@ -153,6 +213,40 @@ export default function UserProfile() {
           </div>
         </Card>
       </div>
+
+      {/* Settings Modal */}
+      <Modal
+        title="Update Password"
+        open={isSettingsModalVisible}
+        onCancel={handleCancel}
+        footer={null}
+        closable={false}
+        className="settings-modal"
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleUpdatePassword}
+        >
+          <Form.Item
+            name="password"
+            label="New Password"
+          >
+            <Input.Password 
+              prefix={<LockOutlined />} 
+              placeholder="Enter your new password" 
+            />
+          </Form.Item>
+          <Form.Item className="modal-buttons">
+            <Button type="default" onClick={() => {playExit(); handleCancel();}} style={{ marginRight: 8 }}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={updateLoading} onClick={playClick}>
+              Update
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }
