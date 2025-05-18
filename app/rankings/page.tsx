@@ -51,7 +51,6 @@ export default function Leaderboard() {
   const apiService = useApi();
   const { value: token } = useLocalStorage<string | null>("token", null);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
-  const playExit = useAudio('/sounds/exit.mp3', 0.3);
 
   useEffect(() => {
     if (!token) {

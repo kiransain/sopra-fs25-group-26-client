@@ -4,13 +4,14 @@ import { useEffect, useState, useRef  } from "react";
 import { GoogleMap, Marker, Circle } from '@react-google-maps/api';
 import { useRouter } from 'next/navigation';
 import { Avatar, Button, Tag, Typography, message, Modal, Alert, Progress} from 'antd';
-import { UserOutlined, SoundOutlined, SoundFilled, AimOutlined } from '@ant-design/icons';
+import { UserOutlined, SoundOutlined, SoundFilled, AimOutlined, EyeOutlined } from '@ant-design/icons';
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/game-play.css";
 import { useParams } from "next/navigation";
 import { useGoogleMaps } from "@/hooks/useGoogleMaps";
 import { useAudio } from "@/hooks/useAudio";
+import { motion } from "framer-motion";
 
 
 interface PlayerGetDTO {
@@ -662,35 +663,42 @@ useEffect(() => {
           {/* Power-up buttons */}
           <div className="power-up-buttons-container">
             {game?.status === 'IN_GAME' && !powerUpUsed && (
-              <Button 
-                type="primary"
-                size="large"
-                className="powerup-button"
-                onClick={() => {playPowerUp(); activateShowPlayersPowerUp();}}
-                style={{ 
-                  backgroundColor: '#722ed1',
-                  marginRight: currentPlayer?.role === 'HUNTER' ? '8px' : '0'
-                }}
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
               >
-                Reveal All Players (10s)
-              </Button>
+                <Button 
+                  type="primary"
+                  shape="circle"
+                  className="power-up-button reveal-players-button"
+                  onClick={() => {playPowerUp(); activateShowPlayersPowerUp();}}
+                  icon={<EyeOutlined />}
+                >
+                  Reveal
+                </Button>
+              </motion.div>
             )}
+
 
             {/* Hunter-specific power-up button */}
             {game?.status === 'IN_GAME' && 
               currentPlayer?.role === 'HUNTER' && 
               !hunterPowerUpUsed && (
-              <Button 
-                type="primary"
-                size="large"
-                className="hunter-powerup-button"
-                icon={<AimOutlined />}
-                loading={isRecenteringArea}
-                onClick={() => {playPowerUp2(); activateRecenterAreaPowerUp();}}
-                style={{ backgroundColor: '#f5222d' }}
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
               >
-                Recenter Game Area
-              </Button>
+                <Button 
+                  type="primary"
+                  shape="circle"
+                  className="power-up-button recenter-area-button"
+                  icon={<AimOutlined />}
+                  loading={isRecenteringArea}
+                  onClick={() => {playPowerUp2(); activateRecenterAreaPowerUp();}}
+                >
+                  Recenter
+                </Button>
+              </motion.div>
             )}
           </div>
         </div>
