@@ -69,9 +69,7 @@ return (
       <h1 className="app-title">ManHunt</h1>
 
       <div className="logo-container">
-        <div className="man-logo-reg">
-          <div className="pin-marker-reg"></div>
-        </div>
+          <img src="/logo.svg" alt="ManHunt Logo" className="logo-image" />
       </div>
 
       <div className="intro-text">

@@ -121,7 +121,7 @@ export default function Leaderboard() {
           />
           <span className={currentUser?.userId === record.userId ? "current-user-name" : ""}>
             {username}
-            {currentUser?.userId === record.userId && <Tag color="blue" className="you-tag">You</Tag>}
+            {currentUser?.userId === record.userId && <Tag color="blue" className="you-tag"></Tag>}
           </span>
         </Space>
       ),

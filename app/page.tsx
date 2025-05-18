@@ -45,9 +45,7 @@ const Login: React.FC = () => {
         <h1 className="app-title">ManHunt</h1>
         
         <div className="logo-container">
-          <div className="man-logo">
-            <div className="pin-marker"></div>
-          </div>
+          <img src="/logo.svg" alt="ManHunt Logo" className="logo-image" />
         </div>
         
         <Form

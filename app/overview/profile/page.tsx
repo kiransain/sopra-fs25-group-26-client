@@ -89,7 +89,7 @@ export default function UserProfile() {
         { password: values.password },
         { Authorization: `Bearer ${token}` }
       );
-      
+
       message.success("Password updated successfully!");
       setIsSettingsModalVisible(false);
     } catch (error) {
@@ -242,7 +242,7 @@ export default function UserProfile() {
               Cancel
             </Button>
             <Button type="primary" htmlType="submit" loading={updateLoading} onClick={playClick}>
-              Update Password
+              Update
             </Button>
           </Form.Item>
         </Form>
