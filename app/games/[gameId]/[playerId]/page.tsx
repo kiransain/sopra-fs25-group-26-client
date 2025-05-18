@@ -73,6 +73,10 @@ export default function GamePlay() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [volume] = useState(0.1);
   const [isRecenteringArea, setIsRecenteringArea] = useState(false);
+  // Timer state
+  const [timerStartTime, setTimerStartTime] = useState<number | null>(null);
+  const [initialDuration, setInitialDuration] = useState<number | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
 
 
 
@@ -376,67 +380,61 @@ useEffect(() => {
   };
 
   // Phase durations in seconds
-  const [remainingSeconds, setRemainingSeconds] = useState<number>(0);
   // const PREP_DURATION = get preparationTimeInSeconds;
   // const GAME_DURATION = get gameTimeInSeconds;
 
   useEffect(() => {
-  if (!game?.timer) {
-    setRemainingSeconds(0);
-    return;
-  }
-  // Parse the LocalDateTime string (assumes backend time is in server's local time)
-  const startTime = new Date(game.timer + 'Z').getTime(); // Treat as UTC
-  console.log("Parsed startTime:", startTime); // Debug log
+    if (!game) return;
 
-  let totalDuration: number;
-  if (game.status === 'IN_GAME_PREPARATION') {
-    totalDuration = game.preparationTimeInSeconds ;
-  } else if (game.status === 'IN_GAME') {
-    totalDuration = game.gameTimeInSeconds * 1000;
-  } else {
-    setRemainingSeconds(0);
-    return;
-  }
+    // When game status changes to preparation or in-game, initialize timer
+    if (game.status === 'IN_GAME_PREPARATION' || game.status === 'IN_GAME') {
+      const duration = game.status === 'IN_GAME_PREPARATION' 
+        ? game.preparationTimeInSeconds 
+        : game.gameTimeInSeconds;
 
-  const updateTimer = () => {
-  const now = Date.now();
-  const elapsed = now - startTime;
-  const remaining = Math.max(0, totalDuration - elapsed);
-  setRemainingSeconds(Math.floor(remaining / 1000));
-};
+      // Only reset timer if this is a new phase (prevention of reset on polling)
+      if (initialDuration !== duration) {
+        setTimerStartTime(Date.now());
+        setInitialDuration(duration);
+        setRemainingSeconds(duration);
+      }
+    }
+  }, [game?.status, game?.preparationTimeInSeconds, game?.gameTimeInSeconds]);
 
-  updateTimer(); // Immediate update
-  const interval = setInterval(updateTimer, 1000);
-  
-  return () => clearInterval(interval);
-}, [game?.timer, game?.status, game?.preparationTimeInSeconds, game?.gameTimeInSeconds]);
+  // Run the countdown
+  useEffect(() => {
+    if (!timerStartTime || !initialDuration) return;
 
-  
+    const interval = setInterval(() => {
+      const elapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
+      const newRemaining = Math.max(0, initialDuration - elapsedSeconds);
+      setRemainingSeconds(newRemaining);
+
+      if (newRemaining <= 0) {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [timerStartTime, initialDuration]);
+
   const CountdownTimer = () => {
-  if (!game?.timer) {
-    console.log("Timer not available yet");
-    return null;
-  }
-  
-  console.log("Timer value:", game.timer);
-  console.log("Game status:", game.status);
-  console.log("Remaining seconds:", remainingSeconds);
+    if (!game || remainingSeconds === null) return null;
 
-  return (
-    <div className="game-timer">
-      <Text strong>
-        {game.status === 'IN_GAME_PREPARATION' ? 'Prep Time: ' : 'Game Time: '}
-      </Text>
-      <Tag color={
-        remainingSeconds <= 10 ? 'red' : 
-        remainingSeconds <= 30 ? 'orange' : 'green'
-      }>
-        {remainingSeconds}
-      </Tag>
-    </div>
-  );
-};
+    return (
+      <div className="game-timer">
+        <Text strong>
+          {game.status === 'IN_GAME_PREPARATION' ? 'Prep Time: ' : 'Game Time: '}
+        </Text>
+        <Tag color={
+          remainingSeconds <= 10 ? 'red' : 
+          remainingSeconds <= 30 ? 'orange' : 'green'
+        }>
+          {remainingSeconds}
+        </Tag>
+      </div>
+    );
+  };
 
   const mapOptions = {
     disableDefaultUI: true,
