@@ -135,7 +135,7 @@ reason).
 | **@kiransain**    | 11.05.2025 | [Leaderboard redesign](https://github.com/kiransain/sopra-fs25-group-26-client/commit/16fc9deb2d617625f897278d372c95ee5dfad8c3) | Completely redesigned the in-game leaderboard, improving the overall layout, typography, and responsiveness. Added player avatars and dynamic highlighting for top performers, making the leaderboard more visually appealing and engaging. | Enhances user engagement and retention by improving competitive visibility and feedback. |
 
 ---
-## Contributions Week 7 - 14.05.2025 to 20.05.2025
+## Contributions Week 8 - 14.05.2025 to 20.05.2025
 
 | Student        | Date       | Link to Commit                                                                                                                   | Description                                                                                                                     | Relevance                |
 |-----------------|------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|--------------------------|
