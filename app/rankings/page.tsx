@@ -23,6 +23,7 @@ import {
 import { useApi } from "@/hooks/useApi";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import "@/styles/rankings.css";
+import { useAudio } from "@/hooks/useAudio";
 
 interface UserStats {
   gamesPlayed: string;
@@ -49,6 +50,8 @@ export default function Leaderboard() {
   const router = useRouter();
   const apiService = useApi();
   const { value: token } = useLocalStorage<string | null>("token", null);
+  const playClick = useAudio('/sounds/button-click.mp3', 0.3);
+  const playExit = useAudio('/sounds/exit.mp3', 0.3);
 
   useEffect(() => {
     if (!token) {
@@ -166,7 +169,7 @@ export default function Leaderboard() {
           type="error"
           showIcon
         />
-        <Button type="primary" onClick={handleBack} className="back-button">
+        <Button type="primary" onClick={() => {playClick(); handleBack()}} className="back-button">
           Back to Profile
         </Button>
       </div>
@@ -178,7 +181,7 @@ export default function Leaderboard() {
       <div className="leaderboard-header">
         <Button 
           icon={<ArrowLeftOutlined />} 
-          onClick={handleBack}
+          onClick={() => {playClick(); handleBack()}}
           className="back-button"
           type="text"
         />

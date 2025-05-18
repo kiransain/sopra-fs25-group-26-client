@@ -66,7 +66,7 @@ export default function Page() {
   const apiService = useApi();
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
-
+  const playExit = useAudio('/sounds/exit.mp3', 0.3);
 
   useEffect(() => {
     if (!token) return;
@@ -242,7 +242,7 @@ export default function Page() {
               danger
               icon={<CloseCircleOutlined />}
               loading={exiting}
-              onClick={ () => handleExitGame()}
+              onClick={ () => {playExit(); handleExitGame();}}
               className="exit-game-button"
             >
               Exit Game

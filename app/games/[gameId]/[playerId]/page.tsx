@@ -64,6 +64,10 @@ export default function GamePlay() {
   const [outOfAreaModalVisible, setOutOfAreaModalVisible] = useState(false);
   const [outOfAreaTimerId, setOutOfAreaTimerId] = useState<NodeJS.Timeout | null>(null);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
+  const playPowerUp = useAudio('/sounds/powerup.mp3', 0.3);
+  const playPowerUp2 = useAudio('/sounds/powerup2.mp3', 0.3);
+  const playExit = useAudio('/sounds/exit.mp3', 0.3);
+  const playOutOfArea = useAudio('/sounds/longPowerup.mp3', 0.3);
   const [isMuted, setIsMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [volume] = useState(0.1);
@@ -130,6 +134,14 @@ export default function GamePlay() {
     }
   };
 }, []);
+
+
+useEffect(() => {
+  if (outOfAreaModalVisible) {
+    playOutOfArea(); // Play sound when modal opens
+  }
+}, [outOfAreaModalVisible]);
+
 
 useEffect(() => {
   if (!audioRef.current) return;
@@ -641,7 +653,7 @@ useEffect(() => {
               type="primary"
               size="large"
               className="caught-button"
-              onClick={() => setCaughtModalVisible(true)}
+              onClick={() => {playExit(); setCaughtModalVisible(true)}}
             >
               I have Been Caught!
             </Button>
@@ -654,7 +666,7 @@ useEffect(() => {
                 type="primary"
                 size="large"
                 className="powerup-button"
-                onClick={() => {playClick(); activateShowPlayersPowerUp();}}
+                onClick={() => {playPowerUp(); activateShowPlayersPowerUp();}}
                 style={{ 
                   backgroundColor: '#722ed1',
                   marginRight: currentPlayer?.role === 'HUNTER' ? '8px' : '0'
@@ -674,7 +686,7 @@ useEffect(() => {
                 className="hunter-powerup-button"
                 icon={<AimOutlined />}
                 loading={isRecenteringArea}
-                onClick={() => {playClick(); activateRecenterAreaPowerUp();}}
+                onClick={() => {playPowerUp2(); activateRecenterAreaPowerUp();}}
                 style={{ backgroundColor: '#f5222d' }}
               >
                 Recenter Game Area
@@ -687,8 +699,8 @@ useEffect(() => {
       <Modal
         title="Confirm Caught"
         open={caughtModalVisible}
-        onOk={handleCaughtAction}
-        onCancel={() => setCaughtModalVisible(false)}
+        onOk={() => { playClick(); handleCaughtAction(); }}
+        onCancel={() => {playExit(); setCaughtModalVisible(false)}}
         okText="Yes, I'm caught"
         cancelText="Cancel"
       >

@@ -235,7 +235,7 @@ export default function Page() {
                           router.push('/newgame');
                         }}
         >
-          Create Game
+          ➕ Create 
         </Button>
 
         

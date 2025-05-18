@@ -37,7 +37,7 @@ export default function UserProfile() {
   const apiService = useApi();
   const { value: token } = useLocalStorage<string | null>("token", null);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
-
+  const playExit = useAudio('/sounds/exit.mp3', 0.3);
 
   useEffect(() => {
     if (!token)
@@ -113,7 +113,7 @@ export default function UserProfile() {
     return (
       <div className="profile-error">
         <Text>User not found or error loading profile.</Text>
-        <Button type="primary" onClick={handleBack}>
+        <Button type="primary" onClick={() => {playExit(); handleBack();}}>
           Back to Overview
         </Button>
       </div>
@@ -125,7 +125,7 @@ export default function UserProfile() {
       <div className="profile-header">
         <Button 
           icon={<ArrowLeftOutlined />} 
-          onClick={handleBack}
+          onClick={() => {playClick(); handleBack();}}
           className="back-button"
           type="text"
         />
@@ -139,7 +139,7 @@ export default function UserProfile() {
             <Button 
               type="text" 
               icon={<SettingOutlined />} 
-              onClick={showSettingsModal}
+              onClick={() => {playClick(); showSettingsModal();}}
               className="settings-button-top"
               aria-label="Settings"
             />
@@ -195,7 +195,7 @@ export default function UserProfile() {
           <Button 
             type="primary"
             icon={<FireOutlined />}
-            onClick={() => router.push('/rankings')}
+            onClick={() => {playClick(); router.push('/rankings')}}
             className="view-rankings-button"
             style={{ marginBottom: 10 }}
           >
@@ -238,7 +238,7 @@ export default function UserProfile() {
             />
           </Form.Item>
           <Form.Item className="modal-buttons">
-            <Button type="default" onClick={() => {playClick(); handleCancel();}} style={{ marginRight: 8 }}>
+            <Button type="default" onClick={() => {playExit(); handleCancel();}} style={{ marginRight: 8 }}>
               Cancel
             </Button>
             <Button type="primary" htmlType="submit" loading={updateLoading} onClick={playClick}>

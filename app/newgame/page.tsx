@@ -40,7 +40,7 @@ const NewGame: React.FC = () => {
   const [currentLocation, setCurrentLocation] = useState<{lat: number, lng: number} | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3); // audio
-
+  const playPowerUp2 = useAudio('/sounds/powerup2.mp3', 0.3);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -207,7 +207,7 @@ const NewGame: React.FC = () => {
               htmlType="submit" 
               className="create-button"
               loading={isLoading}
-              onClick = {playClick}
+              onClick = {playPowerUp2}
             >
               Create Game
             </Button>
