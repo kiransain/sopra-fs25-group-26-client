@@ -127,7 +127,7 @@ export default function GamePlay() {
 
   useEffect(() => {
   // Initialize audio element
-  audioRef.current = new Audio('/sounds/game-music.mp3');
+  audioRef.current = new Audio('/sounds/pulse.mp3');
   audioRef.current.loop = true;
   audioRef.current.volume = volume; // Set initial volume
   
@@ -403,7 +403,7 @@ useEffect(() => {
 
   useEffect(() => {
     if (!timerStartTime || !initialDuration) return;
-    
+
     const interval = setInterval(() => {
       const elapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
       const newRemaining = Math.max(0, initialDuration - elapsedSeconds);
