@@ -643,7 +643,11 @@ useEffect(() => {
             </div>
           </div>
           
-          {game?.status === 'IN_GAME' &&
+          
+
+          {/* Power-up buttons */}
+          <div className="power-up-buttons-container">
+            {game?.status === 'IN_GAME' &&
             currentPlayer &&
            currentPlayer.role === 'HIDER' && 
            currentPlayer.status !== 'FOUND' && (
@@ -657,9 +661,6 @@ useEffect(() => {
               I have Been Caught!
             </Button>
           )}
-
-          {/* Power-up buttons */}
-          <div className="power-up-buttons-container">
             {game?.status === 'IN_GAME' && !powerUpUsed && (
               <motion.div
                 whileHover={{ scale: 1.1 }}
