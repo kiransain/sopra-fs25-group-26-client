@@ -159,32 +159,3 @@
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
-
-/* Match profile's text colors */
-.tutorial-text span {
-  font-weight: 500;
-}
-
-.text-blue-500 {
-  color: #1890ff;
-}
-
-.text-red-500 {
-  color: #ff4d4f;
-}
-
-.text-orange-500 {
-  color: #fa8c16;
-}
-
-.text-purple-500 {
-  color: #722ed1;
-}
-
-.text-green-500 {
-  color: #52c41a;
-}
-
-.text-yellow-500 {
-  color: #faad14;
-}

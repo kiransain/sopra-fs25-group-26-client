@@ -67,7 +67,7 @@ const NewGame: React.FC = () => {
     gameTime: number;
     gameName: string}) => {
     if (!currentLocation) {
-      alert('Location not available. Please ensure location services are enabled.');
+      alert('Location not available. Please ensure location services are enabled and try going to overview and refresh the page.');
       return;
     }
     

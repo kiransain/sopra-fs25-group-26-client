@@ -111,8 +111,8 @@ export default function Page() {
   if (navigator.geolocation) {
     const geolocationOptions = {
       enableHighAccuracy: true,
-      maximumAge: 30000,  // Accept cached positions up to 30 seconds old
-      timeout: 10000      // More generous timeout for Firefox
+      maximumAge: 1000,  // Accept cached positions up to 30 seconds old
+      timeout: 1000      // More generous timeout for Firefox
     };
 
     watchId = navigator.geolocation.watchPosition(
@@ -138,7 +138,7 @@ export default function Page() {
         errorCount++;
         
         // Only fallback after multiple consecutive errors
-        if (errorCount > 2) {
+        if (errorCount > 5) {
           setCurrentLocation({ lat: 47.374444, lng: 8.541111 });
         }
       },

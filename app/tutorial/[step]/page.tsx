@@ -7,99 +7,191 @@ import { motion, AnimatePresence } from 'framer-motion';
 import React from 'react';
 import "@/styles/tutorial.css";
 import { useAudio } from "@/hooks/useAudio";
+import Image from 'next/image';
 
-const { Title, Paragraph } = Typography;
 
-// Silky smooth transition animations
-/* const slideVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? '50%' : '-50%',
-    opacity: 0.5,
-    scale: 0.95,
-  }),
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      type: 'spring',
-      damping: 25,
-      stiffness: 120,
-      mass: 0.5,
-    }
-  },
-  exit: (direction: number) => ({
-    x: direction > 0 ? '-30%' : '30%',
-    opacity: 0,
-    scale: 0.98,
-    transition: {
-      duration: 0.2,
-      ease: 'easeInOut'
-    }
-  })
-}; */
+
+const { Title } = Typography;
 
 const TUTORIAL_STEPS = [
   {
-    title: "Welcome to MainHunt!",
+    title: "Welcome to Manhunt",
     content: (
-      <>
-        <Paragraph className="tutorial-text">Press <span className="text-blue-500">CREATE GAME</span> to start or join an available game in the lobby.</Paragraph>
-        <Paragraph className="tutorial-text">Give your game a name and wait for at least <span className="text-orange-500">3 players</span> to begin.</Paragraph>
-        <img 
-          src="/tutorial/newgame_lobby.png" 
-          alt="New Game Lobby" 
-          style={{ 
-            width: '100%', 
-            maxWidth: '500px', 
-            margin: '10px auto', 
-            display: 'block',
-            borderRadius: '8px',
-            border: '1px solid #ddd'
-          }} 
-        />
-      </>
+      <div className="tutorial-page">
+        <div className="tutorial-text-block">
+          <p>Manhunt brings the thrill of outdoor hide-and-seek into the digital age by combining physical gameplay with mobile technology. Our mission is to make outdoor play exciting again while using location features to enhance the experience.</p>
+          
+          <div className="flex justify-center my-4"> 
+            <div className="max-w-full md:max-w-3xl"> 
+              <Image
+                src="/tutorial/newgame_overview.png"
+                alt="Game overview screen"
+                width={1000}
+                height={562} /* Adjusted to proper 16:9 aspect ratio */
+                className="rounded-lg border border-gray-200 shadow-md"
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                }}
+              />
+            </div>
+          </div>
+
+          <p>You have already found the overview page - great start! From here you can join existing games or create your own adventure. Tap your profile icon to view your statistics, see where you rank on the leaderboard, or update your account settings.</p>
+        </div>
+      </div>
     )
   },
   {
-    title: "Game Setup",
+    title: "Creating Your Game",
     content: (
-      <>
-        <Paragraph className="tutorial-text">Below you will see all available players.</Paragraph>
-        <img 
-          src="/tutorial/available_players.png" 
-          alt="New Game Lobby" 
-          style={{ 
-            width: '100%', 
-            maxWidth: '500px', 
-            margin: '10px auto', 
-            display: 'block',
-            borderRadius: '8px',
-            border: '1px solid #ddd'
-          }} 
-        />
-        <Paragraph className="tutorial-text">The <span className="text-red-500">marker is you</span> and the game radius is created around the <span className="text-red-500">hunter</span>!</Paragraph>
-      </>
+      <div className="tutorial-page">
+        <div className="tutorial-text-block">
+          <p>To start a new game, tap the Create button. This will open the game customization screen where you can set up your perfect Manhunt experience.</p>
+
+          <div className="flex justify-center my-4"> {/* Centering container */}
+            <div className="max-w-full md:max-w-3xl"> 
+            <Image
+            src="/tutorial/create_game.png"
+            alt="Game creation screen"
+            width={800}  // Original image width
+            height={450} // Original image height
+            className="tutorial-image"
+            style={{
+              width: 'auto',
+              height: 'auto',
+            }}/>
+          </div>
+          </div>
+
+          <p>Customize three key elements: First, adjust your play area - this determines how much ground your game will cover. Second, set the preparation time - this gives hiders time to find good hiding spots. Finally, choose your main game duration - this is how long the hunter has to find everyone.</p>
+        </div>
+      </div>
     )
   },
   {
-    title: "Hunter & Hiders",
+    title: "Game Preparation",
     content: (
-      <>
-        <Paragraph className="tutorial-text"><span className="text-red-500">Hunters</span> must find all players!</Paragraph>
-        <Paragraph className="tutorial-text"><span className="text-blue-500">Hiders</span> must avoid the hunter.</Paragraph>
-        <Paragraph className="tutorial-text">Hunters can use <span className="text-purple-500">power-ups</span> to see all players for 10s!</Paragraph>
-      </>
+      <div className="tutorial-page">
+        <div className="tutorial-text-block">
+          <p>Once your game has at least two players, you can begin. The preparation phase starts immediately, giving hiders precious time to scatter and hide while the hunter waits.</p>
+
+          <div className="tutorial-image-placeholder wide-image">
+            <div className="tutorial-image-placeholder">
+            <Image
+            src="/tutorial/all_players.png"
+            alt="Game creation screen"
+            width={800}  // Original image width
+            height={450} // Original image height
+            className="tutorial-image"
+            style={{
+              width: 'auto',
+              height: 'auto',
+            }}/>
+          </div>
+          </div>
+
+          <p>During this phase, check the top right corner of your screen to see the preparation timer counting down. You will also see your randomly assigned role - either hunter (red) or hider (green). Use this time wisely - hiders should find good concealment while the hunter plans their search strategy.</p>
+            <div className="tutorial-image-placeholder wide-image">
+            <div className="tutorial-image-placeholder">
+            <Image
+            src="/tutorial/timer and role.png"
+            alt="Game creation screen"
+            width={800}  // Original image width
+            height={450} // Original image height
+            className="tutorial-image"
+            style={{
+              width: 'auto',
+              height: 'auto',
+            }}/>
+          </div>
+          </div>
+        
+        </div>
+      </div>
     )
   },
   {
-    title: "Game Dynamics",
+    title: "Main Gameplay",
     content: (
-      <>
-        <Paragraph className="tutorial-text">When a player is caught, the <span className="text-yellow-500">game radius shrinks</span>!</Paragraph>
-        <Paragraph className="tutorial-text"><span className="text-green-500">45s</span> preparation time + <span className="text-green-500">60s</span> main game.</Paragraph>
-        <Paragraph className="tutorial-text text-purple-500">Enjoy the hunt!</Paragraph>
-      </>
+      <div className="tutorial-page">
+        <div className="tutorial-text-block">
+          <p>When preparation ends, the main game timer begins. Your blue map marker shows your current location and updates as you move. The red circle marks the play area boundary - stay inside it to remain in the game.</p>
+
+          <div className="tutorial-image-placeholder">
+            <div className="tutorial-image-placeholder">
+            <Image
+            src="/tutorial/hunt_preperation.png"
+            alt="Game creation screen"
+            width={800}  // Original image width
+            height={450} // Original image height
+            className="tutorial-image"
+            style={{
+              width: 'auto',
+              height: 'auto',
+            }}/>
+          </div>
+          </div>
+
+          <p>As the hunter, your goal is simple: find and tag all hiders. As a hider, your objective is to avoid detection until time runs out. The game becomes more intense as caught players are eliminated and the play area shrinks accordingly.</p>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "TODO: Power-ups & Special Rules",
+    content: (
+      <div className="tutorial-page">
+        <div className="tutorial-text-block">
+          <p>Manhunt includes special power-ups to keep gameplay dynamic. All players receive one use of the reveal ability, which shows all player locations for 10 seconds - use it strategically!</p>
+
+          <div className="tutorial-image-placeholder wide-image">
+           <div className="tutorial-image-placeholder">
+            <Image
+            src="/tutorial/create_game.png"
+            alt="Game creation screen"
+            width={800}  // Original image width
+            height={450} // Original image height
+            className="tutorial-image"
+            style={{
+              width: 'auto',
+              height: 'auto',
+            }}/>
+          </div>
+          </div>
+
+          <p>Hunters get an additional ability: they can recenter the play area based on their current location. This can be crucial when the original center becomes less relevant to the ongoing hunt.</p>
+
+          <p>If you accidentally leave the play area, you will receive a 10-second warning to return before automatic elimination. This keeps the action focused while allowing for occasional boundary mistakes.</p>
+        </div>
+      </div>
+    )
+  },
+  {
+    title: "Game Conclusion",
+    content: (
+      <div className="tutorial-page">
+        <div className="tutorial-text-block">
+          <p>The game ends in one of two ways: either the hunter successfully catches all hiders, or the main game timer expires with hiders still remaining. In both cases, players are shown the results screen with statistics from the match.</p>
+
+          <div className="tutorial-image-placeholder">
+            <div className="tutorial-image-placeholder">
+            <Image
+            src="/tutorial/end of game.png"
+            alt="Game creation screen"
+            width={800}  // Original image width
+            height={450} // Original image height
+            className="tutorial-image"
+            style={{
+              width: 'auto',
+              height: 'auto',
+            }}/>
+          </div>
+          </div>
+
+          <p>Remember these troubleshooting tips if you encounter issues: For location problems, try refreshing the app or moving to a more open area. If you experience lobby issues, exit and rejoin the game. Most importantly, get outside, move around, and enjoy this modern twist on a classic game!</p>
+        </div>
+      </div>
     )
   }
 ];
