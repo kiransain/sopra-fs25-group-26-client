@@ -122,7 +122,7 @@ export default function Page() {
     if (!token || !gameId || !currentUser || !currentLocation) return; // Wait until token and gameId is available
 
     fetchGame();
-    const interval = setInterval(fetchGame, 10000);
+    const interval = setInterval(fetchGame, 2000);
 
     return () => clearInterval(interval);
   }, [token, gameId, currentUser, currentLocation]); // <-- Depend on token, gameId

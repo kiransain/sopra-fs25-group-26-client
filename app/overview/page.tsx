@@ -146,7 +146,7 @@ export default function Page() {
     );
 
     // Set up polling with cleanup
-    intervalId = setInterval(fetchGames, 5000);
+    intervalId = setInterval(fetchGames, 2000);
   } else {
     console.log('Geolocation is not supported by this browser.');
     setCurrentLocation({ lat: 47.374444, lng: 8.541111 });

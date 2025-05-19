@@ -335,7 +335,7 @@ useEffect(() => {
 
     updateGameState();
 
-    const interval = setInterval(updateGameState, 3000);
+    const interval = setInterval(updateGameState, 2000);
     setUpdateInterval(interval);
 
     return () => {
@@ -394,7 +394,11 @@ useEffect(() => {
 
       // Only reset timer if this is a new phase (prevention of reset on polling)
       if (initialDuration !== duration) {
-        setTimerStartTime(Date.now());
+        // Use the server‐provided phase start time for accurate countdown
+        const phaseStartMs = game.timer
+          ? new Date(game.timer).getTime()
+          : Date.now();
+        setTimerStartTime(phaseStartMs);
         setInitialDuration(duration);
         setRemainingSeconds(duration);
       }
@@ -403,18 +407,21 @@ useEffect(() => {
 
   // Run the countdown
   useEffect(() => {
-    if (!timerStartTime || !initialDuration) return;
+    if (timerStartTime === null || initialDuration === null) return;
 
-    const interval = setInterval(() => {
-      const elapsedSeconds = Math.floor((Date.now() - timerStartTime) / 1000);
-      const newRemaining = Math.max(0, initialDuration - elapsedSeconds);
-      setRemainingSeconds(newRemaining);
+    // Compute the exact phase end time in milliseconds
+    const phaseEndMs = timerStartTime + initialDuration * 1000;
 
-      if (newRemaining <= 0) {
-        clearInterval(interval);
-      }
-    }, 1000);
+    // Update remaining seconds based on absolute end time
+    const updateTimer = () => {
+      const now = Date.now();
+      const remainingMs = Math.max(0, phaseEndMs - now);
+      setRemainingSeconds(Math.ceil(remainingMs / 1000));
+    };
 
+    // Run immediately (to account for any delay), then every second
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [timerStartTime, initialDuration]);
 
