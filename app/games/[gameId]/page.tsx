@@ -21,6 +21,7 @@ interface UserGetDTO {
 interface PlayerGetDTO {
   playerId: number;
   userId: number;
+  displayPicture: string;
   displayName: string;
   role: 'HUNTER' | 'HIDER';
   status: 'HIDING' | 'HUNTING' | 'FOUND';
@@ -235,7 +236,7 @@ export default function Page() {
               onClick={() =>{playClick(); handleStartGame();}}
               className="start-game-button"
             >
-              Start 
+              Start
             </Button>
               )}
             <Button
@@ -256,7 +257,11 @@ export default function Page() {
                 return (
                   <List.Item key={player.playerId} className="player-item">
                     <div className="player-info">
-                      <Avatar size="small" icon={<UserOutlined />} />
+                      <Avatar
+                        src={player.displayPicture || undefined}
+                        icon={!player.displayPicture ? <UserOutlined /> : undefined}
+                        size="small"
+                      />
                       <Text
                         className="player-name"
                         style={isMe ? { textDecoration: 'underline' } : {}}

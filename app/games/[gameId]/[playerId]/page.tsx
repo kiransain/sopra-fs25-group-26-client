@@ -618,7 +618,8 @@ useEffect(() => {
                       style={{ display: 'inline-block', textAlign: 'center', margin: '0 8px' }}
                     >
                       <Avatar
-                        icon={<UserOutlined />}
+                        src={player.displayPicture || undefined}
+                        icon={!player.displayPicture ? <UserOutlined /> : undefined}
                         size="small"
                         style={{
                           backgroundColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
@@ -710,7 +711,7 @@ useEffect(() => {
         okText="Yes, I'm caught"
         cancelText="Cancel"
       >
-        <p>Are you sure you want to mark yourself as caught? This action cannot be undone.</p>
+        <p>This action cannot be undone.</p>
       </Modal>
       <Modal
   title="WARNING: OUT OF GAME AREA!"
@@ -722,7 +723,7 @@ useEffect(() => {
 >
   <Alert
     message="You are outside the game area!"
-    description="Return to the game area immediately or you will lose!"
+    description="Return to the game area or you will lose!"
     type="error"
     showIcon
     style={{ marginBottom: 16 }}

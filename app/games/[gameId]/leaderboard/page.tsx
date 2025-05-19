@@ -22,6 +22,7 @@ interface PlayerGetDTO {
   playerId: number;
   userId: number;
   displayName: string;
+  displayPicture: string;
   role: 'HUNTER' | 'HIDER';
   status: 'HIDING' | 'HUNTING' | 'FOUND';
   outOfArea: boolean;
@@ -105,9 +106,10 @@ export default function Page() {
           Authorization: `Bearer ${token}`
         });
         setCurrentUser(user);
+
       } catch (e) {
         console.error('Could not load /me', e);
-        messageApi.error('Failed to load user data'); 
+        messageApi.error('Failed to load user data');
       }
     })();
   }, [token, apiService, messageApi]);
@@ -164,50 +166,6 @@ export default function Page() {
             </Col>
           </Row>
 
-          {currentPlayer && (
-            <Card 
-              bordered={false}
-              className="player-result-card"
-              style={{
-                backgroundColor: currentPlayer.rank === 1 ? '#fffbe6' : '#f6ffed',
-                borderColor: currentPlayer.rank === 1 ? '#ffe58f' : '#b7eb8f',
-                marginBottom: 24
-              }}
-            >
-              <Row align="middle" gutter={16}>
-                <Col>
-                  <Avatar 
-                    size={48} 
-                    icon={<UserOutlined />}
-                    style={{ 
-                      backgroundColor: currentPlayer.rank === 1 ? '#ffc53d' : '#52c41a',
-                      color: '#fff'
-                    }}
-                  />
-                </Col>
-                <Col>
-                  <Typography.Text strong style={{ fontSize: 16 }}>
-                    {currentPlayer.displayName}
-                  </Typography.Text>
-                  <div style={{ marginTop: 4 }}>
-                    <Space size="small">
-                      <Tag color={currentPlayer.role === 'HUNTER' ? 'red' : 'green'}>
-                        {currentPlayer.role}
-                      </Tag>
-                      {currentPlayer.rank === 1 ? (
-                        <Tag icon={<CrownFilled />} color="gold">
-                          WINNER
-                        </Tag>
-                      ) : (
-                        <Tag>Rank #{currentPlayer.rank}</Tag>
-                      )}
-                    </Space>
-                  </div>
-                </Col>
-              </Row>
-            </Card>
-          )}
-
           <Card 
             title={
               <Space>
@@ -219,6 +177,14 @@ export default function Page() {
             headStyle={{ borderBottom: 0, paddingBottom: 0 }}
             bodyStyle={{ paddingTop: 8 }}
           >
+            {/* Show the current player's placement */}
+            {currentPlayer && (
+              <div style={{ marginBottom: 16 }}>
+                <Text>
+                  You ranked {currentPlayer.rank} in this game.
+                </Text>
+              </div>
+            )}
             <List
               dataSource={sortedPlayers}
               renderItem={(player, index) => {
@@ -243,12 +209,13 @@ export default function Page() {
                       </Col>
                       <Col span={16}>
                         <Space>
-                          <Avatar 
-                            size="small" 
-                            icon={<UserOutlined />}
+                          <Avatar
+                            src={player.displayPicture || undefined}
+                            icon={!player.displayPicture ? <UserOutlined /> : undefined}
+                            size="small"
                             className={isMe ? 'current-player-avatar' : ''}
                           />
-                          <Text strong={isMe}>
+                          <Text style={{ textDecoration: isMe ? 'underline' : 'none' }}>
                             {player.displayName}
                           </Text>
                           {player.playerId === game?.creatorId && (

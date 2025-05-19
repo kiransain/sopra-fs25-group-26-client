@@ -9,8 +9,7 @@ import {
   Avatar, 
   Space, 
   Spin, 
-  Alert, 
-  Tag,
+  Alert,
   Card
 } from "antd";
 import { ColumnsType } from 'antd/es/table';
@@ -121,7 +120,7 @@ export default function Leaderboard() {
           />
           <span className={currentUser?.userId === record.userId ? "current-user-name" : ""}>
             {username}
-            {currentUser?.userId === record.userId && <Tag color="blue" className="you-tag"></Tag>}
+            {currentUser?.userId === record.userId}
           </span>
         </Space>
       ),
