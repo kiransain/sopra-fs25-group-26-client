@@ -13,11 +13,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 30px;
+    padding: 12px 20px;
     background-color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     z-index: 2;
     border-radius: 0 0 15px 15px;
+    flex-wrap: nowrap;
 }
 
 .app-title {
@@ -25,11 +26,13 @@
     font-weight: bold;
     color: #0073e6;
     margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .create-game-button {
-    width: 200px;
-    height: 50px;
+    width: 100px;
+    height: 40px;
     border-radius: 30px;
     background-color: #0073e6;
     border: none;
@@ -37,6 +40,8 @@
     font-weight: 600;
     transition: background-color 0.3s, transform 0.2s;
     cursor: pointer;
+    margin: 0 10px;
+    flex-shrink: 0;
 }
 
 .create-game-button:hover {
@@ -143,10 +148,10 @@
 
 .join-button {
     margin-left: auto;
-    width: 160px;
+    width: 100px;
     background-color: #28a745;
     color: white;
-    padding: 10px 20px;
+    padding: 8px 12px;
     border-radius: 25px;
     border: none;
     font-weight: 600;
@@ -157,4 +162,37 @@
 .join-button:hover {
     background-color: #218838;
     transform: scale(1.05);
+}
+
+/* Media queries for better mobile responsiveness */
+@media screen and (max-width: 480px) {
+    .header {
+        padding: 10px 15px;
+    }
+    
+    .app-title {
+        font-size: 24px;
+    }
+    
+    .create-game-button {
+        width: 80px;
+        height: 36px;
+        font-size: 14px;
+    }
+    
+    .content-container {
+        padding: 10px;
+    }
+}
+
+/* For extremely small screens */
+@media screen and (max-width: 370px) {
+    .app-title {
+        font-size: 20px;
+    }
+    
+    .create-game-button {
+        width: 70px;
+        padding: 0;
+    }
 }

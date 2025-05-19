@@ -35,6 +35,7 @@ export default function UserProfile() {
   const [updateLoading, setUpdateLoading] = useState<boolean>(false);
   const router = useRouter();
   const apiService = useApi();
+  const [messageApi, contextHolder] = message.useMessage();
   const { value: token } = useLocalStorage<string | null>("token", null);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3);
   const playExit = useAudio('/sounds/exit.mp3', 0.3);
@@ -51,7 +52,7 @@ export default function UserProfile() {
       } catch (error) {
         console.error("Failed to fetch user data:", error);
         if (error instanceof Error) {
-          message.error(`Error fetching user data: ${error.message}`);
+          messageApi.error(`Error fetching user data: ${error.message}`);
         }
       } finally {
         setLoading(false);
@@ -90,11 +91,11 @@ export default function UserProfile() {
         { Authorization: `Bearer ${token}` }
       );
 
-      message.success("Password updated successfully!");
+      messageApi.success("Password updated successfully!");
       setIsSettingsModalVisible(false);
     } catch (error) {
       console.error("Failed to update password:", error);
-      message.error("Failed to update password. Please try again.");
+      messageApi.error("Type a new password");
     } finally {
       setUpdateLoading(false);
     }
@@ -122,6 +123,7 @@ export default function UserProfile() {
 
   return (
     <div className="profile-container">
+      {contextHolder}
       <div className="profile-header">
         <Button 
           icon={<ArrowLeftOutlined />} 
