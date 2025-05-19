@@ -203,7 +203,6 @@ export default function Page() {
           { Authorization: `Bearer ${token}`});
       router.push('/overview');
     } catch (error) {
-      messageApi.error("Failed to leave the game");
       setTimeout(() => router.push('/overview'), 2000);
       console.error(error)
     } finally {
