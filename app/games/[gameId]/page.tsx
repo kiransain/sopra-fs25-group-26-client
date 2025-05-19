@@ -110,9 +110,10 @@ export default function Page() {
       }
     } catch (error: unknown) {
       if ((error as ApiError).response?.status === 404) {
-        router.push('/overview')
+        messageApi.info("Game no longer exists. Returning to overview...");
+        setTimeout(() => router.push('/overview'), 2000);
       } else {
-        console.error("Failed to fetch [playerId]:", error);
+        console.error("Failed to fetch game:", error);
       }
     }
   };
@@ -203,6 +204,7 @@ export default function Page() {
       router.push('/overview');
     } catch (error) {
       messageApi.error("Failed to leave the game");
+      setTimeout(() => router.push('/overview'), 2000);
       console.error(error)
     } finally {
       setExiting(false);
