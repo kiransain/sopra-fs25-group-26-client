@@ -335,7 +335,7 @@ useEffect(() => {
 
     updateGameState();
 
-    const interval = setInterval(updateGameState, 2000);
+    const interval = setInterval(updateGameState, 1000);
     setUpdateInterval(interval);
 
     return () => {

@@ -116,7 +116,7 @@ const TUTORIAL_STEPS = [
     content: (
       <div className="tutorial-page">
         <div className="tutorial-text-block">
-          <p>When preparation ends, the main game timer begins. Your blue map marker shows your current location and updates as you move. The red circle marks the play area boundary - stay inside it to remain in the game.</p>
+          <p>When preparation ends, the main game timer begins. Your red map marker shows your current location and updates as you move. The red circle marks the play area boundary - stay inside it to remain in the game.</p>
 
           <div className="tutorial-image-placeholder">
             <div className="tutorial-image-placeholder">
@@ -139,16 +139,22 @@ const TUTORIAL_STEPS = [
     )
   },
   {
-    title: "TODO: Power-ups & Special Rules",
+    title: "Power-ups & Special Rules",
     content: (
       <div className="tutorial-page">
         <div className="tutorial-text-block">
-          <p>Manhunt includes special power-ups to keep gameplay dynamic. All players receive one use of the reveal ability, which shows all player locations for 10 seconds - use it strategically!</p>
+          <p>
+            Manhunt includes special power-ups to keep gameplay dynamic. All players receive one use of the{' '}
+            <span style={{ color: '#722ed1', fontWeight: 'bold' }}>
+              reveal
+            </span>{' '}
+            ability, which shows all player locations for 10 seconds - use it strategically!
+          </p>
 
           <div className="tutorial-image-placeholder wide-image">
            <div className="tutorial-image-placeholder">
             <Image
-            src="/tutorial/create_game.png"
+            src="/tutorial/power_ups.png"
             alt="Game creation screen"
             width={800}  // Original image width
             height={450} // Original image height
@@ -160,7 +166,13 @@ const TUTORIAL_STEPS = [
           </div>
           </div>
 
-          <p>Hunters get an additional ability: they can recenter the play area based on their current location. This can be crucial when the original center becomes less relevant to the ongoing hunt.</p>
+          <p>
+            Hunters get an additional ability: they can{' '}
+            <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>
+              recenter
+            </span>{' '}
+            the play area based on their current location. This can be crucial when the original center becomes less relevant to the ongoing hunt.
+          </p>
 
           <p>If you accidentally leave the play area, you will receive a 10-second warning to return before automatic elimination. This keeps the action focused while allowing for occasional boundary mistakes.</p>
         </div>

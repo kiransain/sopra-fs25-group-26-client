@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { useParams } from "next/navigation";
 import { Avatar, Button, List, Tag, Typography, message } from 'antd';
@@ -44,16 +44,11 @@ interface GameGetDTO {
   players: PlayerGetDTO[];
 }
 
-interface ApiError {
-  response?: {
-    status?: number;
-  }
-}
-
 const { Title, Text } = Typography;
 
 export default function Page() {
   const [messageApi, contextHolder] = message.useMessage();
+  const errorHandledRef = useRef(false);
 
   const [game, setGame] = useState<GameGetDTO | null>(null);
   const[currentUser, setCurrentUser] = useState<UserGetDTO | null>(null);
@@ -109,12 +104,15 @@ export default function Page() {
         return;
       }
     } catch (error: unknown) {
-      if ((error as ApiError).response?.status === 404) {
+      if (!errorHandledRef.current) {
+        errorHandledRef.current = true;
         messageApi.info("Game no longer exists. Returning to overview...");
-        setTimeout(() => router.push('/overview'), 2000);
-      } else {
-        console.error("Failed to fetch game:", error);
+        // Delay redirect by 3 seconds to allow the message to display
+        setTimeout(() => {
+          router.push('/overview');
+        }, 3000);
       }
+      console.error("Failed to fetch game:", error);
     }
   };
 
@@ -123,7 +121,7 @@ export default function Page() {
     if (!token || !gameId || !currentUser || !currentLocation) return; // Wait until token and gameId is available
 
     fetchGame();
-    const interval = setInterval(fetchGame, 2000);
+    const interval = setInterval(fetchGame, 1000);
 
     return () => clearInterval(interval);
   }, [token, gameId, currentUser, currentLocation]); // <-- Depend on token, gameId
