@@ -376,7 +376,7 @@ useEffect(() => {
   };
 
   const getRoleColor = (role: string) => {
-    return role === 'HUNTER' ? 'red' : 'green';
+    return role === 'HUNTER' ? 'blue' : 'yellow';
   };
 
   // Phase durations in seconds
@@ -563,7 +563,7 @@ useEffect(() => {
                   center={gameCenter}
                   radius={game.radius}
                   options={{
-                    fillColor: "rgba(255, 0, 0, 0.2)",
+                    fillColor: "rgba(102, 0, 255, 0.2)",
                     fillOpacity: 0.3,
                     strokeColor: "#FF0000",
                     strokeOpacity: 0.8,
@@ -582,7 +582,7 @@ useEffect(() => {
                     icon={{
                       path: google.maps.SymbolPath.CIRCLE,
                       scale: 7,
-                      fillColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                      fillColor: player.role === 'HUNTER' ? 'blue' : 'yellow',
                       fillOpacity: 1,
                       strokeWeight: 0
                     }}
@@ -714,7 +714,7 @@ useEffect(() => {
         <p>This action cannot be undone.</p>
       </Modal>
       <Modal
-  title="WARNING: OUT OF GAME AREA!"
+  title="You are outside the game area!"
   open={outOfAreaModalVisible}
   footer={null}
   closable={false}
@@ -722,8 +722,7 @@ useEffect(() => {
   style={{ top: 20 }}
 >
   <Alert
-    message="You are outside the game area!"
-    description="Return to the game area or you will lose!"
+    message="Return to the game area or you will lose!"
     type="error"
     showIcon
     style={{ marginBottom: 16 }}
