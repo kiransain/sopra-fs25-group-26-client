@@ -376,7 +376,7 @@ useEffect(() => {
   };
 
   const getRoleColor = (role: string) => {
-    return role === 'HUNTER' ? 'blue' : 'yellow';
+    return role === 'HUNTER' ? 'red' : 'green';
   };
 
   // Phase durations in seconds
@@ -582,7 +582,7 @@ useEffect(() => {
                     icon={{
                       path: google.maps.SymbolPath.CIRCLE,
                       scale: 7,
-                      fillColor: player.role === 'HUNTER' ? 'blue' : 'yellow',
+                      fillColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
                       fillOpacity: 1,
                       strokeWeight: 0
                     }}

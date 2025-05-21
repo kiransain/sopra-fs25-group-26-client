@@ -175,6 +175,21 @@ const TUTORIAL_STEPS = [
           </p>
 
           <p>If you accidentally leave the play area, you will receive a 10-second warning to return before automatic elimination. This keeps the action focused while allowing for occasional boundary mistakes.</p>
+          <div className="tutorial-image-placeholder wide-image">
+            <div className="tutorial-image-placeholder">
+              <Image
+                  src="/tutorial/out_of_area.jpg"
+                  alt="Game creation screen"
+                  width={400}
+                  height={225}
+                  className="tutorial-image"
+                  style={{
+                    width: '100%',
+                    maxWidth: '400px',
+                    height: 'auto'
+                  }}/>
+            </div>
+          </div>
         </div>
       </div>
     )
