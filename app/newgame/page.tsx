@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
-import { Button, Form, Input, InputNumber } from "antd";
+import { Button, Form, Input, InputNumber, message } from "antd";
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useState, useEffect } from "react";
 import useLocalStorage from "@/hooks/useLocalStorage";
@@ -41,6 +41,14 @@ const NewGame: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const playClick = useAudio('/sounds/button-click.mp3', 0.3); // audio
   const playPowerUp2 = useAudio('/sounds/powerup2.mp3', 0.3);
+  const [messageApi, contextHolder] = message.useMessage();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  useEffect(() => {
+    if (errorMessage) {
+      messageApi.info(errorMessage);
+      setErrorMessage(null);
+    }
+  }, [errorMessage, messageApi]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -70,7 +78,7 @@ const NewGame: React.FC = () => {
       alert('Location not available. Please ensure location services are enabled and try going to overview and refresh the page.');
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
@@ -79,32 +87,31 @@ const NewGame: React.FC = () => {
         locationLat: currentLocation.lat,
         locationLong: currentLocation.lng,
         radius: values.radius,
-        preparationTimeInSeconds: values.preparationTime, 
+        preparationTimeInSeconds: values.preparationTime,
         gameTimeInSeconds: values.gameTime
       };
 
-      
+
       const response = await apiService.post<GameGetDTO>("/games", gameData,{
         Authorization: `Bearer ${token}`,
       });
-      
+
       router.push(`/games/${response.gameId}`);
-    } catch (error) {
-      if (error instanceof Error) {
-        alert(`Failed to create game:\n${error.message}`);
-      } else {
-        console.error("An unknown error occurred while creating the game.");
-      }
+    } catch (error: unknown) {
+      setErrorMessage("Gamename already taken. Please try another name.");
+      console.error("An error occurred while creating the game." + error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="newgame-container">
+    <>
+      {contextHolder}
+      <div className="newgame-container">
       <div className="newgame-header">
         {/* Exit arrow near header */}
-                  <Button 
+                  <Button
                     icon={<ArrowLeftOutlined />}
                     onClick={() =>{playClick(); router.push('/overview');}}
                     className="tutorial-back-button"
@@ -113,7 +120,7 @@ const NewGame: React.FC = () => {
                   />
         <h1 className="newgame-title">ManHunt</h1>
       </div>
-  
+
       <div className="newgame-content">
         <div className="game-creation-visual">
           <div className="radar-animation">
@@ -123,7 +130,7 @@ const NewGame: React.FC = () => {
           </div>
           <div className="hunter-silhouette" />
         </div>
-  
+
         <Form
           form={form}
           name="newgame"
@@ -140,13 +147,13 @@ const NewGame: React.FC = () => {
             name="gameName"
             rules={[{ required: true, message: "Please input a game name!" }]}
           >
-            <Input 
-              placeholder="Game Name" 
+            <Input
+              placeholder="Game Name"
               className="game-name-input"
               prefix={<span className="input-icon">🔍</span>}
             />
           </Form.Item>
-  
+
           <div className="game-settings-grid">
             <Form.Item
               name="radius"
@@ -157,15 +164,15 @@ const NewGame: React.FC = () => {
               }
               rules={[{ required: true, message: "Please input game radius!" }]}
             >
-              <InputNumber 
-                min={5.0} 
-                max={100} 
+              <InputNumber
+                min={5.0}
+                max={100}
                 step={1.0}
                 className="game-input"
                 addonAfter="m"
               />
             </Form.Item>
-  
+
             <Form.Item
               name="preparationTime"
               label={
@@ -175,14 +182,14 @@ const NewGame: React.FC = () => {
               }
               rules={[{ required: true, message: "Please input preparation time!" }]}
             >
-              <InputNumber 
-                min={10} 
+              <InputNumber
+                min={10}
                 max={300}
                 className="game-input"
                 addonAfter="sec"
               />
             </Form.Item>
-  
+
             <Form.Item
               name="gameTime"
               label={
@@ -192,19 +199,19 @@ const NewGame: React.FC = () => {
               }
               rules={[{ required: true, message: "Please input game duration!" }]}
             >
-              <InputNumber 
-                min={60} 
+              <InputNumber
+                min={60}
                 max={900}
                 className="game-input"
                 addonAfter="sec"
               />
             </Form.Item>
           </div>
-          
+
           <Form.Item>
-            <Button 
-              type="primary" 
-              htmlType="submit" 
+            <Button
+              type="primary"
+              htmlType="submit"
               className="create-button"
               loading={isLoading}
               onClick = {playPowerUp2}
@@ -214,7 +221,8 @@ const NewGame: React.FC = () => {
           </Form.Item>
         </Form>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 export default NewGame;
