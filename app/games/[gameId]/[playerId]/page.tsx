@@ -463,289 +463,288 @@ useEffect(() => {
     : currentLocation;
 
   return (
-    <div className="game-play-container">
-      {contextHolder}
-      {game?.status === 'IN_GAME_PREPARATION' && (
-          currentPlayer?.role === 'HIDER' ? (
-              <Alert
-                  banner
-                  message="Get into the game area and hide!"
-                  type="warning"
-                  showIcon
-                  style={{ marginBottom: 16 }}
-              />
-          ) : (
-              <Alert
-                  banner
-                  message="Prepare for your hunt!"
-                  type="warning"
-                  showIcon
-                  style={{ marginBottom: 16 }}
-              />
-          )
-      )}
-      {game?.status === 'IN_GAME' && (
-        currentPlayer?.role === 'HIDER' && currentPlayer.status !== 'FOUND' ? (
-          <Alert
-            banner
-            message="The hunt has begun! The hunter is on the loose."
-            type="warning"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
-        ) : currentPlayer?.role === 'HUNTER' ? (
-          <Alert
-            banner
-            message="You can start hunting now!"
-            type="warning"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
-        ) : null
-      )}
-      {currentPlayer?.role === 'HIDER' &&
-          currentPlayer.status === 'FOUND' && (
-              <Alert
-                  banner
-                  message="You have been found! Please wait and spectate until the game is over."
-                  type="info"
-                  showIcon
-                  style={{ marginBottom: 16 }}
-              />
-              
-          )}
-      <header className="game-play-header">
-        <Title level={3} className="game-title">{game.gamename}</Title>
-        {currentPlayer && (
-          <Tag color={getRoleColor(currentPlayer.role)} className="role-tag">
-            {currentPlayer.role}
-          </Tag>
+      <div className="game-play-container">
+        {contextHolder}
+        {game?.status === 'IN_GAME_PREPARATION' && (
+            currentPlayer?.role === 'HIDER' ? (
+                <Alert
+                    banner
+                    message="Get into the game area and hide!"
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                />
+            ) : (
+                <Alert
+                    banner
+                    message="Prepare for your hunt!"
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                />
+            )
         )}
-        {/*frontend timer implemented here.*/}
-         <div className="game-timer">
-         <CountdownTimer/>
-        </div>
-        <div>
-          <Button 
-            shape="circle" 
-            icon={isMuted ? <SoundOutlined /> : <SoundFilled />} 
-            onClick={() => {
-              setIsMuted(!isMuted);
-              playClick();
-            }}
-            style={{
-              position: 'fixed',
-              bottom: '20px',
-              right: '20px',
-              zIndex: 1000
-            }}
-          />
-        </div>
-      </header>
-      <div className="game-play-content">
-        <div className="map-container">
-          {isLoaded ? (
-              <GoogleMap
-                mapContainerStyle={{ width: '100%', height: '100%' }}
-                center={currentLocation}
-                zoom={18}
-                options={mapOptions}
-                onLoad={(map: google.maps.Map) => {
-                  console.log('Map Loaded:', map);
-                }}
-              >
-                <Marker
-                  position={currentLocation}
-                  animation={google.maps.Animation.DROP} 
+        {game?.status === 'IN_GAME' && (
+            currentPlayer?.role === 'HIDER' && currentPlayer.status !== 'FOUND' ? (
+                <Alert
+                    banner
+                    message="The hunt has begun! The hunter is on the loose."
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
                 />
-                <Circle
-                  key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
-                  center={gameCenter}
-                  radius={game.radius}
-                  options={{
-                    fillColor: "rgba(102, 0, 255, 0.2)",
-                    fillOpacity: 0.3,
-                    strokeColor: "#FF0000",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2
-                  }}
+            ) : currentPlayer?.role === 'HUNTER' ? (
+                <Alert
+                    banner
+                    message="You can start hunting now!"
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
                 />
-                {showAllPlayers && game.players.map(player => {
-                if (!player.locationLat || !player.locationLong || player.playerId === currentPlayer?.playerId) {
-                  return null;
-                }
-                
-                return (
-                  <Marker
-                    key={`player-${player.playerId}`}
-                    position={{ lat: player.locationLat, lng: player.locationLong }}
-                    icon={{
-                      path: google.maps.SymbolPath.CIRCLE,
-                      scale: 7,
-                      fillColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
-                      fillOpacity: 1,
-                      strokeWeight: 0
-                    }}
-                  />
-                );
-              })}
-              </GoogleMap>
-          ) : (
-            <div>Loading map...</div>
-          )}
-        </div>
+            ) : null
+        )}
+        {currentPlayer?.role === 'HIDER' &&
+            currentPlayer.status === 'FOUND' && (
+                <Alert
+                    banner
+                    message="You have been found! Please wait and spectate until the game is over."
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                />
 
-        <div className="game-play-info">
-          <div className="player-status">
-            {currentPlayer && (
-              <div className="status-item">
-                {currentPlayer.outOfArea && (
-                  <Tag color="orange">OUT OF AREA</Tag>
-                )}
-              </div>
             )}
+        <header className="game-play-header">
+          <Title level={3} className="game-title">{game.gamename}</Title>
+          {currentPlayer && (
+              <Tag color={getRoleColor(currentPlayer.role)} className="role-tag">
+                {currentPlayer.role}
+              </Tag>
+          )}
+          <div className="game-timer">
+            <CountdownTimer/>
+          </div>
+          <div>
+            <Button
+                shape="circle"
+                icon={isMuted ? <SoundOutlined /> : <SoundFilled />}
+                onClick={() => {
+                  setIsMuted(!isMuted);
+                  playClick();
+                }}
+                style={{
+                  position: 'fixed',
+                  bottom: '20px',
+                  right: '20px',
+                  zIndex: 1000
+                }}
+            />
+          </div>
+        </header>
+        <div className="game-play-content">
+          <div className="map-container">
+            {isLoaded ? (
+                <GoogleMap
+                    mapContainerStyle={{ width: '100%', height: '100%' }}
+                    center={currentLocation}
+                    zoom={18}
+                    options={mapOptions}
+                    onLoad={(map: google.maps.Map) => {
+                      console.log('Map Loaded:', map);
+                    }}
+                >
+                  <Marker
+                      position={currentLocation}
+                      animation={google.maps.Animation.DROP}
+                  />
+                  <Circle
+                      key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
+                      center={gameCenter}
+                      radius={game.radius}
+                      options={{
+                        fillColor: "rgba(102, 0, 255, 0.2)",
+                        fillOpacity: 0.3,
+                        strokeColor: "#FF0000",
+                        strokeOpacity: 0.8,
+                        strokeWeight: 2
+                      }}
+                  />
+                  {showAllPlayers && game.players.map(player => {
+                    if (!player.locationLat || !player.locationLong || player.playerId === currentPlayer?.playerId) {
+                      return null;
+                    }
 
-            <div className="status-item">
-              <Text strong>Players:</Text>
-              <div className="player-avatars">
-                {game.players.map(player => {
-                  const isMe = player.playerId === currentPlayer?.playerId;
-                  return (
-                    <div
-                      key={player.playerId}
-                      className="player-avatar-item"
-                      style={{ display: 'inline-block', textAlign: 'center', margin: '0 8px' }}
-                    >
-                      <Avatar
-                        src={player.displayPicture || undefined}
-                        icon={!player.displayPicture ? <UserOutlined /> : undefined}
-                        size="small"
-                        style={{
-                          backgroundColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
-                          opacity: player.status === 'FOUND' ? 0.1 : 1,
-                          display: 'block',
-                          margin: '0 auto'
-                        }}
-                      />
-                      <Text
-                        style={{
-                          marginTop: 4,
-                          display: 'block',
-                          textDecoration: isMe ? 'underline' : 'none'
-                        }}
-                      >
-                        {player.displayName}
-                      </Text>
-                    </div>
-                  );
-                })}
+                    return (
+                        <Marker
+                            key={`player-${player.playerId}`}
+                            position={{ lat: player.locationLat, lng: player.locationLong }}
+                            icon={{
+                              path: google.maps.SymbolPath.CIRCLE,
+                              scale: 7,
+                              fillColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                              fillOpacity: 1,
+                              strokeWeight: 0
+                            }}
+                        />
+                    );
+                  })}
+                </GoogleMap>
+            ) : (
+                <div>Loading map...</div>
+            )}
+          </div>
+
+          <div className="game-play-info">
+            <div className="player-status">
+              {currentPlayer && (
+                  <div className="status-item">
+                    {currentPlayer.outOfArea && (
+                        <Tag color="orange">OUT OF AREA</Tag>
+                    )}
+                  </div>
+              )}
+
+              <div className="status-item">
+                <Text strong>Players:</Text>
+                <div className="player-avatars">
+                  {game.players.map(player => {
+                    const isMe = player.playerId === currentPlayer?.playerId;
+                    return (
+                        <div
+                            key={player.playerId}
+                            className="player-avatar-item"
+                            style={{ display: 'inline-block', textAlign: 'center', margin: '0 8px' }}
+                        >
+                          <Avatar
+                              src={player.displayPicture || undefined}
+                              icon={!player.displayPicture ? <UserOutlined /> : undefined}
+                              size="small"
+                              style={{
+                                backgroundColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                                opacity: player.status === 'FOUND' ? 0.1 : 1,
+                                display: 'block',
+                                margin: '0 auto'
+                              }}
+                          />
+                          <Text
+                              style={{
+                                marginTop: 4,
+                                display: 'block',
+                                textDecoration: isMe ? 'underline' : 'none'
+                              }}
+                          >
+                            {player.displayName}
+                          </Text>
+                        </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-          
-          
 
-          {/* Power-up buttons */}
-          <div className="power-up-buttons-container">
+            {/* Power-up buttons container ZUERST */}
+            <div className="power-up-buttons-container">
+              {game?.status === 'IN_GAME' && !powerUpUsed && (
+                  <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                  >
+                    <Button
+                        type="primary"
+                        shape="circle"
+                        className="power-up-button reveal-players-button"
+                        onClick={() => {playPowerUp(); activateShowPlayersPowerUp();}}
+                        icon={<EyeOutlined />}
+                    >
+                      Reveal
+                    </Button>
+                  </motion.div>
+              )}
+
+              {/* Hunter-specific power-up button */}
+              {game?.status === 'IN_GAME' &&
+                  currentPlayer?.role === 'HUNTER' &&
+                  !hunterPowerUpUsed && (
+                      <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                      >
+                        <Button
+                            type="primary"
+                            shape="circle"
+                            className="power-up-button recenter-area-button"
+                            icon={<AimOutlined />}
+                            loading={isRecenteringArea}
+                            onClick={() => {playPowerUp2(); activateRecenterAreaPowerUp();}}
+                        >
+                          Recenter
+                        </Button>
+                      </motion.div>
+                  )}
+            </div>
+
+            {/* Caught button container DANACH */}
             {game?.status === 'IN_GAME' &&
-            currentPlayer &&
-           currentPlayer.role === 'HIDER' && 
-           currentPlayer.status !== 'FOUND' && (
-            <Button 
-              danger
-              type="primary"
-              size="large"
-              className="caught-button"
-              onClick={() => {playExit(); setCaughtModalVisible(true)}}
-            >
-              I have Been Caught!
-            </Button>
-          )}
-            {game?.status === 'IN_GAME' && !powerUpUsed && (
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Button 
-                  type="primary"
-                  shape="circle"
-                  className="power-up-button reveal-players-button"
-                  onClick={() => {playPowerUp(); activateShowPlayersPowerUp();}}
-                  icon={<EyeOutlined />}
-                >
-                  Reveal
-                </Button>
-              </motion.div>
-            )}
-
-
-            {/* Hunter-specific power-up button */}
-            {game?.status === 'IN_GAME' && 
-              currentPlayer?.role === 'HUNTER' && 
-              !hunterPowerUpUsed && (
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Button 
-                  type="primary"
-                  shape="circle"
-                  className="power-up-button recenter-area-button"
-                  icon={<AimOutlined />}
-                  loading={isRecenteringArea}
-                  onClick={() => {playPowerUp2(); activateRecenterAreaPowerUp();}}
-                >
-                  Recenter
-                </Button>
-              </motion.div>
-            )}
+                currentPlayer &&
+                currentPlayer.role === 'HIDER' &&
+                currentPlayer.status !== 'FOUND' && (
+                    <div className="caught-button-container">
+                      <Button
+                          danger
+                          type="primary"
+                          size="large"
+                          className="caught-button"
+                          onClick={() => {playExit(); setCaughtModalVisible(true)}}
+                      >
+                        I have Been Caught!
+                      </Button>
+                    </div>
+                )}
           </div>
         </div>
+
+        <Modal
+            title="Confirm Caught"
+            open={caughtModalVisible}
+            onOk={() => { playClick(); handleCaughtAction(); }}
+            onCancel={() => {playExit(); setCaughtModalVisible(false)}}
+            okText="Yes, I'm caught"
+            cancelText="Cancel"
+        >
+          <p>This action cannot be undone.</p>
+        </Modal>
+        <Modal
+            title="You are outside the game area!"
+            open={outOfAreaModalVisible}
+            footer={null}
+            closable={false}
+            maskClosable={false}
+            style={{ top: 20 }}
+        >
+          <Alert
+              message="Return to the game area or you will lose!"
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+          />
+
+          {outOfAreaTimer !== null && (
+              <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                <Text strong style={{ fontSize: 16, color: '#ff4d4f' }}>
+                  Time remaining: {outOfAreaTimer} seconds
+                </Text>
+                <Progress
+                    percent={(outOfAreaTimer / 10) * 100}
+                    status="exception"
+                    showInfo={false}
+                    strokeColor="#ff4d4f"
+                />
+              </div>
+          )}
+
+          <p style={{ textAlign: 'center' }}>
+            Return to the game area on the map to continue playing.
+          </p>
+        </Modal>
       </div>
-      
-      <Modal
-        title="Confirm Caught"
-        open={caughtModalVisible}
-        onOk={() => { playClick(); handleCaughtAction(); }}
-        onCancel={() => {playExit(); setCaughtModalVisible(false)}}
-        okText="Yes, I'm caught"
-        cancelText="Cancel"
-      >
-        <p>This action cannot be undone.</p>
-      </Modal>
-      <Modal
-  title="You are outside the game area!"
-  open={outOfAreaModalVisible}
-  footer={null}
-  closable={false}
-  maskClosable={false}
-  style={{ top: 20 }}
->
-  <Alert
-    message="Return to the game area or you will lose!"
-    type="error"
-    showIcon
-    style={{ marginBottom: 16 }}
-  />
-  
-  {outOfAreaTimer !== null && (
-    <div style={{ textAlign: 'center', marginBottom: 16 }}>
-      <Text strong style={{ fontSize: 16, color: '#ff4d4f' }}>
-        Time remaining: {outOfAreaTimer} seconds
-      </Text>
-      <Progress 
-        percent={(outOfAreaTimer / 10) * 100} 
-        status="exception" 
-        showInfo={false} 
-        strokeColor="#ff4d4f"
-      />
-    </div>
-  )}
-  
-  <p style={{ textAlign: 'center' }}>
-    Return to the game area on the map to continue playing.
-  </p>
-</Modal>
-    </div>
-  );
-}
+  );}
