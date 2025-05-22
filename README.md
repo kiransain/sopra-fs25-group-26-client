@@ -1,5 +1,8 @@
 # 🕵️ Welcome to **Manhunt!**
 
+![Vercel](https://vercelbadge.vercel.app/api/kiransain/sopra-fs25-group-26-client)
+![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
 ## 🎯 Introduction
 
 **Manhunt** is a mobile, multiplayer web application that reimagines classic hide-and-seek for the smartphone era. By blending real-world movement with battle‐royale–style dynamics, it brings back a nostalgic childhood game in a modern, enhanced form—making playing outside fun again.
@@ -96,7 +99,10 @@ npm start
 ```
 
 External Dependencies
-- Application needs running backend server. Make sure the backend is running on `localhost:8080` or change the API URL in the `.env` file.
+- Application needs running backend server. Ensure the backend is running (default: `http://localhost:8080`). You can configure the API base URL in `.env` using:
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+
 - Google Maps API key is required. Set it in the `.env` file as `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key`.
 
 Deployment
@@ -114,14 +120,14 @@ Releases
 ## 🖼️ Illustrations
 
 ### Main User Flow:
-1.**Login/Register Page** - Login or register to the game
-2.**Overview Page** – Entry point, see existing games  
-3.**Join Game** – Browse and join open lobbies  
-4.**Create Game** – Set game area, preparation and main timer 
-5.**Game Lobby** – Wait for other players (min. 2 to start)
-6.**Main Game** – Real-time map view, power-ups, role assignment   
-7.**Endgame** – Automatically ends if all players are caught or time is up
-8.**Global rankings** – Shows up under profile and you can compare yourself to all players.
+1. **Login/Register Page** - Login or register to the game
+2. **Overview Page** – Entry point, see existing games  
+3. **Join Game** – Browse and join open lobbies  
+4. **Create Game** – Set game area, preparation and main timer 
+5. **Game Lobby** – Wait for other players (minimum of 2 players required to start)
+6. **Main Game** – Real-time map view, power-ups, role assignment   
+7. **Endgame** – Automatically ends if all players are caught or time is up
+8. **Global rankings** – Shows up under profile and you can compare yourself to all players.
     
 [screenshots to be done]
 
@@ -133,7 +139,7 @@ Future contributors might consider:
 
 1.  Customizable role assignment logic (e.g. several hunters)
 2.  Adding support for team-based gameplay
-3.  Only location-based games available (e.g. only games in Zurich available)
+3.  Limit available games to user’s current city (e.g., Zurich only)
 
 ----------
 
@@ -144,7 +150,11 @@ Future contributors might consider:
 - @Gentjash
 - And many thanks to our TA Ambros, the SoPra teaching team and the open-source tools we relied on.
 
+----------
 
+## 🌐 Related 
+
+- 🔗 [Backend Repository](https://github.com/kiransain/sopra-fs25-group-26-server)
     
 ----------
 
