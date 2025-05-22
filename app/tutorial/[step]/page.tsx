@@ -89,8 +89,8 @@ const TUTORIAL_STEPS = [
               <Image
                 src="/screenshots/main-game-preparation.jpg"
                 alt="Preparation timer screen"
-                width={800}
-                height={450}
+                width={375}
+              height={812}
                 className="rounded-lg border border-gray-200 shadow-md w-full h-auto"
               />
             </div>
@@ -111,8 +111,8 @@ const TUTORIAL_STEPS = [
               <Image
                 src="/screenshots/main-game.jpg"
                 alt="Game map screen"
-                width={900}  // Slightly wider for maps
-                height={506} // Maintain 16:9 ratio
+                width={375}
+              height={812}
                 className="rounded-lg border border-gray-200 shadow-md w-full h-auto"
               />
             </div>
@@ -163,8 +163,8 @@ const TUTORIAL_STEPS = [
               <Image
                 src="/screenshots/outOfArea.jpg"
                 alt="Boundary warning screen"
-                width={600}
-                height={338} // Maintain 16:9 ratio
+                width={375}
+              height={812}
                 className="rounded-lg border border-gray-200 shadow-md w-full h-auto"
               />
             </div>
