@@ -36,7 +36,7 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
      - Use **Hooks** to obtain data and manage states.  
      - Call **API Service** methods to retrieve and update backend data.
    - **Main File:**
-   [games/[gameId]/[playerId]/page.tsx](app/games/%5BgameId%5D/%5BplayerId%5D/page.tsx) is the main in-game page.
+   [games/[gameId]/[playerId]/page](app/games/%5BgameId%5D/%5BplayerId%5D/page.tsx)
 
 2. **Components**
     - **Role:** Encapsulate shared UI elements for map integration, including the provider and the map renderer.
@@ -46,7 +46,7 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
         - **MapComponent** consumes the provider's context to render the map, player markers and game area circle.
         - Styles are applied via CSS modules in the **Styles**.
    - **Main File:**
-   [components/GoogleMapsProvider.tsx](app/components/GoogleMapsProvider.tsx)
+   [GoogleMapsProvider](app/components/GoogleMapsProvider.tsx)
 
 3. **API Service**
    - **Role:** Centralize all HTTP communication with the backend REST API.
@@ -54,7 +54,7 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
      - Invoked by **Pages** and **Hooks** to fetch or mutate game and user data.  
      - Returns JSON payloads that are passed into **Components** for rendering.
    - **Main File:**
-   [api/apiService.ts](app/api/apiService.ts)
+   [apiService](app/api/apiService.ts)
 
 4. **Hooks**
    - **Role:** Provide shared logic (e.g., geolocation, audio playback, polling) as reusable React hooks.
@@ -62,14 +62,14 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
      - Employed in **Pages** and **Components** to abstract side effects and stateful logic.  
      - Rely on **API Service** to fetch data where needed.
    - **Main File:**
-   [hooks/useGoogleMaps.ts](app/hooks/useGoogleMaps.ts)
+   [useGoogleMaps](app/hooks/useGoogleMaps.ts)
 
 5. **Styles**
    - **Role:** Define the visual theming and layout using scoped CSS Modules.
    - **Correlations:**  
      - Imported by **Pages** and **Components** to ensure consistent styling across the app.
    - **Main File:**
-   [styles/game-play.css](app/styles/game-play.css)
+   [game-play](app/styles/game-play.css)
 ---------- 
 
 ## 🚀 Launch & Deployment
@@ -77,6 +77,8 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
 Prerequisites
 - Node.js 18+
 - npm 9+
+- -**Browser Location:** Ensure that your browser has location services enabled otherwise the game functions will not work.
+
 
 Clone the Repository
 ```bash
@@ -112,6 +114,7 @@ Releases
 - Make sure changes are committed and pushed to the 'develop' branch.
 - Create a pull request to merge 'develop' into 'main'.
 - After code review and approval, merge the pull request.
+- Create a new tag for the release version and push it.
 - Vercel will automatically deploy the latest version to production.
 
 
