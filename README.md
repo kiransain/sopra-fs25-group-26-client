@@ -1,8 +1,5 @@
 # 🕵️ Welcome to **Manhunt!**
 
-![Vercel](https://vercelbadge.vercel.app/api/kiransain/sopra-fs25-group-26-client)
-![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)
-
 ## 🎯 Introduction
 
 **Manhunt** is a mobile, multiplayer web application that reimagines classic hide-and-seek for the smartphone era. By blending real-world movement with battle‐royale–style dynamics, it brings back a nostalgic childhood game in a modern, enhanced form—making playing outside fun again.
@@ -101,10 +98,7 @@ npm start
 ```
 
 External Dependencies
-- Application needs running backend server. Ensure the backend is running (default: `http://localhost:8080`). You can configure the API base URL in `.env` using:
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
-
+- Application needs running backend server. Make sure the backend is running on `localhost:8080` or change the API URL in the `.env` file.
 - Google Maps API key is required. Set it in the `.env` file as `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key`.
 
 Deployment
@@ -122,17 +116,42 @@ Releases
 
 ## 🖼️ Illustrations
 
-### Main User Flow:
-1. **Login/Register Page** - Login or register to the game
-2. **Overview Page** – Entry point, see existing games  
-3. **Join Game** – Browse and join open lobbies  
-4. **Create Game** – Set game area, preparation and main timer 
-5. **Game Lobby** – Wait for other players (minimum of 2 players required to start)
-6. **Main Game** – Real-time map view, power-ups, role assignment   
-7. **Endgame** – Automatically ends if all players are caught or time is up
-8. **Global rankings** – Shows up under profile and you can compare yourself to all players.
-    
-[screenshots to be done]
+### Main User Flows:
+1.**Login/Register Page** - The main entry point, where users login or register to access the app.
+<img src="public/screenshots/login.jpg" alt="Login Page" width="200" />
+
+2.**Overview Page** – The hub, where users can see all active game lobbies, join them or create a new one. Additionally, users can view their profile and global rankings by clicking on the profile icon in the top right corner or read about the rules in the information section.
+
+<img src="public/screenshots/overview.jpg" alt="Overview Page" width="200" />
+
+ 
+3.**Create Game** – The creator sets the game parameters. After successfully creating a game, the user is redirected to the game lobby.
+
+<img src="public/screenshots/create_game.jpg" alt="Create Game Page" width="200" />
+
+4.**Game Lobby** – All players gather here before the game starts. The creator can start the game, and all players can leave the lobby.
+
+<img src="public/screenshots/lobby.jpg" alt="Game Lobby Page" width="200" />
+
+5.**Main Game in Preparation** – The game is in preparation mode. Players can see their updated realtime location on the map, their roles and the game area. The main game starts when the countdown reaches zero.
+
+<img src="public/screenshots/main-game-preparation.jpg" alt="Game in Preparation Page" width="200" />
+
+6.**Main Game in Progress** – The game is in progress. Players can additionally see their role-specific power ups. Hiders also have a 'caught' button to admit they are caught. Players outside of the game area have 10 seconds to return into the game area otherwise they are out. The game ends when the countdown reaches zero, all hiders were caught or the hunter it out due the out-of-area penalty.
+
+<img src="public/screenshots/main-game.jpg" alt="Game in Progress" width="200" />
+
+7.**Game End** – The game ends. Players can see the results and their roles. Players are awarded with points based on their performance and can return to the overview page.
+
+<img src="public/screenshots/leaderboard.jpg" alt="Game End Page" width="200" />
+
+8.**Profile Page** – The profile page shows the player's statistics, including the number of games played, won and lost and their points. From here users can access the global leaderboard, update their password or log out.
+
+<img src="public/screenshots/profile.jpg" alt="Profile Page" width="200" />
+
+9.**Global Leaderboard** – The global leaderboard shows all users ranked based on their points. Players can see their rank and the rank of other players.
+
+<img src="public/screenshots/global-leaderboard.jpg" alt="Leaderboard Page" width="200" />
 
 ----------
 
@@ -140,9 +159,8 @@ Releases
 
 Future contributors might consider:
 
-1.  Customizable role assignment logic (e.g. several hunters)
-2.  Adding support for team-based gameplay
-3.  Limit available games to user’s current city (e.g., Zurich only)
+1. Add forms in newgame/page.tsx to allow player customize roles and teams.
+2. Allow custom profile pictures uploaded by users.
 
 ----------
 
@@ -153,11 +171,7 @@ Future contributors might consider:
 - @Gentjash
 - And many thanks to our TA Ambros, the SoPra teaching team and the open-source tools we relied on.
 
-----------
 
-## 🌐 Related 
-
-- 🔗 [Backend Repository](https://github.com/kiransain/sopra-fs25-group-26-server)
     
 ----------
 
