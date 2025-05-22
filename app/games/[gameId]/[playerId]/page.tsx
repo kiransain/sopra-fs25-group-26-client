@@ -722,13 +722,6 @@ useEffect(() => {
             maskClosable={false}
             style={{ top: 20 }}
         >
-          <Alert
-              message="Return to the game area or you will lose!"
-              type="error"
-              showIcon
-              style={{ marginBottom: 16 }}
-          />
-
           {outOfAreaTimer !== null && (
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <Text strong style={{ fontSize: 16, color: 'purple' }}>
@@ -744,7 +737,7 @@ useEffect(() => {
           )}
 
           <p style={{ textAlign: 'center' }}>
-            Return to the game area on the map to continue playing.
+            Return to the game area on the map to continue playing or you will lose.
           </p>
         </Modal>
       </div>
