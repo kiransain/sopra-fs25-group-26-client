@@ -33,7 +33,7 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
      - Use **Hooks** to obtain data and manage states.  
      - Call **API Service** methods to retrieve and update backend data.
    - **Main File:**
-   [games/[gameId]/[playerId]/page.tsx](app/games/%5BgameId%5D/%5BplayerId%5D/page.tsx) is the main in-game page.
+   [games/[gameId]/[playerId]/page](app/games/%5BgameId%5D/%5BplayerId%5D/page.tsx)
 
 2. **Components**
     - **Role:** Encapsulate shared UI elements for map integration, including the provider and the map renderer.
@@ -43,7 +43,7 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
         - **MapComponent** consumes the provider's context to render the map, player markers and game area circle.
         - Styles are applied via CSS modules in the **Styles**.
    - **Main File:**
-   [components/GoogleMapsProvider.tsx](app/components/GoogleMapsProvider.tsx)
+   [GoogleMapsProvider](app/components/GoogleMapsProvider.tsx)
 
 3. **API Service**
    - **Role:** Centralize all HTTP communication with the backend REST API.
@@ -51,7 +51,7 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
      - Invoked by **Pages** and **Hooks** to fetch or mutate game and user data.  
      - Returns JSON payloads that are passed into **Components** for rendering.
    - **Main File:**
-   [api/apiService.ts](app/api/apiService.ts)
+   [apiService](app/api/apiService.ts)
 
 4. **Hooks**
    - **Role:** Provide shared logic (e.g., geolocation, audio playback, polling) as reusable React hooks.
@@ -59,14 +59,14 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
      - Employed in **Pages** and **Components** to abstract side effects and stateful logic.  
      - Rely on **API Service** to fetch data where needed.
    - **Main File:**
-   [hooks/useGoogleMaps.ts](app/hooks/useGoogleMaps.ts)
+   [useGoogleMaps](app/hooks/useGoogleMaps.ts)
 
 5. **Styles**
    - **Role:** Define the visual theming and layout using scoped CSS Modules.
    - **Correlations:**  
      - Imported by **Pages** and **Components** to ensure consistent styling across the app.
    - **Main File:**
-   [styles/game-play.css](app/styles/game-play.css)
+   [game-play](app/styles/game-play.css)
 ---------- 
 
 ## 🚀 Launch & Deployment
@@ -106,6 +106,7 @@ Releases
 - Make sure changes are committed and pushed to the 'develop' branch.
 - Create a pull request to merge 'develop' into 'main'.
 - After code review and approval, merge the pull request.
+- Create a new tag for the release version and push it.
 - Vercel will automatically deploy the latest version to production.
 
 
@@ -115,13 +116,13 @@ Releases
 
 ### Main User Flow:
 1.**Login/Register Page** - Login or register to the game
-2.**Overview Page** – Entry point, see existing games  
+2.**Overview Page** – Entry point, create new game or join existing game, visit profile
 3.**Join Game** – Browse and join open lobbies  
-4.**Create Game** – Set game area, preparation and main timer 
+4.**Create Game** – Set game radius, preparation and main timer 
 5.**Game Lobby** – Wait for other players (min. 2 to start)
 6.**Main Game** – Real-time map view, power-ups, role assignment   
-7.**Endgame** – Automatically ends if all players are caught or time is up
-8.**Global rankings** – Shows up under profile and you can compare yourself to all players.
+7.**Endgame** – Automatically ends if all players are caught, time is up or hunter is too long outside of game area.
+8.**Global rankings** – under profile page, ranking of all players.
     
 [screenshots to be done]
 
@@ -131,9 +132,8 @@ Releases
 
 Future contributors might consider:
 
-1.  Customizable role assignment logic (e.g. several hunters)
-2.  Adding support for team-based gameplay
-3.  Only location-based games available (e.g. only games in Zurich available)
+1.  Add forms in newgame/page.tsx to allow player customize roles and teams.
+2. Allow custom profile pictures uploaded by users.
 
 ----------
 
