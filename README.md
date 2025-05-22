@@ -229,6 +229,7 @@ The following steps outline the release process for the frontend application:
     <img src="public/screenshots/login.jpg" alt="Login Page" width="200" />
 
 2. **Overview Page** – The hub, where users can see all active game lobbies, join them or create a new one. Additionally, users can view their profile and global rankings by clicking on the profile icon in the top right corner or read about the rules in the information section.
+
    <img src="public/screenshots/overview.jpg" alt="Overview Page" width="200" />
 
 3. **Create Game** – The creator sets the game parameters. After successfully creating a game, the user is redirected to the game lobby.
@@ -249,11 +250,11 @@ The following steps outline the release process for the frontend application:
 
 7. **Out of Area** - Once a player it out of area, they have 10 seconds to return into the game area - otherwise they are eliminated from the game!
 
-   <img src="public/screenshots/outOfArea.jpg>" alt="Profile Page" width="200" />
+   <img src="public/screenshots/outOfArea.jpg" alt="Out of Area" width="200" />
 
 8. **Game End** – The game ends after either the time is up or all players have been caught. Players can see the results and their roles. Players are awarded with points based on their performance and can return to the overview page.
 
-   <img src="public/screenshots/leaderboard.jpg" alt="Game End Page" width="200" />
+    <img src="public/screenshots/leaderboard.jpg" alt="Game End Page" width="200" />
 
 9. **Profile Page** – The profile page shows the player's statistics, including the number of games played, won and lost and their points. From here users can access the global leaderboard, update their password or log out.
 
@@ -261,7 +262,7 @@ The following steps outline the release process for the frontend application:
 
 10. **Global Leaderboard** – The global leaderboard shows all users ranked based on their points. Players can see their rank and the rank of other players.
 
-   <img src="public/screenshots/global-leaderboard.jpg" alt="Leaderboard Page" width="200" />
+    <img src="public/screenshots/global-leaderboard.jpg" alt="Leaderboard Page" width="200" />
 
 ## 🛣️ Roadmap
 Future contributors might consider:
