@@ -118,13 +118,13 @@ Releases
 
 ### Main User Flows:
 1.**Login/Register Page** - The main entry point, where users login or register to access the app.
+
 <img src="public/screenshots/login.jpg" alt="Login Page" width="200" />
 
 2.**Overview Page** – The hub, where users can see all active game lobbies, join them or create a new one. Additionally, users can view their profile and global rankings by clicking on the profile icon in the top right corner or read about the rules in the information section.
 
 <img src="public/screenshots/overview.jpg" alt="Overview Page" width="200" />
 
- 
 3.**Create Game** – The creator sets the game parameters. After successfully creating a game, the user is redirected to the game lobby.
 
 <img src="public/screenshots/create_game.jpg" alt="Create Game Page" width="200" />
