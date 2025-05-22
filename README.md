@@ -2,91 +2,126 @@
 
 ## 🎯 Introduction
 
-**Manhunt** is a location-based mobile web game that combines the thrill of _hide-and-seek_ with game mechanics inspired by _Fortnite_. Our goal is to encourage players to go outside and have fun while using the benefits of modern mobile technology and GPS.
+**Manhunt** is a mobile, multiplayer web application that reimagines classic hide-and-seek for the smartphone era. By blending real-world movement with battle‐royale–style dynamics, it brings back a nostalgic childhood game in a modern, enhanced form—making playing outside fun again.
 
-The app allows players to join or create real-time location-based games, play as a hider or hunter, use power-ups, and compete for top rankings on a global leaderboard.
+Players join or create a game as either **<span style="color:#722ed1">Hunter</span>** or **<span style="color:#fadb14">Hider</span>**, then physically move within a geo-fenced play area that dynamically shrinks. Strategic power-ups—**Reveal** (briefly expose all players) and **Recenter** (shift the game center)—add tactical depth. All clients remain tightly synchronized—sharing GPS positions, player statuses, and a server-anchored countdown—to ensure fairness and eliminate boundary or timing disputes.
+
+**Motivation**
+- Rekindle the joy of a nostalgic outdoor game with modern technology  
+- Solve childhood hide-and-seek frustrations (lost players, boundary disputes, unfair starts)  
+- Encourage physical activity, social interaction and strategic thinking  
+- Offer quick, repeatable rounds with clear rules and engaging mechanics
 
 ----------
 
 ## ⚙️ Technologies Used
--   **Frontend:** TypeScript, React, CSS
--   **Backend:** Spring Boot (Java), RESTful APIs
--  **External API** Google Maps API
--   **Database:** H2 (in-memory for dev/testing), PostgreSQL (for deployment)
--   **Deployment:** Google Cloud (Backend), Vercel (Frontend)
-----------
+- **Framework:** Next.js & React (TypeScript)
+- **UI Library:** Ant Design
+- **Styling:** CSS Modules
+- **Animations:** Framer Motion
+- **APIs:** Google Maps JavaScript API
+- **Testing & Quality:** ESLint
+- **Deployment:** Vercel
+---------- 
 
 ## 🧩 High-Level Components
 
-1.  **Frontend App (`client/`)**
-    -   Built with Typescript, React, and CSS        
-    -   Responsible for the UI, maps, and live game display       
-    -   Main file
-        
-2.  **Backend Server (`server/`)**
-    -   Built with Spring Boot
-    -   Manages user accounts, games, leaderboards, and game logic
-    -   Main class
-        
-3.  **Game Engine**
-       -   Coordinates game logic (e.g., player roles, timers, area shrinking)
-       -   Handles GPS data and location-based game states
-       -   Example file
-        
-4.  **Authentication & User Management**
-    -   Login, registration, profile handling, and secure password update
-    -   Example file
-        
-5.  **Map & Location Integration**
-    -   Uses browser geolocation and dynamic map rendering
-    -   Enforces game boundaries and out-of-bounds logic
-    -  Uses Google Maps API        
-----------
+1. **Pages**
+   - **Role:** Serve as the main entry points for each URL route, defining layout and page logic.
+   - **Correlations:**  
+     - Import and render UI **Components** for page-specific views.  
+     - Use **Hooks** to obtain data and manage states.  
+     - Call **API Service** methods to retrieve and update backend data.
+   - **Main File:**
+   [games/[gameId]/[playerId]/page.tsx](app/games/%5BgameId%5D/%5BplayerId%5D/page.tsx) is the main in-game page.
+
+2. **Components**
+    - **Role:** Encapsulate shared UI elements for map integration, including the provider and the map renderer.
+    - **Correlations:**
+        - Imported by **Pages** to display the game map.
+        - **GoogleMapsProvider** uses a 'useEffect' hook to fetch and initialize the Google Maps API key on mount.
+        - **MapComponent** consumes the provider's context to render the map, player markers and game area circle.
+        - Styles are applied via CSS modules in the **Styles**.
+   - **Main File:**
+   [components/GoogleMapsProvider.tsx](app/components/GoogleMapsProvider.tsx)
+
+3. **API Service**
+   - **Role:** Centralize all HTTP communication with the backend REST API.
+   - **Correlations:**  
+     - Invoked by **Pages** and **Hooks** to fetch or mutate game and user data.  
+     - Returns JSON payloads that are passed into **Components** for rendering.
+   - **Main File:**
+   [api/apiService.ts](app/api/apiService.ts)
+
+4. **Hooks**
+   - **Role:** Provide shared logic (e.g., geolocation, audio playback, polling) as reusable React hooks.
+   - **Correlations:**  
+     - Employed in **Pages** and **Components** to abstract side effects and stateful logic.  
+     - Rely on **API Service** to fetch data where needed.
+   - **Main File:**
+   [hooks/useGoogleMaps.ts](app/hooks/useGoogleMaps.ts)
+
+5. **Styles**
+   - **Role:** Define the visual theming and layout using scoped CSS Modules.
+   - **Correlations:**  
+     - Imported by **Pages** and **Components** to ensure consistent styling across the app.
+   - **Main File:**
+   [styles/game-play.css](app/styles/game-play.css)
+---------- 
 
 ## 🚀 Launch & Deployment
 
-### Prerequisites
--   Java 17+
--   Node.js 18+
--   PostgreSQL or H2
+Prerequisites
+- Node.js 18+
+- npm 9+
 
-### Backend (Spring Boot)
-`cd server`
-`./gradlew build` 
-`./gradlew bootRun` 
+Clone the Repository
+```bash
+git clone git@github.com:kiransain/sopra-fs25-group-26-client.git
+cd sopra-fs25-group-26-client
 
-### Frontend (React)
-`cd client`
-`npm install`
-`npm run dev` 
+# Install Dependencies
+npm install
+```
 
-### Running Tests
--   Backend tests: `./gradlew test`
+Local Development
+```bash
+npm run dev
+```
 
-### Deployment
--   Backend: Deployed on Google Cloud App Engine
--   Frontend: Deployed via Vercel (automatic on `main` branch push)
-    
-----------
+Production Build
+```bash
+npm run build
+npm start
+```
+
+External Dependencies
+- Application needs running backend server. Make sure the backend is running on `localhost:8080` or change the API URL in the `.env` file.
+- Google Maps API key is required. Set it in the `.env` file as `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_api_key`.
+
+Deployment
+- The frontend is automatically deployed to Vercel on pushes to the `main` branch.
+
+Releases
+- Make sure changes are committed and pushed to the 'develop' branch.
+- Create a pull request to merge 'develop' into 'main'.
+- After code review and approval, merge the pull request.
+- Vercel will automatically deploy the latest version to production.
+
+
+---------- 
 
 ## 🖼️ Illustrations
 
 ### Main User Flow:
-1.  **Overview Page** – Entry point, see existing games  
-2.  **Join Game** – Browse and join open lobbies  
-3.  **Create Game** – Set game area, preparation and main timer 
-4.  **Game Lobby** – Wait for other players (min. 2 to start)
-5.  **Main Game** – Real-time map view, power-ups, role assignment   
-6.  **Endgame** – Automatically ends if all players are caught or time is up
-7.  **Global rankings** – Shows up under profile and you can compare yourself to all players.
-    
-
-### Key UI Features:
-
--   **Player markers** (red = hunter, green = hider)
--   **Power-ups** (see players, shrink area)
--   **Out-of-bounds warning & auto-elimination**
--   **Global leaderboard and personal stats**
+1.**Login/Register Page** - Login or register to the game
+2.**Overview Page** – Entry point, see existing games  
+3.**Join Game** – Browse and join open lobbies  
+4.**Create Game** – Set game area, preparation and main timer 
+5.**Game Lobby** – Wait for other players (min. 2 to start)
+6.**Main Game** – Real-time map view, power-ups, role assignment   
+7.**Endgame** – Automatically ends if all players are caught or time is up
+8.**Global rankings** – Shows up under profile and you can compare yourself to all players.
     
 [screenshots to be done]
 
@@ -107,7 +142,7 @@ Future contributors might consider:
 - @kiransain
 - @ermin-mumic
 - @Gentjash
-- And many thanks to our TA Ambros, the SoPra teaching team, and the open-source tools we relied on.
+- And many thanks to our TA Ambros, the SoPra teaching team and the open-source tools we relied on.
 
 
     
