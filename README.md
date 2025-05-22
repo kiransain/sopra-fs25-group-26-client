@@ -247,11 +247,11 @@ The following steps outline the release process for the frontend application:
 
    <img src="public/screenshots/main-game.jpg" alt="Game in Progress" width="200" />
 
-7. **Out of Area** - Once you leave out of area...
+7. **Out of Area** - Once a player it out of area, they have 10 seconds to return into the game area - otherwise they are eliminated from the game!
 
-   Enter image <>
+   <img src="public/screenshots/outOfArea.jpg>" alt="Profile Page" width="200" />
 
-8. **Game End** – The game ends. Players can see the results and their roles. Players are awarded with points based on their performance and can return to the overview page.
+8. **Game End** – The game ends after either the time is up or all players have been caught. Players can see the results and their roles. Players are awarded with points based on their performance and can return to the overview page.
 
    <img src="public/screenshots/leaderboard.jpg" alt="Game End Page" width="200" />
 
@@ -285,3 +285,11 @@ Future contributors might consider:
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
+----------
+
+## 🎵 Audio Credits
+
+The background music and sound effects used in this game are copyright-free.  
+They are sourced from [Pixabay](https://pixabay.com/), a platform offering royalty-free media.
+

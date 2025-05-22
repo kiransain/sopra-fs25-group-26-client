@@ -95,7 +95,7 @@ const TUTORIAL_STEPS = [
             <div className="tutorial-image-placeholder wide-image">
             <div className="tutorial-image-placeholder">
             <Image
-            src="/tutorial/timer and role.png"
+            src="/screenshots/main-game-preparation.jpg"
             alt="Game creation screen"
             width={800}  // Original image width
             height={450} // Original image height
@@ -121,7 +121,7 @@ const TUTORIAL_STEPS = [
           <div className="tutorial-image-placeholder">
             <div className="tutorial-image-placeholder">
             <Image
-            src="/tutorial/hunt_preperation.png"
+            src="/screenshots/main-game.jpg"
             alt="Game creation screen"
             width={800}  // Original image width
             height={450} // Original image height
@@ -154,7 +154,7 @@ const TUTORIAL_STEPS = [
           <div className="tutorial-image-placeholder wide-image">
            <div className="tutorial-image-placeholder">
             <Image
-            src="/tutorial/power_ups.png"
+            src="/tutorial/powerup.png"
             alt="Game creation screen"
             width={800}  // Original image width
             height={450} // Original image height
@@ -178,7 +178,7 @@ const TUTORIAL_STEPS = [
           <div className="tutorial-image-placeholder wide-image">
             <div className="tutorial-image-placeholder">
               <Image
-                  src="/tutorial/out_of_area.jpg"
+                  src="/screenshots/outOfArea.jpg"
                   alt="Game creation screen"
                   width={400}
                   height={225}
