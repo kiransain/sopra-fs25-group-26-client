@@ -141,3 +141,11 @@
 .recenter-area-button {
   background: linear-gradient(135deg, blue, aqua) !important;
 }
+
+.player-avatars {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  white-space: nowrap; /* Prevent avatars from wrapping */
+  padding-bottom: 5px; /* Add some padding for the scrollbar */
+}
