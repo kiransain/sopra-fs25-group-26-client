@@ -273,14 +273,13 @@ Future contributors might consider:
 ## 👥 Authors & Acknowledgments
 
 - Kiran Nanduri - frontend - [![Kiran Nanduri](https://img.shields.io/badge/-@kiransain-181717?style=flat-square&logo=github)](https://github.com/kiransain)
-
 - Ermin Mumic - backend - [![Ermin Mumić](https://img.shields.io/badge/-@ermin--mumic-181717?style=flat-square&logo=github)](https://github.com/ermin-mumic)
-
 - Gent Jashari - frontend - [![Ermin Mumić](https://img.shields.io/badge/-@GentJash-181717?style=flat-square&logo=github)](https://github.com/GentJash)
 
 - And many thanks to our TA Ambros Eberhard, the SoPra teaching team, the course in parallel Software Engineering by Prof. Thomas Fritz, and the open-source tools we relied on.
 
 - This code is based on the [SoPra-FS25-Client](https://github.com/HASEL-UZH/sopra-fs25-template-client)
+- To see contributions, you can see [Contributors](https://github.com/kiransain/sopra-fs25-group-26-client/graphs/contributors)
 ----------
 
 ## 📄 License
