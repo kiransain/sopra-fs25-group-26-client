@@ -160,6 +160,8 @@ reason).
 
 |**@kiransain** | 22.05.2025  |[#89 - accessability](https://github.com/kiransain/sopra-fs25-group-26-client/commit/1ab27a8513e21595e8f89bb2ed2ee1d01a3bd4a4)| Color schemed changed and red was changed to purple. | This was done as in yesterday's software eng lecture, the topic accessability was mentioned. It is important to make sure our application which was previously red-green to be accessible to people with colour-blindedness, hence change. |
 
+|**@kiransain** | 22.05.2025  |[#88, #70](https://github.com/kiransain/sopra-fs25-group-26-client/commit/007676f920c15b3a4dc6d4f2f5729d5cbfa812e1), [README](https://github.com/kiransain/sopra-fs25-group-26-client/commit/188c2fcf844f5ba228e365cb3d9e483f0f499f6e) |README and tutorial images updated. |
+
 
 
 
