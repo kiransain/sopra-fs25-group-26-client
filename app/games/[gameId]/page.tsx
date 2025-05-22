@@ -239,8 +239,9 @@ export default function Page() {
             </Button>
               )}
             <Button
-              danger
+      
               icon={<CloseCircleOutlined />}
+              style={{ backgroundColor: 'purple', borderColor: 'purple', color:'white' }}
               loading={exiting}
               onClick={ () => {playExit(); handleExitGame();}}
               className="exit-game-button"

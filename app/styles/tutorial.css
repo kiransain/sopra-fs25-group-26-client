@@ -105,13 +105,13 @@
 
 /* Enhanced button styling to match profile */
 .tutorial-button.ant-btn-primary {
-  background-color: #1890ff;
-  border-color: #1890ff;
+  background-color: purple;
+  border-color: purple;
 }
 
 .tutorial-button.ant-btn-primary:hover {
-  background-color: #40a9ff;
-  border-color: #40a9ff;
+  background-color: purple;
+  border-color: purple;
 }
 
 /* Mobile responsiveness - matches profile breakpoints */

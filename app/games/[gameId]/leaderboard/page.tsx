@@ -224,7 +224,7 @@ export default function Page() {
                         </Space>
                       </Col>
                       <Col span={6} style={{ textAlign: 'right' }}>
-                        <Tag color={player.role === 'HUNTER' ? 'red' : 'green'}>
+                        <Tag color={player.role === 'HUNTER' ? 'purple' : 'yellow'}>
                           {player.role}
                         </Tag>
                       </Col>

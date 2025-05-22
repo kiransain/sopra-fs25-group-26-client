@@ -159,10 +159,10 @@ const NewGame: React.FC = () => {
               name="radius"
               label={
                 <span className="setting-label">
-                  <span className="icon">📏</span> Game Radius (m)
+                  <span className="icon">📏</span> Game Radius between 5 - 100m 
                 </span>
               }
-              rules={[{ required: true, message: "Please input game radius!" }]}
+              rules={[{ required: true, message: "Please input game radius between 5 - 100m !" }]}
             >
               <InputNumber
                 min={5.0}
@@ -177,10 +177,10 @@ const NewGame: React.FC = () => {
               name="preparationTime"
               label={
                 <span className="setting-label">
-                  <span className="icon">⏱️</span> Preparation time (sec)
+                  <span className="icon">⏱️</span> Preparation time between 10 - 300 sec
                 </span>
               }
-              rules={[{ required: true, message: "Please input preparation time!" }]}
+              rules={[{ required: true, message: "Please input preparation time between 10 - 300 sec!" }]}
             >
               <InputNumber
                 min={10}
@@ -194,10 +194,10 @@ const NewGame: React.FC = () => {
               name="gameTime"
               label={
                 <span className="setting-label">
-                  <span className="icon">⌛</span> Game Duration (sec)
+                  <span className="icon">⌛</span> Game Duration between 60 and 900 sec
                 </span>
               }
-              rules={[{ required: true, message: "Please input game duration!" }]}
+              rules={[{ required: true, message: "Please input game duration between 60-900 sec!" }]}
             >
               <InputNumber
                 min={60}

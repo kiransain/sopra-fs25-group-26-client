@@ -376,7 +376,7 @@ useEffect(() => {
   };
 
   const getRoleColor = (role: string) => {
-    return role === 'HUNTER' ? 'red' : 'green';
+    return role === 'HUNTER' ? 'purple' : 'yellow';
   };
 
   // Phase durations in seconds
@@ -426,7 +426,7 @@ useEffect(() => {
           {game.status === 'IN_GAME_PREPARATION' ? 'Prep Time: ' : 'Game Time: '}
         </Text>
         <Tag color={
-          remainingSeconds <= 10 ? 'red' : 
+          remainingSeconds <= 10 ? 'purple' : 
           remainingSeconds <= 30 ? 'orange' : 'green'
         }>
           {remainingSeconds}
@@ -556,6 +556,7 @@ useEffect(() => {
                   <Marker
                       position={currentLocation}
                       animation={google.maps.Animation.DROP}
+                      
                   />
                   <Circle
                       key={`circle-${gameCenter.lat}-${gameCenter.lng}-${game.radius}`}
@@ -564,7 +565,7 @@ useEffect(() => {
                       options={{
                         fillColor: "rgba(102, 0, 255, 0.2)",
                         fillOpacity: 0.3,
-                        strokeColor: "#FF0000",
+                        strokeColor: "purple",
                         strokeOpacity: 0.8,
                         strokeWeight: 2
                       }}
@@ -581,7 +582,7 @@ useEffect(() => {
                             icon={{
                               path: google.maps.SymbolPath.CIRCLE,
                               scale: 7,
-                              fillColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                              fillColor: player.role === 'HUNTER' ? 'purple' : 'yellow',
                               fillOpacity: 1,
                               strokeWeight: 0
                             }}
@@ -620,7 +621,7 @@ useEffect(() => {
                               icon={!player.displayPicture ? <UserOutlined /> : undefined}
                               size="small"
                               style={{
-                                backgroundColor: player.role === 'HUNTER' ? '#ff4d4f' : '#52c41a',
+                                backgroundColor: player.role === 'HUNTER' ? 'purple' : 'yellow',
                                 opacity: player.status === 'FOUND' ? 0.1 : 1,
                                 display: 'block',
                                 margin: '0 auto'
@@ -690,7 +691,7 @@ useEffect(() => {
                 currentPlayer.status !== 'FOUND' && (
                     <div className="caught-button-container">
                       <Button
-                          danger
+                          style={{ backgroundColor: 'purple', borderColor: 'purple', color: 'white' }}
                           type="primary"
                           size="large"
                           className="caught-button"
@@ -730,14 +731,14 @@ useEffect(() => {
 
           {outOfAreaTimer !== null && (
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                <Text strong style={{ fontSize: 16, color: '#ff4d4f' }}>
+                <Text strong style={{ fontSize: 16, color: 'purple' }}>
                   Time remaining: {outOfAreaTimer} seconds
                 </Text>
                 <Progress
                     percent={(outOfAreaTimer / 10) * 100}
                     status="exception"
                     showInfo={false}
-                    strokeColor="#ff4d4f"
+                    strokeColor='purple'
                 />
               </div>
           )}

@@ -250,7 +250,7 @@ export default function TutorialPage({ params }: { params: Promise<{ step: strin
             size="large"
           />
         <Title level={3} className="tutorial-header-title">Game Tutorial</Title>
-        <Tag color="blue" className="tutorial-step-tag">
+        <Tag color="purple" className="tutorial-step-tag">
           Step {currentStep + 1}/{TUTORIAL_STEPS.length}
         </Tag>
       </header>

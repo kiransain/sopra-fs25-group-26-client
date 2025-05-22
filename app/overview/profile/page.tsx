@@ -206,7 +206,7 @@ export default function UserProfile() {
           <div className="profile-actions">
             <Button 
               type="primary" 
-              danger
+              style={{ backgroundColor: 'purple', borderColor: 'purple' }}
               onClick={() => {playClick(); handleLogout();}}
               className="logout-button"
             >

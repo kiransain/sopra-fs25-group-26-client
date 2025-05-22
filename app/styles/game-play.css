@@ -75,7 +75,7 @@
   }
   
   .caught-button {
-    background: linear-gradient(135deg, #ff4d4f, #d9363e) !important;
+    background: linear-gradient(135deg, purple, purple) !important;
     width: 100%;
     height: 45px;
     margin-top: 10px;
@@ -172,21 +172,20 @@
 
 /* Specific power-up colors */
 .reveal-players-button {
-  background: linear-gradient(135deg, #8a2be2, #5f1db3) !important;
+  background: linear-gradient(135deg, purple, #5f1db3) !important;
 }
 
 .recenter-area-button {
-  background: linear-gradient(135deg, #ff4d4f, #d9363e) !important;
+  background: linear-gradient(135deg, blue, aqua) !important;
 }
 
 
-
 .power-up-buttons-container {
-display: flex;
+  display: flex;
   flex-direction: row;
-flex-wrap: wrap;
-gap: 8px;
-margin-top: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
   justify-content: flex-start;
 }
 
