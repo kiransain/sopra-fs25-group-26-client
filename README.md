@@ -74,6 +74,8 @@ Players join or create a game as either **<span style="color:#722ed1">Hunter</sp
 Prerequisites
 - Node.js 18+
 - npm 9+
+- -**Browser Location:** Ensure that your browser has location services enabled otherwise the game functions will not work.
+
 
 Clone the Repository
 ```bash
@@ -132,7 +134,7 @@ Releases
 
 Future contributors might consider:
 
-1.  Add forms in newgame/page.tsx to allow player customize roles and teams.
+1. Add forms in newgame/page.tsx to allow player customize roles and teams.
 2. Allow custom profile pictures uploaded by users.
 
 ----------
