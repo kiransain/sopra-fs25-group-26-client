@@ -46,8 +46,8 @@ You've already made it to the overview page, well done! Here's a guide to naviga
 ### 🕹️ In the Main Game
 
 - **Player Identification:** In the bottom section of your screen, you will see a list of all active players in the game.
-    - <span style="color:red">Red</span> markers or avatars indicate the **Hunter**.
-    - <span style="color:green">Green</span> markers or avatars indicate the **Hiders**.
+    - <span style="color:#722ed1">Purple</span> markers or avatars indicate the **Hunter**.
+    - <span style="color:#fadb14">Yellow</span> markers or avatars indicate the **Hiders**.
 - **Preparation Phase:**
     - The timer at the top right of your screen shows the **preparation timer** counting down.
     - During this time, if you are a **Hider**, use this time to move within the game area (red circle on the map) and find a good hiding spot.

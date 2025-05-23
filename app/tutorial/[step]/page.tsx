@@ -73,28 +73,25 @@ const TUTORIAL_STEPS = [
           <div className="flex justify-center my-4">
             <div className="w-full max-w-md">
               <Image
-                src="/screenshots/leaderboard.jpg"
-                alt="Player list screen"
-                width={1179/4}
-                height={2150/4}
-                className="rounded-lg border border-gray-200 shadow-md w-full h-auto"
+                  src="/screenshots/main-game-preparation.jpg"
+                  alt="Preparation timer screen"
+                  width={1179/4}
+                  height={2152/4}
+                  className="rounded-lg border border-gray-200 shadow-md w-full h-auto"
               />
             </div>
           </div>
 
-          <p>During this phase, check the top right corner of your screen to see the preparation timer counting down. You will also see your randomly assigned role - either hunter (red) or hider (green). Use this time wisely - hiders should find good concealment while the hunter plans their search strategy.</p>
-          
-          <div className="flex justify-center my-4">
-            <div className="w-full max-w-md">
-              <Image
-                src="/screenshots/main-game-preparation.jpg"
-                alt="Preparation timer screen"
-                width={1179/4}
-              height={2152/4}
-                className="rounded-lg border border-gray-200 shadow-md w-full h-auto"
-              />
-            </div>
-          </div>
+          <p>
+            During this phase, check the top right corner of your screen to see the preparation timer counting down. You will also see your randomly assigned role - either{' '}
+            <span className="text-purple-600 font-bold">hunter</span>{' '}
+            (purple) or{' '}
+            <span className="text-yellow-500 font-bold">hider</span>{' '}
+            (yellow). Use this time wisely -{' '}
+            <span className="text-yellow-500 font-bold">hiders</span> should find good concealment while the{' '}
+            <span className="text-purple-600 font-bold">hunter</span> plans their search strategy.
+          </p>
+
         </div>
       </div>
     )
@@ -118,7 +115,9 @@ const TUTORIAL_STEPS = [
             </div>
           </div>
 
-          <p>As the hunter, your goal is simple: find and tag all hiders. As a hider, your objective is to avoid detection until time runs out. The game becomes more intense as caught players are eliminated and the play area shrinks accordingly.</p>
+          <p>
+            As the <span className="text-purple-600 font-bold">hunter</span>, your goal is simple: find and tag all <span className="text-yellow-500 font-bold">hiders</span>. As a <span className="text-yellow-500 font-bold">hider</span>, your objective is to avoid detection until time runs out. The game becomes more intense as caught players are eliminated and the play area shrinks accordingly.
+          </p>
         </div>
       </div>
     )
