@@ -3,6 +3,8 @@
 ![Vercel](https://vercelbadge.vercel.app/api/kiransain/sopra-fs25-group-26-client)
 ![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+----------
+
 ## 🎯 Introduction
 
 **Manhunt** is a mobile, multiplayer web application that reimagines classic hide-and-seek for the smartphone era. By blending real-world movement with battle‐royale–style dynamics, it brings back a nostalgic childhood game in a modern, enhanced form—making playing outside fun again.
@@ -131,33 +133,26 @@ You've already made it to the overview page, well done! Here's a guide to naviga
 
 
 4. **Hooks**
+    - Custom React hooks used to encapsulate shared logic like geolocation, audio playback, and polling.
+    - **Role:** Provide reusable logic for stateful or side-effect-heavy operations.
+    - **Used In:** Pages and components.
+    - **Depends On:** API Service for data fetching where needed.
+    - **Main Files:**
+      - [`useGoogleMaps`](app/hooks/useGoogleMaps.ts)
 
-Custom React hooks used to encapsulate shared logic like geolocation, audio playback, and polling.
-
-- **Role:** Provide reusable logic for stateful or side-effect-heavy operations.
-- **Used In:** Pages and components.
-- **Depends On:** API Service for data fetching where needed.
-- **Main Files:**
-  - [`useGoogleMaps`](app/hooks/useGoogleMaps.ts)
-
----
-
- 4.1 **`useAudio` Hook**
-
-- **Purpose:** Manage audio playback in React components.
-- **Inputs:** `src` (audio file path), optional volume.
-- **Returns:** `play` function to trigger audio.
-
-**Features:**
-- Initializes and references an `HTMLAudioElement` using `useRef`.
-- Handles cleanup on unmount to prevent memory leaks.
-- Resets and plays audio on demand, with error handling.
-
-**Usage Example:**
-```tsx
-const play = useAudio("/sounds/button.mp3", 0.3);
-// Call `playClick()` on e.g. button click
-```
+ - 4.1 **`useAudio` Hook**
+    - **Purpose:** Manage audio playback in React components.
+    - **Inputs:** `src` (audio file path), optional volume.
+    - **Returns:** `play` function to trigger audio.
+    - **Features:**
+        - Initializes and references an `HTMLAudioElement` using `useRef`.
+        - Handles cleanup on unmount to prevent memory leaks.
+        - Resets and plays audio on demand, with error handling.
+    - **Usage Example:**
+        ```tsx
+        const play = useAudio("/sounds/button.mp3", 0.3);
+        // Call `playClick()` on e.g. button click
+        ```
 
 
 5. **Styles**
@@ -197,6 +192,8 @@ npm run build
 npm start
 ```
 
+----------
+
 ## ⚙️ External Dependencies
 
 The application relies on the following external dependencies:
@@ -205,9 +202,13 @@ The application relies on the following external dependencies:
 
 - **Google Maps API Key:** The Google Maps JavaScript API is used for displaying maps and handling location services within the game. You need to obtain a Google Maps API key and set it as the value of the `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` environment variable in your `.env` file.
 
+----------
+
 ## 🚀 Deployment
 
 The frontend application is configured for automatic deployment to Vercel. This process is triggered automatically whenever changes are pushed to the `main` branch of the Git repository.
+
+----------
 
 ## 📦 Releases
 
@@ -219,6 +220,8 @@ The following steps outline the release process for the frontend application:
 4.  **Merge:** Once the pull request is approved, merge the `dev` branch into the `main` branch.
 5.  **Tagging:** After the merge, create a new tag for the release version (e.g., `M%`) and push this tag to the remote repository.
 6.  **Vercel Deployment:** Vercel will automatically detect the new tag on the `main` branch and initiate a production deployment of the latest version of the application.
+
+----------
 
 ## 🖼️ Illustrations
 
@@ -264,11 +267,15 @@ The following steps outline the release process for the frontend application:
 
     <img src="public/screenshots/global-leaderboard.jpg" alt="Leaderboard Page" width="200" />
 
+----------
+
 ## 🛣️ Roadmap
 Future contributors might consider:
 - Customizable role assignment logic (e.g. several hunters)
 - Adding support for team-based gameplay
 - Limit available games to user’s current city (e.g., Zurich only)
+  
+----------
 
 ## 👥 Authors & Acknowledgments
 
@@ -280,11 +287,6 @@ Future contributors might consider:
 
 - This code is based on the [SoPra-FS25-Client](https://github.com/HASEL-UZH/sopra-fs25-template-client)
 - To see contributions, you can see [Contributors](https://github.com/kiransain/sopra-fs25-group-26-client/graphs/contributors)
-----------
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
 
 ----------
 
@@ -293,3 +295,10 @@ This project is licensed under the [MIT License](LICENSE).
 The background music and sound effects used in this game are copyright-free.  
 They are sourced from [Pixabay](https://pixabay.com/), a platform offering royalty-free media.
 
+----------
+
+## 📄 License
+
+This project is licensed under the [Apache-2.0 License](LICENSE).
+
+----------
